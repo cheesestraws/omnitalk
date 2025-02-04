@@ -8,10 +8,24 @@
 
 stats_t stats;
 
+// Have a reserved stats buffer so that we can't run out of memory mid-flow
+#define STATSBUFFER_SIZE 256
+char statsbuffer[STATSBUFFER_SIZE];
+
+#define COUNTER(R, FIELD, HELP) \
+	snprintf(statsbuffer, STATSBUFFER_SIZE, "#HELP " #FIELD \
+		" " #FIELD " %s \n", HELP); \
+	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN); \
+	snprintf(statsbuffer, STATSBUFFER_SIZE, "#TYPE " #FIELD \
+		" counter\n" #FIELD " %lu \n", stats.FIELD); \
+	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN);
+
+
 esp_err_t http_metrics_handler(httpd_req_t *req) {
 	httpd_resp_set_type(req, "text/plain; version=0.0.4; charset=utf-8");
 
-	httpd_resp_send_chunk(req, "metrics are at /metrics", HTTPD_RESP_USE_STRLEN);
+	COUNTER(req, uptime_seconds, "system uptime in seconds")
+	
     httpd_resp_sendstr_chunk(req, NULL);
     
     return ESP_OK;
