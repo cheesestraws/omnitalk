@@ -14,7 +14,7 @@
 
 static const char* TAG = "ETHERNET";
 
-void ethernet_init(void) {
+void start_ethernet(void) {
 	/* set up ESP32 internal MAC */
 	eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
 	mac_config.sw_reset_timeout_ms = 1000;

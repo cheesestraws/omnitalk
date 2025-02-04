@@ -1,3 +1,3 @@
 #pragma once
 
-void ethernet_init(void);
+void start_ethernet(void);
