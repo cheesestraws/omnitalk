@@ -1,7 +1,17 @@
 #pragma once
 
-typedef struct stats {
+#include <stdatomic.h>
 
+#include <esp_http_server.h>
+
+typedef struct stats {
+	_Atomic unsigned long uptime_seconds;
 } stats_t;
 
+// stats is the variable to stuff all our stats in.  It'll be exported
+// to prometheus.
 extern stats_t stats;
+
+// Other gubbins
+void start_stats_workers(void);
+esp_err_t http_metrics_handler(httpd_req_t *req);
