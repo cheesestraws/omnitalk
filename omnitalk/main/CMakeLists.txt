@@ -1,4 +1,7 @@
 set(srcs
+	"net/common.c"
+	"net/ethernet.c"
+
 	"web/stats.c"
 	"web/util.c"
 	"web/web.c"

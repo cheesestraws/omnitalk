@@ -4,6 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "net/net.h"
 #include "web/stats.h"
 #include "web/web.h"
 #include "controlplane_runloop.h"
@@ -16,7 +17,8 @@ void app_main(void)
 
 	printf("Welcome to OmniTalk\n");
 	start_stats_workers();
-	
+
+	start_net();	
 	start_web();
 	
 	controlplane = start_controlplane_runloop();
