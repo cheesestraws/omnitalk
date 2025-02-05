@@ -1,7 +1,7 @@
 #include "net/mdns.h"
 
-#include <esp_mac.h>
 #include <esp_err.h>
+#include <esp_mac.h>
 #include <mdns.h>
 
 #include "net/common.h"

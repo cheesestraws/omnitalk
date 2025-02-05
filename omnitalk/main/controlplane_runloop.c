@@ -5,6 +5,6 @@
 runloop_info_t start_controlplane_runloop(void) {
 	runloop_info_t info = {0};
 
-	printf("start control plane");
+	printf("start control plane\n");
 	return info;
 }

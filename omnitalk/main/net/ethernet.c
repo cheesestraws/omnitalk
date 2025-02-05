@@ -2,17 +2,37 @@
 
 #include <stdbool.h>
 
+#include <esp_err.h>
+#include <esp_eth.h>
 #include <esp_system.h>
 #include <esp_log.h>
 #include <esp_netif.h>
 #include <esp_netif_types.h>
-#include <esp_eth.h>
 #include <driver/gpio.h>
 
 #include "net/common.h"
 #include "hw.h"
 
 static const char* TAG = "ETHERNET";
+
+// ethernet_input_path is the callback that will get called whenever
+// we get a packet.  For most things, it just passes it straight through
+// to esp_netif.
+//
+// Technically this is a bit naughty and we should do this with a tap,
+// but I'm too tired.
+esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint32_t length, void *priv) {
+	// Let's not break L2 TAP
+#if CONFIG_ESP_NETIF_L2_TAP
+    esp_err_t ret = ESP_OK;
+    ret = esp_vfs_l2tap_eth_filter_frame(eth_handle, buffer, (size_t *)&length, info);
+    if (length == 0) {
+        return ret;
+    }
+#endif
+
+    return esp_netif_receive((esp_netif_t *)priv, buffer, length, NULL);
+}
 
 void start_ethernet(void) {
 	/* set up ESP32 internal MAC */
@@ -51,5 +71,11 @@ void start_ethernet(void) {
 	char* hostname = generate_hostname();
 	ESP_ERROR_CHECK(esp_netif_set_hostname(global_netif, hostname));
 	free(hostname);
+	
+	// Install our custom input path
+	ESP_ERROR_CHECK(esp_eth_update_input_path(eth_handle, ethernet_input_path, global_netif));
+
+	
 	ESP_ERROR_CHECK(esp_eth_start(eth_handle));
 }
+
