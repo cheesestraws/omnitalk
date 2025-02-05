@@ -6,6 +6,9 @@
 
 typedef struct stats {
 	_Atomic unsigned long uptime_seconds;
+	
+	_Atomic unsigned long mem_all_allocs;
+	_Atomic unsigned long mem_all_frees;
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported

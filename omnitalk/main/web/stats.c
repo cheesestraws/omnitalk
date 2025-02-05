@@ -25,6 +25,9 @@ esp_err_t http_metrics_handler(httpd_req_t *req) {
 	httpd_resp_set_type(req, "text/plain; version=0.0.4; charset=utf-8");
 
 	COUNTER(req, uptime_seconds, "system uptime in seconds")
+	COUNTER(req, mem_all_allocs, "all heap allocations")
+	COUNTER(req, mem_all_frees, "all heap allocations")
+
 	
     httpd_resp_sendstr_chunk(req, NULL);
     

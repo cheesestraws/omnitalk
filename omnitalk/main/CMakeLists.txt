@@ -5,6 +5,7 @@ set(srcs
 	"net/net.c"
 
 	"web/stats.c"
+	"web/stats_memory.c"
 	"web/util.c"
 	"web/web.c"
 

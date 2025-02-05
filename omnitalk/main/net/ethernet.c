@@ -31,6 +31,8 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
     }
 #endif
 
+	// if we intercept buffer, we have to free it
+
     return esp_netif_receive((esp_netif_t *)priv, buffer, length, NULL);
 }
 
