@@ -14,7 +14,7 @@ char statsbuffer[STATSBUFFER_SIZE];
 
 #define COUNTER(R, FIELD, HELP) \
 	snprintf(statsbuffer, STATSBUFFER_SIZE, "#HELP " #FIELD \
-		" " #FIELD " %s \n", HELP); \
+		" %s \n", HELP); \
 	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN); \
 	snprintf(statsbuffer, STATSBUFFER_SIZE, "#TYPE " #FIELD \
 		" counter\n" #FIELD " %lu \n", stats.FIELD); \
