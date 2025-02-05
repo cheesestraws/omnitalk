@@ -9,11 +9,24 @@
 #include <esp_netif.h>
 #include <esp_netif_types.h>
 #include <driver/gpio.h>
+#include <lwip/prot/ethernet.h>
 
 #include "net/common.h"
+#include "proto/SNAP.h"
 #include "hw.h"
 
+#define REQUIRE(x) if(!(x)) { return false; }
+
 static const char* TAG = "ETHERNET";
+
+bool is_appletalk_frame(uint8_t *buffer, uint32_t length) {
+	REQUIRE(length >= sizeof(struct eth_hdr) + sizeof(snap_hdr_t));
+	return false;
+}
+
+bool is_aarp_frame(uint8_t *buffer, uint32_t length) {
+	return false;
+}
 
 // ethernet_input_path is the callback that will get called whenever
 // we get a packet.  For most things, it just passes it straight through
@@ -30,6 +43,10 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
         return ret;
     }
 #endif
+
+	// Is this an AppleTalk frame?
+	 
+	
 
 	// if we intercept buffer, we have to free it
 
