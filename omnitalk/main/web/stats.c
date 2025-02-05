@@ -44,6 +44,6 @@ void uptime_task_runloop(void* dummy) {
 }
 
 void start_stats_workers(void) {
-	xTaskCreate(uptime_task_runloop, "UPTIME", 256, NULL, tskIDLE_PRIORITY,
+	xTaskCreate(uptime_task_runloop, "UPTIME", 768, NULL, tskIDLE_PRIORITY,
 		&uptime_task);
 }
