@@ -10,6 +10,7 @@
 #include <esp_netif_types.h>
 #include <driver/gpio.h>
 #include <lwip/prot/ethernet.h>
+#include <lwip/def.h>
 
 #include "net/common.h"
 #include "proto/SNAP.h"
@@ -20,12 +21,53 @@
 static const char* TAG = "ETHERNET";
 
 bool is_appletalk_frame(uint8_t *buffer, uint32_t length) {
+	// We need to have both an ethernet header and a SNAP header.
+	// First check our length.
 	REQUIRE(length >= sizeof(struct eth_hdr) + sizeof(snap_hdr_t));
-	return false;
+	
+	// We should have a length, not an ethertype.  I don't think
+	// any AppleTalk stuff supports jumbo frames, so we can do this
+	// the easy way: a type or size <= 1500 is a length, higher is
+	// an ethertype.
+	struct eth_hdr *eth_hdr = (struct eth_hdr*)buffer;
+	REQUIRE(ntohs(eth_hdr->type) <= 1500)
+	
+	// The LLC header needs to contain the SNAP SAPs
+	snap_hdr_t *snap_hdr = GET_SNAP_HDR(buffer);
+	REQUIRE(snap_hdr->dest_sap == 0xAA &&
+		snap_hdr->src_sap == 0xAA &&
+		snap_hdr->control_byte == 3);
+		
+	// And the SNAP protocol discriminator needs to be right
+	REQUIRE(snap_hdr->proto_discriminator_top_byte == 0x80 &&
+		snap_hdr->proto_discriminator_bottom_bytes == PP_HTONL(0x0007809BUL));
+	
+	return true;
 }
 
 bool is_aarp_frame(uint8_t *buffer, uint32_t length) {
-	return false;
+	// We need to have both an ethernet header and a SNAP header.
+	// First check our length.
+	REQUIRE(length >= sizeof(struct eth_hdr) + sizeof(snap_hdr_t));
+	
+	// We should have a length, not an ethertype.  I don't think
+	// any AppleTalk stuff supports jumbo frames, so we can do this
+	// the easy way: a type or size <= 1500 is a length, higher is
+	// an ethertype.
+	struct eth_hdr *eth_hdr = (struct eth_hdr*)buffer;
+	REQUIRE(ntohs(eth_hdr->type) <= 1500)
+	
+	// The LLC header needs to contain the SNAP SAPs
+	snap_hdr_t *snap_hdr = GET_SNAP_HDR(buffer);
+	REQUIRE(snap_hdr->dest_sap == 0xAA &&
+		snap_hdr->src_sap == 0xAA &&
+		snap_hdr->control_byte == 3);
+		
+	// And the SNAP protocol discriminator needs to be right
+	REQUIRE(snap_hdr->proto_discriminator_top_byte == 0x00 &&
+		snap_hdr->proto_discriminator_bottom_bytes == PP_HTONL(0x000080F3UL));
+	
+	return true;
 }
 
 // ethernet_input_path is the callback that will get called whenever
@@ -45,8 +87,12 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
 #endif
 
 	// Is this an AppleTalk frame?
-	 
-	
+	if (is_appletalk_frame(buffer, length)) {
+		ESP_LOGI(TAG, "got appletalk frame");
+	}
+	if (is_aarp_frame(buffer, length)) {
+		ESP_LOGI(TAG, "got AARP frame");
+	}
 
 	// if we intercept buffer, we have to free it
 

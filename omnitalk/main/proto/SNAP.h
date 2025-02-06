@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include <lwip/prot/ethernet.h>
+
 struct snap_hdr {
 	uint8_t dest_sap;
 	uint8_t src_sap;
@@ -14,3 +16,5 @@ struct snap_hdr {
 } __attribute__((packed));
 
 typedef struct snap_hdr snap_hdr_t;
+
+#define GET_SNAP_HDR(x) (snap_hdr_t *)((x) + sizeof(struct eth_hdr))
