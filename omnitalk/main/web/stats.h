@@ -9,6 +9,9 @@ typedef struct stats {
 	
 	_Atomic unsigned long mem_all_allocs;
 	_Atomic unsigned long mem_all_frees;
+	
+	_Atomic unsigned long eth_recv_elap_frames;
+	_Atomic unsigned long eth_recv_aarp_frames;
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported
