@@ -28,8 +28,8 @@ void munge_ethernet_output_path(esp_eth_handle_t eth_driver, esp_netif_t *esp_ne
 	
 	esp_netif_driver_ifconfig_t driver_ifconfig = {
 		.handle =  eth_driver,
-        .transmit = send_ethernet,
-        .driver_free_rx_buffer = eth_l2_free
+		.transmit = send_ethernet,
+		.driver_free_rx_buffer = eth_l2_free
 	};
 	
 	ESP_ERROR_CHECK(esp_netif_set_driver_config(esp_netif, &driver_ifconfig));
