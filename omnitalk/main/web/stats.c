@@ -28,7 +28,7 @@ char statsbuffer[STATSBUFFER_SIZE];
 		" %s \n", HELP); \
 	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN); \
 	snprintf(statsbuffer, STATSBUFFER_SIZE, "#TYPE " #FIELD \
-		" counter\n" #FIELD "{" #LABELS "} %lu \n", stats.FIELD##SUFFIX); \
+		" counter\n" #FIELD "{" LABELS "} %lu \n", stats.FIELD##SUFFIX); \
 	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN);
 
 
