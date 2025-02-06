@@ -34,6 +34,8 @@ char statsbuffer[STATSBUFFER_SIZE];
 
 esp_err_t http_metrics_handler(httpd_req_t *req) {
 	httpd_resp_set_type(req, "text/plain; version=0.0.4; charset=utf-8");
+	
+	httpd_resp_send_chunk(req, "omnitalk_metadata{} 1\n", HTTPD_RESP_USE_STRLEN);
 
 	COUNTER(req, uptime_seconds, "system uptime in seconds");
 	COUNTER(req, mem_all_allocs, "all heap allocations");
@@ -54,6 +56,8 @@ esp_err_t http_metrics_handler(httpd_req_t *req) {
 
 	COUNTER(req, eth_recv_elap_frames, "ethernet: received ELAP frames (raw count)");
 	COUNTER(req, eth_recv_aarp_frames, "ethernet: received AARP frames (raw count)");
+	COUNTER(req, eth_input_path_ifInOctets, "ethernet: octet count through the input path");
+	COUNTER(req, eth_output_path_ifOutOctets, "ethernet: octet count through the output path");
 	
     httpd_resp_sendstr_chunk(req, NULL);
     

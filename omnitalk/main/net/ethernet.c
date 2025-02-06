@@ -13,6 +13,7 @@
 #include <lwip/def.h>
 
 #include "net/common.h"
+#include "net/ethernet_output.h"
 #include "proto/SNAP.h"
 #include "web/stats.h"
 #include "hw.h"
@@ -89,6 +90,8 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
     }
 #endif
 
+	stats.eth_input_path_ifInOctets += (unsigned long)length;
+
 	// Is this an AppleTalk frame?
 	if (is_appletalk_frame(buffer, length)) {
 		ESP_LOGI(TAG, "got appletalk frame");
@@ -142,8 +145,9 @@ void start_ethernet(void) {
 	ESP_ERROR_CHECK(esp_netif_set_hostname(global_netif, hostname));
 	free(hostname);
 	
-	// Install our custom input path
+	// Install our custom input and output path
 	ESP_ERROR_CHECK(esp_eth_update_input_path(eth_handle, ethernet_input_path, global_netif));
+	munge_ethernet_output_path(eth_handle, global_netif);
 
 	
 	ESP_ERROR_CHECK(esp_eth_start(eth_handle));

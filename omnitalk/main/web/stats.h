@@ -19,6 +19,9 @@ typedef struct stats {
 	
 	_Atomic unsigned long eth_recv_elap_frames;
 	_Atomic unsigned long eth_recv_aarp_frames;
+	_Atomic unsigned long eth_input_path_ifInOctets;
+	_Atomic unsigned long eth_output_path_ifOutOctets;
+
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported
