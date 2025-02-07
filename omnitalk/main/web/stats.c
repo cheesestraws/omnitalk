@@ -55,6 +55,11 @@ esp_err_t http_metrics_handler(httpd_req_t *req) {
 		"type=\"dma\"", "total free bytes");
 
 	COUNTER(req, tashtalk_raw_uart_in_octets, "tashtalk: raw octets in");
+	COUNTER(req, tashtalk_llap_rx_frame_count, "tashtalk: llap rx frames");
+	COUNTER(req, tashtalk_llap_too_long_count, "tashtalk: llap packet overflow");
+	COUNTER(req, tashtalk_crc_fail_count, "tashtalk: llap crc fail");
+	COUNTER(req, tashtalk_framing_error_count, "tashtalk: llap framing error");
+	COUNTER(req, tashtalk_frame_abort_count, "tashtalk: llap frame abort");
 
 
 	COUNTER(req, eth_recv_elap_frames, "ethernet: received ELAP frames (raw count)");

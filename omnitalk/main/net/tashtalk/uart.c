@@ -9,6 +9,7 @@
 
 #include "hw.h"
 #include "mem/buffers.h"
+#include "net/tashtalk/state_machine.h"
 #include "web/stats.h"
 
 static const char* TAG = "TT_UART";
@@ -58,16 +59,16 @@ void tt_uart_rx_runloop(void* dummy) {
 	static const char *TAG = "UART_RX";	
 	ESP_LOGI(TAG, "started");
 	
-	//tashtalk_rx_state_t* rxstate = new_tashtalk_rx_state((buffer_pool_t*)buffer_pool, uart_rx_queue);
+	tashtalk_rx_state_t* rxstate = new_tashtalk_rx_state(uart_rx_queue);
 	
 	while(1){
 		/* TODO: this is stupid, read a byte at a time instead and wait for MAX_DELAY */
 		const int len = uart_read_bytes(uart_num, uart_buffer, 1, 1000 / portTICK_PERIOD_MS);
 		
 		stats.tashtalk_raw_uart_in_octets += len;
-		/*if (len > 0) {
-			feed_all(rxstate, uart_buffer, len);
-		}*/
+		if (len > 0) {
+			tashtalk_feed_all(rxstate, uart_buffer, len);
+		}
 	}
 }
 
