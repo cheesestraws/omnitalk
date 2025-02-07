@@ -2,6 +2,8 @@ set(srcs
 	"net/common.c"
 	"net/ethernet.c"
 	"net/ethernet_output.c"
+	"net/tashtalk/tashtalk.c"
+	"net/tashtalk/uart.c"
 	"net/mdns.c"
 	"net/net.c"
 

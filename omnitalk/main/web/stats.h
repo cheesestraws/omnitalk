@@ -15,7 +15,8 @@ typedef struct stats {
 	_Atomic unsigned long mem_total_free_bytes__type_dma;
 	_Atomic unsigned long mem_minimum_free_bytes__type_dma;
 	_Atomic unsigned long mem_largest_free_block__type_dma;
-
+	
+	_Atomic unsigned long tashtalk_raw_uart_in_octets;
 	
 	_Atomic unsigned long eth_recv_elap_frames;
 	_Atomic unsigned long eth_recv_aarp_frames;

@@ -54,10 +54,15 @@ esp_err_t http_metrics_handler(httpd_req_t *req) {
 	COUNTER_LABELS(req, mem_largest_free_block, __type_dma,
 		"type=\"dma\"", "total free bytes");
 
+	COUNTER(req, tashtalk_raw_uart_in_octets, "tashtalk: raw octets in");
+
+
 	COUNTER(req, eth_recv_elap_frames, "ethernet: received ELAP frames (raw count)");
 	COUNTER(req, eth_recv_aarp_frames, "ethernet: received AARP frames (raw count)");
 	COUNTER(req, eth_input_path_ifInOctets, "ethernet: octet count through the input path");
 	COUNTER(req, eth_output_path_ifOutOctets, "ethernet: octet count through the output path");
+	
+	
 	
     httpd_resp_sendstr_chunk(req, NULL);
     

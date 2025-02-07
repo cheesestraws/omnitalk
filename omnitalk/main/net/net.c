@@ -6,6 +6,7 @@
 
 #include "net/ethernet.h"
 #include "net/mdns.h"
+#include "net/tashtalk/tashtalk.h"
 
 void start_net(void) {
 	ESP_ERROR_CHECK(esp_netif_init());
@@ -13,4 +14,5 @@ void start_net(void) {
 
 	start_ethernet();
 	start_mdns();
+	start_tashtalk();
 }
