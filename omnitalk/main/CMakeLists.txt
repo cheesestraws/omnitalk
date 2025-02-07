@@ -1,4 +1,6 @@
 set(srcs
+	"mem/buffers.c"
+
 	"net/common.c"
 	"net/ethernet.c"
 	"net/ethernet_output.c"
@@ -6,6 +8,9 @@ set(srcs
 	"net/tashtalk/uart.c"
 	"net/mdns.c"
 	"net/net.c"
+	
+	"util/crc.c"
+	"util/crc32.c"
 
 	"web/stats.c"
 	"web/stats_memory.c"
