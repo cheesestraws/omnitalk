@@ -18,4 +18,5 @@ void start_net(void) {
 	start_tashtalk();
 	
 	start_sink("SINK-eth", ethertalkv2_get_transport());
+	start_sink("SINK-tt", tashtalk_get_transport());
 }
