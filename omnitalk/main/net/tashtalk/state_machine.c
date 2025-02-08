@@ -38,14 +38,20 @@ static void append(buffer_t* packet, unsigned char byte) {
 }
 
 static void do_something_sensible_with_packet(tashtalk_rx_state_t* state) {
-
-	freebuf(state->packet_in_progress);
-	state->packet_in_progress = NULL;
 	stats.tashtalk_llap_rx_frame_count++;
 	
+	if (state->send_output_to_queue) {
+		BaseType_t err = xQueueSendToBack(state->output_queue, &state->packet_in_progress, 0);
+		if (err != pdTRUE) {
+			stats.tashtalk_inbound_path_queue_full++;
+			freebuf(state->packet_in_progress);
+		}
+	} else {
+		freebuf(state->packet_in_progress);
+	}
+	state->packet_in_progress = NULL;
+	
 //	uart_check_for_tx_wedge(state->packet_in_progress);
-   	
-//	xQueueSendToBack(state->output_queue, &state->packet_in_progress, portMAX_DELAY);
 }
 
 void tashtalk_feed(tashtalk_rx_state_t* state, unsigned char byte) {

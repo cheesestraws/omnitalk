@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdatomic.h>
 #include <stdbool.h>
 
 #include "freertos/FreeRTOS.h"
@@ -11,6 +12,7 @@
 /* a tashtalk_rx_state_t value represents a state machine for getting LLAP 
    packets out of the byte stream from TashTalk. */
 typedef struct {
+	_Atomic bool send_output_to_queue;
 	buffer_t* packet_in_progress; // the buffer that holds the in-flight packet
 	QueueHandle_t output_queue;
 	bool in_escape;

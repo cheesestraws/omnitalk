@@ -18,8 +18,9 @@ static const int uart_num = UART_NUM_1;
 
 TaskHandle_t uart_rx_task = NULL;
 TaskHandle_t uart_tx_task = NULL;
-QueueHandle_t uart_rx_queue = NULL;
-QueueHandle_t uart_tx_queue = NULL;
+QueueHandle_t tashtalk_inbound_queue = NULL;
+QueueHandle_t tashtalk_outbound_queue = NULL;
+tashtalk_rx_state_t* rxstate = NULL;
 
 #define RX_BUFFER_SIZE 1024
 uint8_t uart_buffer[RX_BUFFER_SIZE];
@@ -60,7 +61,7 @@ void tt_uart_rx_runloop(void* dummy) {
 	static const char *TAG = "UART_RX";	
 	ESP_LOGI(TAG, "started");
 	
-	tashtalk_rx_state_t* rxstate = new_tashtalk_rx_state(uart_rx_queue);
+	rxstate = new_tashtalk_rx_state(tashtalk_inbound_queue);
 	
 	while(1){
 		/* TODO: this is stupid, read a byte at a time instead and wait for MAX_DELAY */
@@ -74,8 +75,8 @@ void tt_uart_rx_runloop(void* dummy) {
 }
 
 void tt_uart_start(void) {
-	uart_rx_queue = xQueueCreate(60, sizeof(buffer_t*));;
-	uart_tx_queue = xQueueCreate(60, sizeof(buffer_t*));;
+	tashtalk_inbound_queue = xQueueCreate(60, sizeof(buffer_t*));;
+	tashtalk_outbound_queue = xQueueCreate(60, sizeof(buffer_t*));;
 	xTaskCreate(&tt_uart_rx_runloop, "UART_RX", 4096, NULL, 20, &uart_rx_task);
 //	xTaskCreate(&uart_tx_runloop, "UART_TX", 4096, (void*)packet_pool, 5, &uart_tx_task);
 }

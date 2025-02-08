@@ -22,6 +22,7 @@ typedef struct stats {
 	_Atomic unsigned long tashtalk_crc_fail_count;
 	_Atomic unsigned long tashtalk_framing_error_count;
 	_Atomic unsigned long tashtalk_frame_abort_count;
+	_Atomic unsigned long tashtalk_inbound_path_queue_full;
 	
 	_Atomic unsigned long eth_recv_elap_frames;
 	_Atomic unsigned long eth_recv_aarp_frames;
