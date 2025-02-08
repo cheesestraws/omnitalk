@@ -7,10 +7,11 @@
 #include <driver/uart.h>
 #include "driver/gpio.h"
 
-#include "hw.h"
 #include "mem/buffers.h"
+#include "net/common.h"
 #include "net/tashtalk/state_machine.h"
 #include "web/stats.h"
+#include "hw.h"
 
 static const char* TAG = "TT_UART";
 static const int uart_num = UART_NUM_1;
@@ -75,6 +76,6 @@ void tt_uart_rx_runloop(void* dummy) {
 void tt_uart_start(void) {
 	uart_rx_queue = xQueueCreate(60, sizeof(buffer_t*));;
 	uart_tx_queue = xQueueCreate(60, sizeof(buffer_t*));;
-	xTaskCreate(&tt_uart_rx_runloop, "UART_RX", 4096, NULL, 5, &uart_rx_task);
+	xTaskCreate(&tt_uart_rx_runloop, "UART_RX", 4096, NULL, 20, &uart_rx_task);
 //	xTaskCreate(&uart_tx_runloop, "UART_TX", 4096, (void*)packet_pool, 5, &uart_tx_task);
 }

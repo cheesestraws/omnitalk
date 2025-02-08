@@ -7,6 +7,7 @@
 #include "esp_log.h"
 
 #include "mem/buffers.h"
+#include "net/common.h"
 #include "net/tashtalk/state_machine.h"
 #include "net/tashtalk/uart.h"
 #include "util/crc.h"
@@ -51,7 +52,7 @@ void tashtalk_feed(tashtalk_rx_state_t* state, unsigned char byte) {
 
 	// do we have a buffer?
 	if (state->packet_in_progress == NULL) {
-		state->packet_in_progress = newbuf(1536);
+		state->packet_in_progress = newbuf(ETHERNET_FRAME_LEN);
 		crc_state_init(&state->crc);
 	}
 	

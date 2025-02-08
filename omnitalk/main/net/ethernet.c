@@ -1,5 +1,6 @@
 #include "net/ethernet.h"
 
+#include <stdatomic.h>
 #include <stdbool.h>
 
 #include <esp_err.h>
@@ -12,13 +13,22 @@
 #include <lwip/prot/ethernet.h>
 #include <lwip/def.h>
 
+#include "mem/buffers.h"
 #include "net/common.h"
 #include "net/ethernet_output.h"
+#include "net/transport.h"
 #include "proto/SNAP.h"
 #include "web/stats.h"
 #include "hw.h"
 
 #define REQUIRE(x) if(!(x)) { return false; }
+
+_Atomic bool ethernet_transport_enabled = false;
+
+TaskHandle_t ethertalkv2_inbound_task = NULL;
+TaskHandle_t ethertalkv2_outbound_task = NULL;
+QueueHandle_t ethertalkv2_inbound_queue = NULL;
+QueueHandle_t ethertalkv2_outbound_queue = NULL;
 
 static const char* TAG = "ETHERNET";
 
@@ -101,10 +111,31 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
 		ESP_LOGI(TAG, "got AARP frame");
 		stats.eth_recv_aarp_frames++;
 	}
+	
+	if (is_appletalk_frame(buffer, length) || is_aarp_frame(buffer, length)) {
+		// We intercept appletalk and aarp frames
+		if (ethernet_transport_enabled) {
+			buffer_t *buffer = wrapbuf(buffer, length);
+			BaseType_t err = xQueueSendToBack(ethertalkv2_inbound_queue,
+				&buffer, (TickType_t)0);
+				
+			if (err != pdTRUE) {
+				stats.eth_input_path_queue_full++;
+				freebuf(buffer);
+			}
+			
+			return ESP_OK;
+		} else {
+			// We have no ethernet transport, quietly drop buffer on the floor
+			free(buffer);
+			return ESP_OK;
+		}
+	} else {
 
 	// if we intercept buffer, we have to free it
 
     return esp_netif_receive((esp_netif_t *)priv, buffer, length, NULL);
+    }
 }
 
 void start_ethernet(void) {
@@ -149,7 +180,39 @@ void start_ethernet(void) {
 	ESP_ERROR_CHECK(esp_eth_update_input_path(eth_handle, ethernet_input_path, global_netif));
 	munge_ethernet_output_path(eth_handle, global_netif);
 
-	
 	ESP_ERROR_CHECK(esp_eth_start(eth_handle));
+	
+	ethertalkv2_inbound_queue = xQueueCreate(ETHERNET_QUEUE_DEPTH, sizeof(buffer_t*));
+	ethertalkv2_outbound_queue = xQueueCreate(ETHERNET_QUEUE_DEPTH, sizeof(buffer_t*));
 }
 
+esp_err_t ethertalkv2_handler_enable(transport_t* dummy) {
+	return ESP_OK;
+}
+
+esp_err_t ethertalkv2_handler_disable(transport_t* dummy) {
+	return ESP_OK;
+}
+
+static transport_t ethertalkv2_transport = {
+	.private_data = NULL,
+	
+	.enable = &ethertalkv2_handler_enable,
+	.disable = &ethertalkv2_handler_disable,
+	
+	.inbound = NULL,
+	.outbound = NULL,
+};
+
+transport_t* ethertalkv2_get_transport() {
+	// warn if we do something silly and attempt to get multiple
+	// transports for this interface
+	static int attempts = 0;
+	if (attempts > 0) {
+		ESP_LOGE(TAG, "multiple transports requested for ethertalkv2; beware - there can be only one!");
+	}
+	attempts++;
+	
+	return &ethertalkv2_transport;
+	
+}

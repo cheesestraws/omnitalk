@@ -27,6 +27,7 @@ typedef struct stats {
 	_Atomic unsigned long eth_recv_aarp_frames;
 	_Atomic unsigned long eth_input_path_ifInOctets;
 	_Atomic unsigned long eth_output_path_ifOutOctets;
+	_Atomic unsigned long eth_input_path_queue_full;
 
 } stats_t;
 
