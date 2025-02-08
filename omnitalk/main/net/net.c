@@ -17,5 +17,5 @@ void start_net(void) {
 	start_mdns();
 	start_tashtalk();
 	
-	start_sink(ethertalkv2_get_transport());
+	start_sink("SINK-eth", ethertalkv2_get_transport());
 }
