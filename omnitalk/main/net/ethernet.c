@@ -186,11 +186,13 @@ void start_ethernet(void) {
 	ethertalkv2_outbound_queue = xQueueCreate(ETHERNET_QUEUE_DEPTH, sizeof(buffer_t*));
 }
 
-esp_err_t ethertalkv2_handler_enable(transport_t* dummy) {
+esp_err_t ethertalkv2_transport_enable(transport_t* dummy) {
+	ethernet_transport_enabled = true;
 	return ESP_OK;
 }
 
-esp_err_t ethertalkv2_handler_disable(transport_t* dummy) {
+esp_err_t ethertalkv2_transport_disable(transport_t* dummy) {
+	ethernet_transport_enabled = false;
 	return ESP_OK;
 }
 
@@ -198,8 +200,8 @@ static transport_t ethertalkv2_transport = {
 	.kind = "ethertalk_v2",
 	.private_data = NULL,
 	
-	.enable = &ethertalkv2_handler_enable,
-	.disable = &ethertalkv2_handler_disable,
+	.enable = &ethertalkv2_transport_enable,
+	.disable = &ethertalkv2_transport_disable,
 };
 
 transport_t* ethertalkv2_get_transport(void) {
