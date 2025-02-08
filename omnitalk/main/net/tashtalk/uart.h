@@ -2,6 +2,7 @@
 
 #include "net/tashtalk/state_machine.h"
 
+extern _Atomic bool tashtalk_enable_uart_tx;
 extern tashtalk_rx_state_t* rxstate;
 extern QueueHandle_t tashtalk_inbound_queue;
 extern QueueHandle_t tashtalk_outbound_queue;

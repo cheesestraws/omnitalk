@@ -13,11 +13,13 @@ void start_tashtalk(void) {
 }
 
 esp_err_t tashtalk_transport_enable(transport_t* dummy) {
+	tashtalk_enable_uart_tx = true;
 	rxstate->send_output_to_queue = true;
 	return ESP_OK;
 }
 
 esp_err_t tashtalk_transport_disable(transport_t* dummy) {
+	tashtalk_enable_uart_tx = false;
 	rxstate->send_output_to_queue = false;
 	return ESP_OK;
 }

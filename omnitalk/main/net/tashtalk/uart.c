@@ -22,6 +22,8 @@ QueueHandle_t tashtalk_inbound_queue = NULL;
 QueueHandle_t tashtalk_outbound_queue = NULL;
 tashtalk_rx_state_t* rxstate = NULL;
 
+_Atomic bool tashtalk_enable_uart_tx = false;
+
 #define RX_BUFFER_SIZE 1024
 uint8_t uart_buffer[RX_BUFFER_SIZE];
 
@@ -74,9 +76,82 @@ void tt_uart_rx_runloop(void* dummy) {
 	}
 }
 
+bool tashtalk_tx_validate(buffer_t* packet) {
+	if (packet->length < 5) {
+		// Too short
+		ESP_LOGE(TAG, "tx packet too short");
+		stats.tashtalk_err_tx_too_short_count++;
+		return false;
+	}
+	
+	if (packet->length == 5 && !(packet->data[2] & 0x80)) {
+		// 3 byte packet is not a control packet
+		ESP_LOGE(TAG, "tx 3-byte non-control packet, wut?");
+		stats.tashtalk_err_tx_too_short_data++;
+		return false;
+	}
+	
+	if ((packet->data[2] & 0x80) && packet->length != 5) {
+		// too long control frame
+		ESP_LOGE(TAG, "tx too-long control packet, wut?");
+		stats.tashtalk_err_tx_too_long_control++;
+		return false;
+	}
+	
+	if (packet->length == 6) {
+		// impossible packet length
+		ESP_LOGE(TAG, "tx impossible packet length, wut?");
+		stats.tashtalk_err_tx_impossible_length++;
+		return false;
+	}
+	
+	if (packet->length >= 7 && (((packet->data[3] & 0x3) << 8) | packet->data[4]) != packet->length - 5) {
+		// packet length does not match claimed length
+		ESP_LOGE(TAG, "tx length field (%d) does not match actual packet length (%d)", (((packet->data[3] & 0x3) << 8) | packet->data[4]), packet->length - 5);
+		stats.tashtalk_err_tx_length_mismatch++;
+		return false;
+	}
+
+	// check the CRC
+	crc_state_t crc;
+	crc_state_init(&crc);
+	crc_state_append_all(&crc, packet->data, packet->length);
+	if (!crc_state_ok(&crc)) {
+		ESP_LOGE(TAG, "bad CRC on tx: IP bug?");
+		stats.tashtalk_err_tx_crc_bad++;
+		return false;
+	}
+	
+	return true;
+}
+
+void tt_uart_tx_runloop(void* buffer_pool) {
+	buffer_t* packet = NULL;
+	static const char *TAG = "UART_TX";
+	
+	ESP_LOGI(TAG, "started");
+	
+	while(1){
+		xQueueReceive(tashtalk_outbound_queue, &packet, portMAX_DELAY);
+		
+		if (!tashtalk_tx_validate(packet)) {
+			ESP_LOGE(TAG, "packet validation failed");
+			goto skip_processing;
+		}
+		
+		if (tashtalk_enable_uart_tx) {
+			uart_write_bytes(uart_num, "\x01", 1);
+			uart_write_bytes(uart_num, (const char*)packet->data, packet->length);
+		}
+skip_processing:
+		freebuf(packet);
+	}
+}
+
+
 void tt_uart_start(void) {
 	tashtalk_inbound_queue = xQueueCreate(60, sizeof(buffer_t*));;
 	tashtalk_outbound_queue = xQueueCreate(60, sizeof(buffer_t*));;
 	xTaskCreate(&tt_uart_rx_runloop, "UART_RX", 4096, NULL, 20, &uart_rx_task);
-//	xTaskCreate(&uart_tx_runloop, "UART_TX", 4096, (void*)packet_pool, 5, &uart_tx_task);
+	xTaskCreate(&tt_uart_tx_runloop, "UART_TX", 4096, NULL, 20, &uart_tx_task);
 }

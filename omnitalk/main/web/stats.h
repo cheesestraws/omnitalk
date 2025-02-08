@@ -19,10 +19,17 @@ typedef struct stats {
 	_Atomic unsigned long tashtalk_raw_uart_in_octets;
 	_Atomic unsigned long tashtalk_llap_rx_frame_count;
 	_Atomic unsigned long tashtalk_llap_too_long_count;
-	_Atomic unsigned long tashtalk_crc_fail_count;
+	_Atomic unsigned long tashtalk_crc_fail_count; // rx
 	_Atomic unsigned long tashtalk_framing_error_count;
 	_Atomic unsigned long tashtalk_frame_abort_count;
 	_Atomic unsigned long tashtalk_inbound_path_queue_full;
+	_Atomic unsigned long tashtalk_err_tx_too_short_count;
+	_Atomic unsigned long tashtalk_err_tx_too_short_data;
+	_Atomic unsigned long tashtalk_err_tx_too_long_control;
+	_Atomic unsigned long tashtalk_err_tx_impossible_length;
+	_Atomic unsigned long tashtalk_err_tx_length_mismatch;
+	_Atomic unsigned long tashtalk_err_tx_crc_bad;
+
 	
 	_Atomic unsigned long eth_recv_elap_frames;
 	_Atomic unsigned long eth_recv_aarp_frames;
