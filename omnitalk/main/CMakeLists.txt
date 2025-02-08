@@ -3,12 +3,12 @@ set(srcs
 
 	"mem/buffers.c"
 
+	"net/ethernet/ethernet.c"
+	"net/ethernet/ethernet_output.c"
 	"net/tashtalk/state_machine.c"
 	"net/tashtalk/tashtalk.c"
 	"net/tashtalk/uart.c"
 	"net/common.c"
-	"net/ethernet.c"
-	"net/ethernet_output.c"
 	"net/mdns.c"
 	"net/net.c"
 	"net/transport.c"

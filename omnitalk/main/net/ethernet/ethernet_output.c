@@ -1,4 +1,4 @@
-#include "net/ethernet_output.h"
+#include "net/ethernet/ethernet_output.h"
 
 #include <stddef.h>
 

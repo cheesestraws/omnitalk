@@ -1,4 +1,4 @@
-#include "net/ethernet.h"
+#include "net/ethernet/ethernet.h"
 
 #include <stdatomic.h>
 #include <stdbool.h>
@@ -14,8 +14,8 @@
 #include <lwip/def.h>
 
 #include "mem/buffers.h"
+#include "net/ethernet/ethernet_output.h"
 #include "net/common.h"
-#include "net/ethernet_output.h"
 #include "net/transport.h"
 #include "proto/SNAP.h"
 #include "web/stats.h"

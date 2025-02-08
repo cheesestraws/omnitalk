@@ -5,7 +5,7 @@
 #include <esp_netif_types.h>
 
 #include "lap/sink/sink.h"
-#include "net/ethernet.h"
+#include "net/ethernet/ethernet.h"
 #include "net/mdns.h"
 #include "net/tashtalk/tashtalk.h"
 
