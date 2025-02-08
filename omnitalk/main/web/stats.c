@@ -80,7 +80,6 @@ esp_err_t http_metrics_handler(httpd_req_t *req) {
 // once a second
 TaskHandle_t uptime_task;
 void uptime_task_runloop(void* dummy) {
-
 	while(1) {
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 		stats.uptime_seconds++;
