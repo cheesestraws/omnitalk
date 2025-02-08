@@ -17,3 +17,4 @@
 esp_err_t send_ethernet(esp_eth_handle_t hdl, void *buf, size_t length);
 
 void munge_ethernet_output_path(esp_eth_handle_t eth_driver, esp_netif_t *esp_netif);
+

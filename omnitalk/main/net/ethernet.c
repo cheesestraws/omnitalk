@@ -195,16 +195,14 @@ esp_err_t ethertalkv2_handler_disable(transport_t* dummy) {
 }
 
 static transport_t ethertalkv2_transport = {
+	.kind = "ethertalk_v2",
 	.private_data = NULL,
 	
 	.enable = &ethertalkv2_handler_enable,
 	.disable = &ethertalkv2_handler_disable,
-	
-	.inbound = NULL,
-	.outbound = NULL,
 };
 
-transport_t* ethertalkv2_get_transport() {
+transport_t* ethertalkv2_get_transport(void) {
 	// warn if we do something silly and attempt to get multiple
 	// transports for this interface
 	static int attempts = 0;
@@ -212,6 +210,9 @@ transport_t* ethertalkv2_get_transport() {
 		ESP_LOGE(TAG, "multiple transports requested for ethertalkv2; beware - there can be only one!");
 	}
 	attempts++;
+	
+	ethertalkv2_transport.inbound = ethertalkv2_inbound_queue;
+	ethertalkv2_transport.outbound = ethertalkv2_outbound_queue;
 	
 	return &ethertalkv2_transport;
 	

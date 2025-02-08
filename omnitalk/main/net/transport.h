@@ -12,6 +12,7 @@ typedef struct transport_s transport_t;
 typedef esp_err_t(*transport_handler)(transport_t*);
 
 struct transport_s {
+	char* kind;
 	void* private_data;
 	
 	transport_handler enable;

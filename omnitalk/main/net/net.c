@@ -4,6 +4,7 @@
 #include <esp_netif.h>
 #include <esp_netif_types.h>
 
+#include "lap/sink/sink.h"
 #include "net/ethernet.h"
 #include "net/mdns.h"
 #include "net/tashtalk/tashtalk.h"
@@ -15,4 +16,6 @@ void start_net(void) {
 	start_ethernet();
 	start_mdns();
 	start_tashtalk();
+	
+	start_sink(ethertalkv2_get_transport());
 }

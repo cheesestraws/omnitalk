@@ -1,4 +1,6 @@
 set(srcs
+	"lap/sink/sink.c"
+
 	"mem/buffers.c"
 
 	"net/tashtalk/state_machine.c"
