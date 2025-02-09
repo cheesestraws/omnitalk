@@ -134,6 +134,20 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 	while(1){
 		xQueueReceive(tashtalk_outbound_queue, &packet, portMAX_DELAY);
 		
+		// Append the CRC
+		if (packet->capacity < packet->length + 2) {
+			ESP_LOGE(TAG, "no room to add CRC");
+			stats.tashtalk_err_tx_no_room_for_crc++;
+			goto skip_processing;
+		}
+		
+		packet->length += 2;
+		crc_state_t crc;
+		crc_state_init(&crc);
+		crc_state_append_all(&crc, packet->data, packet->length);
+		packet->data[packet->length - 2] = crc_state_byte_1(&crc);
+		packet->data[packet->length - 1] = crc_state_byte_2(&crc);
+		
 		if (!tashtalk_tx_validate(packet)) {
 			ESP_LOGE(TAG, "packet validation failed");
 			goto skip_processing;

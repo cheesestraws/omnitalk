@@ -30,6 +30,8 @@ typedef struct stats {
 	_Atomic unsigned long tashtalk_err_tx_impossible_length;
 	_Atomic unsigned long tashtalk_err_tx_length_mismatch;
 	_Atomic unsigned long tashtalk_err_tx_crc_bad;
+	_Atomic unsigned long tashtalk_err_tx_no_room_for_crc;
+
 
 	
 	_Atomic unsigned long eth_recv_elap_frames;
