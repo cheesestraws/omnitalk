@@ -4,41 +4,45 @@
 
 #include <esp_http_server.h>
 
+typedef _Atomic unsigned long prometheus_counter_t;
+typedef _Atomic unsigned long prometheus_gauge_t;
+
+
 typedef struct stats {
-	_Atomic unsigned long uptime_seconds;
+	prometheus_counter_t uptime_seconds;
 	
-	_Atomic unsigned long mem_all_allocs;
-	_Atomic unsigned long mem_all_frees;
-	_Atomic unsigned long mem_total_free_bytes__type_heap;
-	_Atomic unsigned long mem_minimum_free_bytes__type_heap;
-	_Atomic unsigned long mem_largest_free_block__type_heap;
-	_Atomic unsigned long mem_total_free_bytes__type_dma;
-	_Atomic unsigned long mem_minimum_free_bytes__type_dma;
-	_Atomic unsigned long mem_largest_free_block__type_dma;
+	prometheus_counter_t mem_all_allocs;
+	prometheus_counter_t mem_all_frees;
+	prometheus_gauge_t mem_total_free_bytes__type_heap;
+	prometheus_gauge_t mem_minimum_free_bytes__type_heap;
+	prometheus_gauge_t mem_largest_free_block__type_heap;
+	prometheus_gauge_t mem_total_free_bytes__type_dma;
+	prometheus_gauge_t mem_minimum_free_bytes__type_dma;
+	prometheus_gauge_t mem_largest_free_block__type_dma;
 	
-	_Atomic unsigned long tashtalk_raw_uart_in_octets;
-	_Atomic unsigned long tashtalk_llap_rx_frame_count;
-	_Atomic unsigned long tashtalk_llap_too_long_count;
-	_Atomic unsigned long tashtalk_crc_fail_count; // rx
-	_Atomic unsigned long tashtalk_framing_error_count;
-	_Atomic unsigned long tashtalk_frame_abort_count;
-	_Atomic unsigned long tashtalk_inbound_path_queue_full;
-	_Atomic unsigned long tashtalk_err_rx_too_short_count;
-	_Atomic unsigned long tashtalk_err_tx_too_short_count;
-	_Atomic unsigned long tashtalk_err_tx_too_short_data;
-	_Atomic unsigned long tashtalk_err_tx_too_long_control;
-	_Atomic unsigned long tashtalk_err_tx_impossible_length;
-	_Atomic unsigned long tashtalk_err_tx_length_mismatch;
-	_Atomic unsigned long tashtalk_err_tx_crc_bad;
-	_Atomic unsigned long tashtalk_err_tx_no_room_for_crc;
+	prometheus_counter_t tashtalk_raw_uart_in_octets;
+	prometheus_counter_t tashtalk_llap_rx_frame_count;
+	prometheus_counter_t tashtalk_llap_too_long_count;
+	prometheus_counter_t tashtalk_crc_fail_count; // rx
+	prometheus_counter_t tashtalk_framing_error_count;
+	prometheus_counter_t tashtalk_frame_abort_count;
+	prometheus_counter_t tashtalk_inbound_path_queue_full;
+	prometheus_counter_t tashtalk_err_rx_too_short_count;
+	prometheus_counter_t tashtalk_err_tx_too_short_count;
+	prometheus_counter_t tashtalk_err_tx_too_short_data;
+	prometheus_counter_t tashtalk_err_tx_too_long_control;
+	prometheus_counter_t tashtalk_err_tx_impossible_length;
+	prometheus_counter_t tashtalk_err_tx_length_mismatch;
+	prometheus_counter_t tashtalk_err_tx_crc_bad;
+	prometheus_counter_t tashtalk_err_tx_no_room_for_crc;
 
 
 	
-	_Atomic unsigned long eth_recv_elap_frames;
-	_Atomic unsigned long eth_recv_aarp_frames;
-	_Atomic unsigned long eth_input_path_ifInOctets;
-	_Atomic unsigned long eth_output_path_ifOutOctets;
-	_Atomic unsigned long eth_input_path_queue_full;
+	prometheus_counter_t eth_recv_elap_frames;
+	prometheus_counter_t eth_recv_aarp_frames;
+	prometheus_counter_t eth_input_path_ifInOctets;
+	prometheus_counter_t eth_output_path_ifOutOctets;
+	prometheus_counter_t eth_input_path_queue_full;
 
 } stats_t;
 
