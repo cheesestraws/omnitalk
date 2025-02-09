@@ -16,7 +16,9 @@ void start_net(void) {
 	start_ethernet();
 	start_mdns();
 	start_tashtalk();
+	start_ltoudp();
 	
 	start_sink("SINK-eth", ethertalkv2_get_transport());
 	start_sink("SINK-tt", tashtalk_get_transport());
+	start_sink("SINK-ltoudp", ltoudp_get_transport());
 }
