@@ -41,6 +41,14 @@ static void do_something_sensible_with_packet(tashtalk_rx_state_t* state) {
 	stats.tashtalk_llap_rx_frame_count++;
 	
 	if (state->send_output_to_queue) {
+		if (state->packet_in_progress->length > 2) {
+			// chop off CRC
+			state->packet_in_progress->length -= 2;
+		} else {
+			stats.tashtalk_err_rx_too_short_count++;
+			freebuf(state->packet_in_progress);
+		}
+		
 		BaseType_t err = xQueueSendToBack(state->output_queue, &state->packet_in_progress, 0);
 		if (err != pdTRUE) {
 			stats.tashtalk_inbound_path_queue_full++;
