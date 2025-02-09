@@ -9,6 +9,7 @@
 
 #include "mem/buffers.h"
 #include "net/common.h"
+#include "net/transport.h"
 #include "web/stats.h"
 
 static const char* TAG = "LTOUDP";
@@ -17,8 +18,10 @@ static _Atomic int udp_sock = -1;
 TaskHandle_t udp_rx_task = NULL;
 TaskHandle_t udp_tx_task = NULL;
 
-QueueHandle_t ltoudp_outgoing_queue = NULL;
-QueueHandle_t ltoudp_incoming_queue = NULL;
+QueueHandle_t ltoudp_outbound_queue = NULL;
+QueueHandle_t ltoudp_inbound_queue = NULL;
+
+static _Atomic bool ltoudp_transport_enabled = false;
 
 void init_udp(void) {
 	struct sockaddr_in saddr = { 0 };
@@ -127,7 +130,7 @@ void udp_rx_runloop(void *pvParameters) {
 				ESP_LOGE(TAG, "packet too long: %d", len);
 				continue;
 			}
-			if (len > 7) {
+			if (len > 7 && ltoudp_transport_enabled) {
 				stats.ltoudp_rx_frames++;
 				
 				// fetch an empty buffer from the pool and fill it with
@@ -139,7 +142,7 @@ void udp_rx_runloop(void *pvParameters) {
 					buf->length = len-4; // -4 for LToUDP tag
 					memcpy(buf->data, buffer+4, len-4);
 				
-					BaseType_t err = xQueueSendToBack(ltoudp_incoming_queue, &buf, (TickType_t)0);
+					BaseType_t err = xQueueSendToBack(ltoudp_inbound_queue, &buf, (TickType_t)0);
 					if (err != pdTRUE) {
 						stats.ltoudp_err_rx_queue_full++;
 						freebuf(buf);
@@ -166,13 +169,13 @@ void udp_tx_runloop(void *pvParameters) {
 	ESP_LOGI(TAG, "starting LToUDP sender");
 	
 	while(1) {
-		xQueueReceive(ltoudp_outgoing_queue, &packet, portMAX_DELAY);
+		xQueueReceive(ltoudp_outbound_queue, &packet, portMAX_DELAY);
 				
 		if (packet == NULL) {
 			continue;
 		}
 		   
-		if (udp_sock != -1) {
+		if (udp_sock != -1 && ltoudp_transport_enabled) {
 			memcpy(outgoing_buffer+4, packet->data, packet->length);
 			
 			err = sendto(udp_sock, outgoing_buffer, packet->length+4, 0, 
@@ -190,9 +193,42 @@ void udp_tx_runloop(void *pvParameters) {
 
 
 void start_ltoudp(void) {
-	ltoudp_outgoing_queue = xQueueCreate(LTOUDP_QUEUE_DEPTH, sizeof(buffer_t*));;
-	ltoudp_incoming_queue = xQueueCreate(LTOUDP_QUEUE_DEPTH, sizeof(buffer_t*));;
+	ltoudp_outbound_queue = xQueueCreate(LTOUDP_QUEUE_DEPTH, sizeof(buffer_t*));;
+	ltoudp_inbound_queue = xQueueCreate(LTOUDP_QUEUE_DEPTH, sizeof(buffer_t*));;
 	xTaskCreate(&udp_rx_runloop, "LToUDP-rx", 4096, NULL, 5, &udp_rx_task);
 	xTaskCreate(&udp_tx_runloop, "LToUDP-tx", 4096, NULL, 5, &udp_tx_task);
+}
 
+esp_err_t ltoudp_transport_enable(transport_t* dummy) {
+	ltoudp_transport_enabled = true;
+	return ESP_OK;
+}
+
+esp_err_t ltoudp_transport_disable(transport_t* dummy) {
+	ltoudp_transport_enabled = false;
+	return ESP_OK;
+}
+
+static transport_t ltoudp_transport = {
+	.kind = "ltoudp",
+	.private_data = NULL,
+	
+	.enable = &ltoudp_transport_enable,
+	.disable = &ltoudp_transport_disable,
+};
+
+transport_t* ltoudp_get_transport(void) {
+	// warn if we do something silly and attempt to get multiple
+	// transports for this interface
+	static int attempts = 0;
+	if (attempts > 0) {
+		ESP_LOGE(TAG, "multiple transports requested for ltoudp; beware - there can be only one!");
+	}
+	attempts++;
+	
+	ltoudp_transport.inbound = ltoudp_inbound_queue;
+	ltoudp_transport.outbound = ltoudp_outbound_queue;
+	
+	return &ltoudp_transport;
+	
 }
