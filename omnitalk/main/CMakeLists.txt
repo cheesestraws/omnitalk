@@ -5,6 +5,7 @@ set(srcs
 
 	"net/ethernet/ethernet.c"
 	"net/ethernet/ethernet_output.c"
+	"net/ltoudp/ltoudp.c"
 	"net/tashtalk/state_machine.c"
 	"net/tashtalk/tashtalk.c"
 	"net/tashtalk/uart.c"

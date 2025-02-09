@@ -36,7 +36,11 @@ typedef struct stats {
 	prometheus_counter_t tashtalk_err_tx_crc_bad;
 	prometheus_counter_t tashtalk_err_tx_no_room_for_crc;
 
-
+	prometheus_counter_t ltoudp_rx_frames;
+	prometheus_counter_t ltoudp_err_rx_recv_error;
+	prometheus_counter_t ltoudp_err_rx_packet_too_long;
+	prometheus_counter_t ltoudp_err_rx_queue_full;
+	prometheus_counter_t ltoudp_err_tx_send_error;
 	
 	prometheus_counter_t eth_recv_elap_frames;
 	prometheus_counter_t eth_recv_aarp_frames;
