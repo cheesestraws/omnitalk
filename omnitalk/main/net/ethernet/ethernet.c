@@ -115,13 +115,13 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
 	if (is_appletalk_frame(buffer, length) || is_aarp_frame(buffer, length)) {
 		// We intercept appletalk and aarp frames
 		if (ethernet_transport_enabled) {
-			buffer_t *buffer = wrapbuf(buffer, length);
+			buffer_t *buff = wrapbuf(buffer, length);
 			BaseType_t err = xQueueSendToBack(ethertalkv2_inbound_queue,
-				&buffer, (TickType_t)0);
+				&buff, (TickType_t)0);
 				
 			if (err != pdTRUE) {
 				stats.eth_input_path_queue_full++;
-				freebuf(buffer);
+				freebuf(buff);
 			}
 			
 			return ESP_OK;
