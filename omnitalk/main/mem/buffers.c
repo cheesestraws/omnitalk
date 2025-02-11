@@ -25,3 +25,7 @@ buffer_t *wrapbuf(void* data, size_t length) {
 	
 	return buff;
 }
+
+void resetbuf(buffer_t *buffer) {
+	buffer->length = 0;
+}

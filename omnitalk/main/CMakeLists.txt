@@ -3,6 +3,7 @@ set(srcs
 
 	"mem/buffers.c"
 
+	"net/b2udptunnel/b2udptunnel.c"
 	"net/ethernet/ethernet.c"
 	"net/ethernet/ethernet_output.c"
 	"net/ltoudp/ltoudp.c"

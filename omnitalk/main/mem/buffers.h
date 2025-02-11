@@ -12,3 +12,4 @@ typedef struct buffer_s {
 buffer_t *newbuf(size_t length);
 void freebuf(buffer_t *buffer_t);
 buffer_t *wrapbuf(void* data, size_t length);
+void resetbuf(buffer_t *buffer);

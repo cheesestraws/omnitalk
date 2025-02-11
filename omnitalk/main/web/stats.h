@@ -42,6 +42,10 @@ typedef struct stats {
 	prometheus_counter_t ltoudp_err_rx_queue_full;
 	prometheus_counter_t ltoudp_err_tx_send_error;
 	
+	prometheus_counter_t b2eth_err_rx_recvfrom_failed;
+	prometheus_counter_t b2eth_err_rx_frame_too_short;
+	prometheus_counter_t b2eth_err_rx_invalid_src_mac;
+	
 	prometheus_counter_t eth_recv_elap_frames;
 	prometheus_counter_t eth_recv_aarp_frames;
 	prometheus_counter_t eth_input_path_ifInOctets;

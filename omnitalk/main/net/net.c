@@ -6,6 +6,7 @@
 
 #include "lap/sink/sink.h"
 #include "net/ethernet/ethernet.h"
+#include "net/ltoudp/ltoudp.h"
 #include "net/mdns.h"
 #include "net/tashtalk/tashtalk.h"
 
@@ -18,7 +19,7 @@ void start_net(void) {
 	start_tashtalk();
 	start_ltoudp();
 	
-	start_sink("SINK-eth", ethertalkv2_get_transport());
+	/* start_sink("SINK-eth", ethertalkv2_get_transport());
 	start_sink("SINK-tt", tashtalk_get_transport());
-	start_sink("SINK-ltoudp", ltoudp_get_transport());
+	start_sink("SINK-ltoudp", ltoudp_get_transport()); */
 }
