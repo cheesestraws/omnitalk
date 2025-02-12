@@ -12,6 +12,7 @@
 
 #include "mem/buffers.h"
 #include "net/common.h"
+#include "net/transport.h"
 #include "proto/SNAP.h"
 #include "web/stats.h"
 
@@ -22,6 +23,9 @@ static _Atomic bool b2_transport_enabled = false;
 
 QueueHandle_t b2_outbound_queue = NULL;
 QueueHandle_t b2_inbound_queue = NULL;
+TaskHandle_t b2_outbound_task = NULL;
+TaskHandle_t b2_inbound_task = NULL;
+
 
 
 static void init_b2udptunnel(void) {
@@ -34,7 +38,7 @@ static void init_b2udptunnel(void) {
 		return;
 	}
 
-	saddr.sin_family = PF_INET;
+	saddr.sin_family = AF_INET;
 	saddr.sin_port = htons(6066);
 	saddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	int err = bind(sock, (struct sockaddr *)&saddr, sizeof(struct sockaddr_in));
@@ -43,13 +47,16 @@ static void init_b2udptunnel(void) {
 		goto err_cleanup;
 	}
 	
-	int bc = 1;
-	setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc, sizeof(int));
+	socklen_t bc = 1;
+	setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc, sizeof(bc));
 	if (err < 0) {
 		ESP_LOGE(TAG, "setsockopt(...SO_BROADCAST...) failed, error: %d", errno);
 		goto err_cleanup;
 	}
 
+	b2_udp_sock = sock;
+	
+	return;
 	
 err_cleanup:
 	close(sock);
@@ -85,13 +92,14 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 		}
 
 		buffer_t *buf = NULL;
-		struct sockaddr_in cliaddr = { 0 };
+		struct sockaddr_storage cliaddr = { 0 };
 		socklen_t clilen = sizeof(cliaddr);
 		while (1) {
 			buf = newbuf(ETHERNET_FRAME_LEN);
 			
-			int len = recvfrom(b2_udp_sock, buf->data, buf->capacity, 0, 
-				(struct sockaddr *)&cliaddr, &clilen);
+			int len = recvfrom(b2_udp_sock, buf->data, buf->capacity, 0,
+				(struct sockaddr*)&cliaddr, &clilen);
+				
 			if (len == 0) {
 				goto free_and_continue;
 			}
@@ -101,8 +109,10 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 				goto free_and_continue;
 			}
 			
+			// TODO: sanity check sender IP address
+						
 			buf->length = len;
-			
+						
 			if (!sanity_check_incoming_frame(buf)) {
 				goto free_and_continue;
 			}		
@@ -126,9 +136,46 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 }
 
 static void b2udptunnel_outbound_runloop(void* dummy) {
-
 }
 
 void start_b2udptunnel(void) {
+	b2_outbound_queue = xQueueCreate(B2UDPTUNNEL_QUEUE_DEPTH, sizeof(buffer_t*));;
+	b2_inbound_queue = xQueueCreate(B2UDPTUNNEL_QUEUE_DEPTH, sizeof(buffer_t*));;
+	xTaskCreate(&b2udptunnel_inbound_runloop, "B2UDP-rx", 4096, NULL, 5, &b2_inbound_task);
+	//xTaskCreate(&b2udptunnel_outbound_runloop, "B2UDP-tx", 4096, NULL, 5, &b2_outbound_task);
+}
+
+esp_err_t b2_transport_enable(transport_t* dummy) {
+	b2_transport_enabled = true;
+	return ESP_OK;
+}
+
+esp_err_t b2_transport_disable(transport_t* dummy) {
+	b2_transport_enabled = false;
+	return ESP_OK;
+}
+
+static transport_t b2_transport = {
+	.kind = "b2",
+	.private_data = NULL,
+	
+	.enable = &b2_transport_enable,
+	.disable = &b2_transport_disable,
+};
+
+transport_t* b2_get_transport(void) {
+	// warn if we do something silly and attempt to get multiple
+	// transports for this interface
+	static int attempts = 0;
+	if (attempts > 0) {
+		ESP_LOGE(TAG, "multiple transports requested for b2; beware - there can be only one!");
+	}
+	attempts++;
+	
+	b2_transport.inbound = b2_inbound_queue;
+	b2_transport.outbound = b2_outbound_queue;
+	
+	return &b2_transport;
 	
 }
+
