@@ -46,6 +46,10 @@ typedef struct stats {
 	prometheus_counter_t b2eth_err_rx_recvfrom_failed;
 	prometheus_counter_t b2eth_err_rx_frame_too_short;
 	prometheus_counter_t b2eth_err_rx_invalid_src_mac;
+	prometheus_counter_t b2eth_err_tx_frame_too_short;
+	prometheus_counter_t b2eth_err_tx_invalid_dst_mac;
+	prometheus_counter_t b2eth_err_tx_sendto_failed;
+
 	
 	prometheus_counter_t eth_recv_elap_frames; // help: ethernet: received ELAP frames (raw count)
 	prometheus_counter_t eth_recv_aarp_frames; // help: ethernet: received AARP frames (raw count)

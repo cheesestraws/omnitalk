@@ -26,7 +26,17 @@ QueueHandle_t b2_inbound_queue = NULL;
 TaskHandle_t b2_outbound_task = NULL;
 TaskHandle_t b2_inbound_task = NULL;
 
+static bool macaddr_is_appletalk_broadcast(uint8_t *addr) {
+	return addr[0] == 0x09 && addr[1] == 0x00 && addr[2] == 0x07 && addr[3] == 0xff && addr[4] == 0xff && addr[5] == 0xff;
+}
 
+static bool macaddr_is_ethernet_broadcast(uint8_t *addr) {
+	return addr[0] == 0xff && addr[1] == 0xff && addr[2] == 0xff  && addr[3] == 0xff && addr[4] == 0xff && addr[5] == 0xff;
+}
+
+static bool macaddr_is_b2_unicast(uint8_t *addr) {
+	return addr[0] == 'B' && addr[1] == '2';
+}
 
 static void init_b2udptunnel(void) {
 	int sock = -1;
@@ -136,13 +146,59 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 }
 
 static void b2udptunnel_outbound_runloop(void* dummy) {
+	buffer_t *buf;
+	struct sockaddr_in dest_addr = {0};
+	
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port = htons(6066);
+
+	while(1) {
+		xQueueReceive(b2_outbound_queue, &buf, portMAX_DELAY);
+		if (buf == NULL) {
+			continue;
+		}
+		
+		if (b2_udp_sock == -1) {
+			goto skip_processing;
+		}
+		
+		// Is the packet long enough?
+		if (buf->length < sizeof(struct eth_hdr) + sizeof(snap_hdr_t)) {
+			stats.b2eth_err_tx_frame_too_short++;
+			goto skip_processing;
+		}
+		
+		// Work out destination IP
+		struct eth_hdr *hdr = (struct eth_hdr*)buf->data;
+		if (macaddr_is_appletalk_broadcast(hdr->dest.addr) ||
+			macaddr_is_ethernet_broadcast(hdr->dest.addr)) {
+		
+			dest_addr.sin_addr.s_addr = INADDR_BROADCAST;
+		} else if (macaddr_is_b2_unicast(hdr->dest.addr)) {
+			uint32_t dest = (hdr->dest.addr[2] << 24) | (hdr->dest.addr[3] << 16) | 
+			                (hdr->dest.addr[4] << 8) | hdr->dest.addr[5];
+			dest_addr.sin_addr.s_addr = htonl(dest);
+		} else {
+			stats.b2eth_err_tx_invalid_dst_mac++;
+			goto skip_processing;
+		}
+		
+		if (sendto(b2_udp_sock, buf, buf->length, 0,
+			(struct sockaddr*)&dest_addr, sizeof(dest_addr)) < 0) {
+		
+			stats.b2eth_err_tx_sendto_failed++;
+		}
+		
+	skip_processing:
+		freebuf(buf);
+	}
 }
 
 void start_b2udptunnel(void) {
 	b2_outbound_queue = xQueueCreate(B2UDPTUNNEL_QUEUE_DEPTH, sizeof(buffer_t*));;
 	b2_inbound_queue = xQueueCreate(B2UDPTUNNEL_QUEUE_DEPTH, sizeof(buffer_t*));;
 	xTaskCreate(&b2udptunnel_inbound_runloop, "B2UDP-rx", 4096, NULL, 5, &b2_inbound_task);
-	//xTaskCreate(&b2udptunnel_outbound_runloop, "B2UDP-tx", 4096, NULL, 5, &b2_outbound_task);
+	xTaskCreate(&b2udptunnel_outbound_runloop, "B2UDP-tx", 4096, NULL, 5, &b2_outbound_task);
 }
 
 esp_err_t b2_transport_enable(transport_t* dummy) {
