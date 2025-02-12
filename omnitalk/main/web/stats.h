@@ -27,6 +27,7 @@ typedef struct stats {
 	prometheus_counter_t tashtalk_framing_error_count; // help: tashtalk: llap rx frame errors
 	prometheus_counter_t tashtalk_frame_abort_count; // help: tashtalk: llap rx frame aborts
 	prometheus_counter_t tashtalk_inbound_path_queue_full; //help: tashtalk: rx could not write frame to queue
+	prometheus_counter_t tashtalk_rx_control_packets_not_forwarded; // help: tashtalk: rx packets discarded because they're control packets
 	prometheus_counter_t tashtalk_err_rx_too_short_count;
 	prometheus_counter_t tashtalk_err_tx_too_short_count;
 	prometheus_counter_t tashtalk_err_tx_too_short_data;

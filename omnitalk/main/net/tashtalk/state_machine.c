@@ -40,13 +40,22 @@ static void append(buffer_t* packet, unsigned char byte) {
 static void do_something_sensible_with_packet(tashtalk_rx_state_t* state) {
 	stats.tashtalk_llap_rx_frame_count++;
 	
-	if (state->send_output_to_queue) {
+	if (state->send_output_to_queue) {	
+		// Is frame long enough to be valid?
 		if (state->packet_in_progress->length > 2) {
-			// chop off CRC
+			// chop off CRC, now it's a packet
 			state->packet_in_progress->length -= 2;
 		} else {
 			stats.tashtalk_err_rx_too_short_count++;
 			freebuf(state->packet_in_progress);
+			return;
+		}
+		
+		// We do not want to forward control frames
+		if (state->packet_in_progress->length == 3) {
+			stats.tashtalk_rx_control_packets_not_forwarded++;
+			freebuf(state->packet_in_progress);
+			return;
 		}
 		
 		BaseType_t err = xQueueSendToBack(state->output_queue, &state->packet_in_progress, 0);

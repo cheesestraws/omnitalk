@@ -14,6 +14,7 @@ COUNTER_FIELD(req, tashtalk_crc_fail_count, tashtalk_crc_fail_count, "", "tashta
 COUNTER_FIELD(req, tashtalk_framing_error_count, tashtalk_framing_error_count, "", "tashtalk: llap rx frame errors");
 COUNTER_FIELD(req, tashtalk_frame_abort_count, tashtalk_frame_abort_count, "", "tashtalk: llap rx frame aborts");
 COUNTER_FIELD(req, tashtalk_inbound_path_queue_full, tashtalk_inbound_path_queue_full, "", "tashtalk: rx could not write frame to queue");
+COUNTER_FIELD(req, tashtalk_rx_control_packets_not_forwarded, tashtalk_rx_control_packets_not_forwarded, "", "tashtalk: rx packets discarded because they're control packets");
 COUNTER_FIELD(req, tashtalk_err_rx_too_short_count, tashtalk_err_rx_too_short_count, "", "");
 COUNTER_FIELD(req, tashtalk_err_tx_too_short_count, tashtalk_err_tx_too_short_count, "", "");
 COUNTER_FIELD(req, tashtalk_err_tx_too_short_data, tashtalk_err_tx_too_short_data, "", "");
