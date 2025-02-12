@@ -219,5 +219,4 @@ transport_t* ethertalkv2_get_transport(void) {
 	ethertalkv2_transport.outbound = ethertalkv2_outbound_queue;
 	
 	return &ethertalkv2_transport;
-	
 }
