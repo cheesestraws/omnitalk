@@ -30,44 +30,30 @@ char statsbuffer[STATSBUFFER_SIZE];
 	snprintf(statsbuffer, STATSBUFFER_SIZE, "#TYPE " #FIELD \
 		" counter\n" #FIELD "{" LABELS "} %lu \n", stats.FIELD##SUFFIX); \
 	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN);
+	
+#define COUNTER_FIELD(R, FIELD, METRIC, LABELS, HELP) \
+	snprintf(statsbuffer, STATSBUFFER_SIZE, "#HELP " #METRIC \
+		" %s \n", HELP); \
+	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN); \
+	snprintf(statsbuffer, STATSBUFFER_SIZE, "#TYPE " #METRIC \
+		" counter\n" #METRIC "{" LABELS "} %lu \n", stats.FIELD); \
+	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN);
+
+#define GAUGE_FIELD(R, FIELD, METRIC, LABELS, HELP) \
+	snprintf(statsbuffer, STATSBUFFER_SIZE, "#HELP " #METRIC \
+		" %s \n", HELP); \
+	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN); \
+	snprintf(statsbuffer, STATSBUFFER_SIZE, "#TYPE " #METRIC \
+		" gauge\n" #METRIC "{" LABELS "} %lu \n", stats.FIELD); \
+	httpd_resp_send_chunk(R, statsbuffer, HTTPD_RESP_USE_STRLEN);
 
 
 esp_err_t http_metrics_handler(httpd_req_t *req) {
 	httpd_resp_set_type(req, "text/plain; version=0.0.4; charset=utf-8");
 	
 	httpd_resp_send_chunk(req, "omnitalk_metadata{} 1\n", HTTPD_RESP_USE_STRLEN);
-
-	COUNTER(req, uptime_seconds, "system uptime in seconds");
-	COUNTER(req, mem_all_allocs, "all heap allocations");
-	COUNTER(req, mem_all_frees, "all heap allocations");
 	
-	COUNTER_LABELS(req, mem_total_free_bytes, __type_heap,
-		"type=\"heap\"", "total free bytes");
-	COUNTER_LABELS(req, mem_minimum_free_bytes, __type_heap,
-		"type=\"heap\"", "total free bytes");
-	COUNTER_LABELS(req, mem_largest_free_block, __type_heap,
-		"type=\"heap\"", "total free bytes");
-	COUNTER_LABELS(req, mem_total_free_bytes, __type_dma,
-		"type=\"dma\"", "total free bytes");
-	COUNTER_LABELS(req, mem_minimum_free_bytes, __type_dma,
-		"type=\"dma\"", "total free bytes");
-	COUNTER_LABELS(req, mem_largest_free_block, __type_dma,
-		"type=\"dma\"", "total free bytes");
-
-	COUNTER(req, tashtalk_raw_uart_in_octets, "tashtalk: raw octets in");
-	COUNTER(req, tashtalk_llap_rx_frame_count, "tashtalk: llap rx frames");
-	COUNTER(req, tashtalk_llap_too_long_count, "tashtalk: llap packet overflow");
-	COUNTER(req, tashtalk_crc_fail_count, "tashtalk: llap crc fail");
-	COUNTER(req, tashtalk_framing_error_count, "tashtalk: llap framing error");
-	COUNTER(req, tashtalk_frame_abort_count, "tashtalk: llap frame abort");
-
-
-	COUNTER(req, eth_recv_elap_frames, "ethernet: received ELAP frames (raw count)");
-	COUNTER(req, eth_recv_aarp_frames, "ethernet: received AARP frames (raw count)");
-	COUNTER(req, eth_input_path_ifInOctets, "ethernet: octet count through the input path");
-	COUNTER(req, eth_output_path_ifOutOctets, "ethernet: octet count through the output path");
-	
-	
+#include "stats.inc"	
 	
     httpd_resp_sendstr_chunk(req, NULL);
     
