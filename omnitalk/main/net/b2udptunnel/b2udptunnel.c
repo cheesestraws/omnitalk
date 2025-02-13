@@ -133,7 +133,7 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 			if (b2_transport_enabled) {
 				BaseType_t err = xQueueSendToBack(b2_inbound_queue, &buf, (TickType_t)0);
 				if (err != pdTRUE) {
-					stats.transport_in_errors__transport_ltoudp__err_lap_queue_full++;
+					stats.transport_in_errors__transport_b2udp__err_lap_queue_full++;
 					goto free_and_continue;
 				}
 			} else {
