@@ -38,7 +38,7 @@ static void append(buffer_t* packet, unsigned char byte) {
 }
 
 static void do_something_sensible_with_packet(tashtalk_rx_state_t* state) {
-	stats.tashtalk_llap_rx_frame_count++;
+	stats.transport_in_frames__transport_localtalk++;
 	
 	if (state->send_output_to_queue) {	
 		// Is frame long enough to be valid?

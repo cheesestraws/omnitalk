@@ -120,6 +120,7 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 			}
 			
 			stats.transport_in_octets__transport_b2udp += len;
+			stats.transport_in_frames__transport_b2udp++;
 			
 			// TODO: sanity check sender IP address
 						
@@ -191,6 +192,7 @@ static void b2udptunnel_outbound_runloop(void* dummy) {
 			stats.b2eth_err_tx_sendto_failed++;
 		} else {
 			stats.transport_out_octets__transport_b2udp+=buf->length;
+			stats.transport_out_frames__transport_b2udp++;
 		}
 		
 	skip_processing:

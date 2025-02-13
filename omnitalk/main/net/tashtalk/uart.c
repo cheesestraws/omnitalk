@@ -156,7 +156,9 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 		if (tashtalk_enable_uart_tx) {
 			uart_write_bytes(uart_num, "\x01", 1);
 			uart_write_bytes(uart_num, (const char*)packet->data, packet->length);
-			stats.transport_out_octets__transport_localtalk += packet->length;
+			
+			stats.transport_out_octets__transport_localtalk += packet->length + 1;
+			stats.transport_out_frames__transport_localtalk++;
 		}
 skip_processing:
 		freebuf(packet);
