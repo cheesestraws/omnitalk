@@ -121,7 +121,7 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
 				&buff, (TickType_t)0);
 				
 			if (err != pdTRUE) {
-				stats.eth_input_path_queue_full++;
+				stats.transport_in_errors__transport_ethernet__err_lap_queue_full++;
 				freebuf(buff);
 			}
 			
