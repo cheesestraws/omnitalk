@@ -27,7 +27,7 @@ while (my $line = <$fh>) {
 	if ($var =~ /__/) {
 		@labels = split(/__/, $var);
 		$metric = shift @labels;
-		map { $_ =~ s/_/=\\"/; $_ .= "\\\""; } @labels;
+		map { $_ =~ s/_/=\\"/; $_ .= "\\\""; $_=~s/_/ /g;} @labels;
 	}
 	
 	# extract help from comment

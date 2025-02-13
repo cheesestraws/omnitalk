@@ -80,35 +80,35 @@ bool tashtalk_tx_validate(buffer_t* packet) {
 	if (packet->length < 5) {
 		// Too short
 		ESP_LOGE(TAG, "tx packet too short");
-		stats.tashtalk_err_tx_too_short_count++;
+		stats.transport_out_errors__transport_localtalk__err_packet_too_short++;
 		return false;
 	}
 	
 	if (packet->length == 5 && !(packet->data[2] & 0x80)) {
 		// 3 byte packet is not a control packet
 		ESP_LOGE(TAG, "tx 3-byte non-control packet, wut?");
-		stats.tashtalk_err_tx_too_short_data++;
+		stats.transport_out_errors__transport_localtalk__err_data_packet_too_short++;
 		return false;
 	}
 	
 	if ((packet->data[2] & 0x80) && packet->length != 5) {
 		// too long control frame
 		ESP_LOGE(TAG, "tx too-long control packet, wut?");
-		stats.tashtalk_err_tx_too_long_control++;
+		stats.transport_out_errors__transport_localtalk__err_control_packet_too_long++;
 		return false;
 	}
 	
 	if (packet->length == 6) {
 		// impossible packet length
 		ESP_LOGE(TAG, "tx impossible packet length, wut?");
-		stats.tashtalk_err_tx_impossible_length++;
+		stats.transport_out_errors__transport_localtalk__err_packet_length_impossible++;
 		return false;
 	}
 	
 	if (packet->length >= 7 && (((packet->data[3] & 0x3) << 8) | packet->data[4]) != packet->length - 5) {
 		// packet length does not match claimed length
 		ESP_LOGE(TAG, "tx length field (%d) does not match actual packet length (%d)", (((packet->data[3] & 0x3) << 8) | packet->data[4]), packet->length - 5);
-		stats.tashtalk_err_tx_length_mismatch++;
+		stats.transport_out_errors__transport_localtalk__err_packet_length_inconsistent++;
 		return false;
 	}
 
@@ -118,7 +118,7 @@ bool tashtalk_tx_validate(buffer_t* packet) {
 	crc_state_append_all(&crc, packet->data, packet->length);
 	if (!crc_state_ok(&crc)) {
 		ESP_LOGE(TAG, "bad CRC on tx: IP bug?");
-		stats.tashtalk_err_tx_crc_bad++;
+		stats.transport_out_errors__transport_localtalk__err_bad_crc++;
 		return false;
 	}
 	
@@ -137,7 +137,7 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 		// Append the CRC
 		if (packet->capacity < packet->length + 2) {
 			ESP_LOGE(TAG, "no room to add CRC");
-			stats.tashtalk_err_tx_no_room_for_crc++;
+			stats.transport_out_errors__transport_localtalk__err_no_room_for_crc_in_buffer++;
 			goto skip_processing;
 		}
 		

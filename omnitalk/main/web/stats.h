@@ -25,26 +25,28 @@ typedef struct stats {
 	   transport_out_octets{transport="localtalk"}
 	   transport_in_frames{transport="localtalk"}
 	   transport_out_frames{transport="localtalk"}
+	   transport_in_errors{transport="localtalk",err="wrong hat"}
+	   transport_out_errors{transport="localtalk",err="bad smell"}
 	*/
 	
 	prometheus_counter_t transport_in_octets__transport_localtalk;
 	prometheus_counter_t transport_out_octets__transport_localtalk; 
 	prometheus_counter_t transport_in_frames__transport_localtalk;
 	prometheus_counter_t transport_out_frames__transport_localtalk;
-	prometheus_counter_t tashtalk_llap_too_long_count; // help: tashtalk: llap packet overflows
-	prometheus_counter_t tashtalk_crc_fail_count; // help: tashtalk: llap rx crc failures
-	prometheus_counter_t tashtalk_framing_error_count; // help: tashtalk: llap rx frame errors
-	prometheus_counter_t tashtalk_frame_abort_count; // help: tashtalk: llap rx frame aborts
-	prometheus_counter_t tashtalk_inbound_path_queue_full; //help: tashtalk: rx could not write frame to queue
-	prometheus_counter_t tashtalk_rx_control_packets_not_forwarded; // help: tashtalk: rx packets discarded because they're control packets
-	prometheus_counter_t tashtalk_err_rx_too_short_count;
-	prometheus_counter_t tashtalk_err_tx_too_short_count;
-	prometheus_counter_t tashtalk_err_tx_too_short_data;
-	prometheus_counter_t tashtalk_err_tx_too_long_control;
-	prometheus_counter_t tashtalk_err_tx_impossible_length;
-	prometheus_counter_t tashtalk_err_tx_length_mismatch;
-	prometheus_counter_t tashtalk_err_tx_crc_bad;
-	prometheus_counter_t tashtalk_err_tx_no_room_for_crc;
+	prometheus_counter_t transport_in_errors__transport_localtalk__err_frame_too_long; 
+	prometheus_counter_t transport_in_errors__transport_localtalk__err_frame_too_short;
+	prometheus_counter_t transport_in_errors__transport_localtalk__err_bad_crc;
+	prometheus_counter_t transport_in_errors__transport_localtalk__err_framing_error;
+	prometheus_counter_t transport_in_errors__transport_localtalk__err_frame_abort;
+	prometheus_counter_t transport_in_errors__transport_localtalk__err_lap_queue_full;
+	prometheus_counter_t tashtalk_rx_control_packets_not_forwarded;
+	prometheus_counter_t transport_out_errors__transport_localtalk__err_packet_too_short;
+	prometheus_counter_t transport_out_errors__transport_localtalk__err_data_packet_too_short;
+	prometheus_counter_t transport_out_errors__transport_localtalk__err_control_packet_too_long;
+	prometheus_counter_t transport_out_errors__transport_localtalk__err_packet_length_impossible;
+	prometheus_counter_t transport_out_errors__transport_localtalk__err_packet_length_inconsistent;
+	prometheus_counter_t transport_out_errors__transport_localtalk__err_bad_crc;
+	prometheus_counter_t transport_out_errors__transport_localtalk__err_no_room_for_crc_in_buffer;
 
 	prometheus_counter_t transport_in_octets__transport_ltoudp;
 	prometheus_counter_t transport_out_octets__transport_ltoudp; 

@@ -33,7 +33,7 @@ static void append(buffer_t* packet, unsigned char byte) {
 		packet->length++;
 	} else {
 		ESP_LOGE(TAG, "buffer overflow in packet");
-		stats.tashtalk_llap_too_long_count++;
+		stats.transport_in_errors__transport_localtalk__err_frame_too_long++;
 	}
 }
 
@@ -46,7 +46,7 @@ static void do_something_sensible_with_packet(tashtalk_rx_state_t* state) {
 			// chop off CRC, now it's a packet
 			state->packet_in_progress->length -= 2;
 		} else {
-			stats.tashtalk_err_rx_too_short_count++;
+			stats.transport_in_errors__transport_localtalk__err_frame_too_short++;
 			freebuf(state->packet_in_progress);
 			return;
 		}
@@ -60,7 +60,7 @@ static void do_something_sensible_with_packet(tashtalk_rx_state_t* state) {
 		
 		BaseType_t err = xQueueSendToBack(state->output_queue, &state->packet_in_progress, 0);
 		if (err != pdTRUE) {
-			stats.tashtalk_inbound_path_queue_full++;
+			stats.transport_in_errors__transport_localtalk__err_lap_queue_full++;
 			freebuf(state->packet_in_progress);
 		}
 	} else {
@@ -92,7 +92,7 @@ void tashtalk_feed(tashtalk_rx_state_t* state, unsigned char byte) {
 				// 0x00 0xFD is a complete frame
 				if (!crc_state_ok(&state->crc)) {
 					ESP_LOGE(TAG, "/!\\ CRC fail: %d", state->crc);
-					stats.tashtalk_crc_fail_count++;
+					stats.transport_in_errors__transport_localtalk__err_bad_crc++;
 				}
 				
 				do_something_sensible_with_packet(state);
@@ -103,7 +103,7 @@ void tashtalk_feed(tashtalk_rx_state_t* state, unsigned char byte) {
 				// 0x00 0xFD is a complete frame
 				ESP_LOGI(TAG, "framing error of %d bytes", 
 					state->packet_in_progress->length);
-				stats.tashtalk_framing_error_count++;
+				stats.transport_in_errors__transport_localtalk__err_framing_error++;
 				
 				freebuf(state->packet_in_progress);
 				state->packet_in_progress = NULL;
@@ -113,7 +113,7 @@ void tashtalk_feed(tashtalk_rx_state_t* state, unsigned char byte) {
 				// 0x00 0xFD is a complete frame
 				ESP_LOGI(TAG, "frame abort of %d bytes", 
 					state->packet_in_progress->length);
-				stats.tashtalk_frame_abort_count++;
+				stats.transport_in_errors__transport_localtalk__err_frame_abort++;
 				
 				freebuf(state->packet_in_progress);
 				state->packet_in_progress = NULL;
