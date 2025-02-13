@@ -50,7 +50,6 @@ typedef struct stats {
 	prometheus_counter_t transport_out_octets__transport_ltoudp; 
 	prometheus_counter_t transport_in_frames__transport_ltoudp;
 	prometheus_counter_t transport_out_frames__transport_ltoudp;
-	prometheus_counter_t ltoudp_rx_frames;
 	prometheus_counter_t ltoudp_err_rx_recv_error;
 	prometheus_counter_t ltoudp_err_rx_packet_too_long;
 	prometheus_counter_t ltoudp_err_rx_queue_full;

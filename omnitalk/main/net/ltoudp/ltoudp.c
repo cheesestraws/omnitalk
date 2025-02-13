@@ -132,10 +132,6 @@ void udp_rx_runloop(void *pvParameters) {
 				ESP_LOGE(TAG, "packet too long: %d", len);
 				continue;
 			}
-			if (len > 7) {
-				stats.ltoudp_rx_frames++;
-
-			}
 			if (len > 7 && ltoudp_transport_enabled) {
 				// fetch an empty buffer from the pool and fill it with
 				// packet info

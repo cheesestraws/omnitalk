@@ -29,7 +29,6 @@ COUNTER_FIELD(req, transport_in_octets__transport_ltoudp, transport_in_octets, "
 COUNTER_FIELD(req, transport_out_octets__transport_ltoudp, transport_out_octets, "transport=\"ltoudp\"", "");
 COUNTER_FIELD(req, transport_in_frames__transport_ltoudp, transport_in_frames, "transport=\"ltoudp\"", "");
 COUNTER_FIELD(req, transport_out_frames__transport_ltoudp, transport_out_frames, "transport=\"ltoudp\"", "");
-COUNTER_FIELD(req, ltoudp_rx_frames, ltoudp_rx_frames, "", "");
 COUNTER_FIELD(req, ltoudp_err_rx_recv_error, ltoudp_err_rx_recv_error, "", "");
 COUNTER_FIELD(req, ltoudp_err_rx_packet_too_long, ltoudp_err_rx_packet_too_long, "", "");
 COUNTER_FIELD(req, ltoudp_err_rx_queue_full, ltoudp_err_rx_queue_full, "", "");
@@ -44,8 +43,10 @@ COUNTER_FIELD(req, b2eth_err_rx_invalid_src_mac, b2eth_err_rx_invalid_src_mac, "
 COUNTER_FIELD(req, b2eth_err_tx_frame_too_short, b2eth_err_tx_frame_too_short, "", "");
 COUNTER_FIELD(req, b2eth_err_tx_invalid_dst_mac, b2eth_err_tx_invalid_dst_mac, "", "");
 COUNTER_FIELD(req, b2eth_err_tx_sendto_failed, b2eth_err_tx_sendto_failed, "", "");
-COUNTER_FIELD(req, transport_in_octets__transport_ethernet, transport_in_octets, "transport=\"ethernet\"", "ethernet: octet count through the input path");
-COUNTER_FIELD(req, transport_out_octets__transport_ethernet, transport_out_octets, "transport=\"ethernet\"", "ethernet: octet count through the output path");
+COUNTER_FIELD(req, transport_in_octets__transport_ethernet, transport_in_octets, "transport=\"ethernet\"", "");
+COUNTER_FIELD(req, transport_out_octets__transport_ethernet, transport_out_octets, "transport=\"ethernet\"", "");
+COUNTER_FIELD(req, transport_in_frames__transport_ethernet, transport_in_frames, "transport=\"ethernet\"", "");
+COUNTER_FIELD(req, transport_out_frames__transport_ethernet, transport_out_frames, "transport=\"ethernet\"", "");
 COUNTER_FIELD(req, eth_recv_elap_frames, eth_recv_elap_frames, "", "ethernet: received ELAP frames (raw count)");
 COUNTER_FIELD(req, eth_recv_aarp_frames, eth_recv_aarp_frames, "", "ethernet: received AARP frames (raw count)");
 COUNTER_FIELD(req, eth_input_path_queue_full, eth_input_path_queue_full, "", "");
