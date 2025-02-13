@@ -77,14 +77,14 @@ static bool sanity_check_incoming_frame(buffer_t *buf) {
 	// Does the frame actually have room for ethernet and SNAP
 	// headers?
 	if (buf->length < sizeof(struct eth_hdr) + sizeof(snap_hdr_t)) {
-		stats.b2eth_err_rx_frame_too_short++;
+		stats.transport_in_errors__transport_b2udp__err_frame_too_short++;
 		return false;
 	}
 	
 	struct eth_hdr *hdr = (struct eth_hdr*)buf->data;
 	// Do we have a 'b2' source MAC?
 	if (hdr->src.addr[0] != 'B' || hdr->src.addr[1] != '2') {
-		stats.b2eth_err_rx_invalid_src_mac++;
+		stats.transport_in_errors__transport_b2udp__invalid_source_MAC++;
 		return false;
 	}
 
@@ -115,7 +115,7 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 			}
 						
 			if (len < 0) {
-				stats.b2eth_err_rx_recvfrom_failed++;
+				stats.transport_in_errors__transport_b2udp__err_recvfrom_failed++;
 				goto free_and_continue;
 			}
 			
@@ -167,7 +167,7 @@ static void b2udptunnel_outbound_runloop(void* dummy) {
 		
 		// Is the packet long enough?
 		if (buf->length < sizeof(struct eth_hdr) + sizeof(snap_hdr_t)) {
-			stats.b2eth_err_tx_frame_too_short++;
+			stats.transport_out_errors__transport_b2udp__frame_too_short++;
 			goto skip_processing;
 		}
 		
@@ -182,14 +182,14 @@ static void b2udptunnel_outbound_runloop(void* dummy) {
 			                (hdr->dest.addr[4] << 8) | hdr->dest.addr[5];
 			dest_addr.sin_addr.s_addr = htonl(dest);
 		} else {
-			stats.b2eth_err_tx_invalid_dst_mac++;
+			stats.transport_out_errors__transport_b2udp__err_invalid_dst_MAC++;
 			goto skip_processing;
 		}
 		
 		if (sendto(b2_udp_sock, buf, buf->length, 0,
 			(struct sockaddr*)&dest_addr, sizeof(dest_addr)) < 0) {
 		
-			stats.b2eth_err_tx_sendto_failed++;
+			stats.transport_out_errors__transport_b2udp__err_sendto_failed++;
 		} else {
 			stats.transport_out_octets__transport_b2udp+=buf->length;
 			stats.transport_out_frames__transport_b2udp++;

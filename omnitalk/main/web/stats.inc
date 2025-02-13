@@ -37,12 +37,12 @@ COUNTER_FIELD(req, transport_in_octets__transport_b2udp, transport_in_octets, "t
 COUNTER_FIELD(req, transport_out_octets__transport_b2udp, transport_out_octets, "transport=\"b2udp\"", "");
 COUNTER_FIELD(req, transport_in_frames__transport_b2udp, transport_in_frames, "transport=\"b2udp\"", "");
 COUNTER_FIELD(req, transport_out_frames__transport_b2udp, transport_out_frames, "transport=\"b2udp\"", "");
-COUNTER_FIELD(req, b2eth_err_rx_recvfrom_failed, b2eth_err_rx_recvfrom_failed, "", "");
-COUNTER_FIELD(req, b2eth_err_rx_frame_too_short, b2eth_err_rx_frame_too_short, "", "");
-COUNTER_FIELD(req, b2eth_err_rx_invalid_src_mac, b2eth_err_rx_invalid_src_mac, "", "");
-COUNTER_FIELD(req, b2eth_err_tx_frame_too_short, b2eth_err_tx_frame_too_short, "", "");
-COUNTER_FIELD(req, b2eth_err_tx_invalid_dst_mac, b2eth_err_tx_invalid_dst_mac, "", "");
-COUNTER_FIELD(req, b2eth_err_tx_sendto_failed, b2eth_err_tx_sendto_failed, "", "");
+COUNTER_FIELD(req, transport_in_errors__transport_b2udp__err_recvfrom_failed, transport_in_errors, "transport=\"b2udp\",err=\"recvfrom failed\"", "");
+COUNTER_FIELD(req, transport_in_errors__transport_b2udp__err_frame_too_short, transport_in_errors, "transport=\"b2udp\",err=\"frame too short\"", "");
+COUNTER_FIELD(req, transport_in_errors__transport_b2udp__invalid_source_MAC, transport_in_errors, "transport=\"b2udp\",invalid=\"source MAC\"", "");
+COUNTER_FIELD(req, transport_out_errors__transport_b2udp__frame_too_short, transport_out_errors, "transport=\"b2udp\",frame=\"too short\"", "");
+COUNTER_FIELD(req, transport_out_errors__transport_b2udp__err_invalid_dst_MAC, transport_out_errors, "transport=\"b2udp\",err=\"invalid dst MAC\"", "");
+COUNTER_FIELD(req, transport_out_errors__transport_b2udp__err_sendto_failed, transport_out_errors, "transport=\"b2udp\",err=\"sendto failed\"", "");
 COUNTER_FIELD(req, transport_in_octets__transport_ethernet, transport_in_octets, "transport=\"ethernet\"", "");
 COUNTER_FIELD(req, transport_out_octets__transport_ethernet, transport_out_octets, "transport=\"ethernet\"", "");
 COUNTER_FIELD(req, transport_in_frames__transport_ethernet, transport_in_frames, "transport=\"ethernet\"", "");
