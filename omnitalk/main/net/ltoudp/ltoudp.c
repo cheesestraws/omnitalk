@@ -125,6 +125,7 @@ void udp_rx_runloop(void *pvParameters) {
 				stats.ltoudp_err_rx_recv_error++;
 				break;
 			}
+			stats.transport_in_octets__transport_ltoudp += len;
 			if (len > 609) {
 				stats.ltoudp_err_rx_packet_too_long++;
 				ESP_LOGE(TAG, "packet too long: %d", len);
@@ -185,6 +186,8 @@ void udp_tx_runloop(void *pvParameters) {
 			if (err < 0) {
 				ESP_LOGE(TAG, "error: sendto: errno %d", errno);
 				stats.ltoudp_err_tx_send_error++;
+			} else {
+				stats.transport_out_octets__transport_ltoudp += packet->length + 4;
 			}
 			err = 0;
 		}

@@ -20,7 +20,13 @@ typedef struct stats {
 	prometheus_gauge_t mem_minimum_free_bytes__type_dma; // help: minimum free bytes we've seen so far
 	prometheus_gauge_t mem_largest_free_block__type_dma; // help: largest available free block
 	
-	prometheus_counter_t tashtalk_raw_uart_in_octets; // help: tashtalk: raw octets in
+	/* Transport metrics should look like:
+	   transport_in_octets{transport="localtalk"}
+	   transport_out_octets{transport="localtalk"}
+	*/
+	
+	prometheus_counter_t transport_in_octets__transport_localtalk;
+	prometheus_counter_t transport_out_octets__transport_localtalk; 
 	prometheus_counter_t tashtalk_llap_rx_frame_count; // help: tashtalk: llap rx frames
 	prometheus_counter_t tashtalk_llap_too_long_count; // help: tashtalk: llap packet overflows
 	prometheus_counter_t tashtalk_crc_fail_count; // help: tashtalk: llap rx crc failures
@@ -37,12 +43,16 @@ typedef struct stats {
 	prometheus_counter_t tashtalk_err_tx_crc_bad;
 	prometheus_counter_t tashtalk_err_tx_no_room_for_crc;
 
+	prometheus_counter_t transport_in_octets__transport_ltoudp;
+	prometheus_counter_t transport_out_octets__transport_ltoudp; 
 	prometheus_counter_t ltoudp_rx_frames;
 	prometheus_counter_t ltoudp_err_rx_recv_error;
 	prometheus_counter_t ltoudp_err_rx_packet_too_long;
 	prometheus_counter_t ltoudp_err_rx_queue_full;
 	prometheus_counter_t ltoudp_err_tx_send_error;
 	
+	prometheus_counter_t transport_in_octets__transport_b2udp;
+	prometheus_counter_t transport_out_octets__transport_b2udp; 
 	prometheus_counter_t b2eth_err_rx_recvfrom_failed;
 	prometheus_counter_t b2eth_err_rx_frame_too_short;
 	prometheus_counter_t b2eth_err_rx_invalid_src_mac;
@@ -50,11 +60,10 @@ typedef struct stats {
 	prometheus_counter_t b2eth_err_tx_invalid_dst_mac;
 	prometheus_counter_t b2eth_err_tx_sendto_failed;
 
-	
+	prometheus_counter_t transport_in_octets__transport_ethernet; // help: ethernet: octet count through the input path
+	prometheus_counter_t transport_out_octets__transport_ethernet; // help: ethernet: octet count through the output path
 	prometheus_counter_t eth_recv_elap_frames; // help: ethernet: received ELAP frames (raw count)
 	prometheus_counter_t eth_recv_aarp_frames; // help: ethernet: received AARP frames (raw count)
-	prometheus_counter_t eth_input_path_ifInOctets; // help: ethernet: octet count through the input path
-	prometheus_counter_t eth_output_path_ifOutOctets; // help: ethernet: octet count through the output path
 	prometheus_counter_t eth_input_path_queue_full;
 } stats_t;
 

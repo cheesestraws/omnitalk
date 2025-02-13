@@ -11,7 +11,7 @@
 
 
 esp_err_t send_ethernet(esp_eth_handle_t hdl, void *buf, size_t length) {
-	stats.eth_output_path_ifOutOctets += length;
+	stats.transport_out_octets__transport_ethernet += length;
 
 	return esp_eth_transmit(hdl, buf, length);
 }

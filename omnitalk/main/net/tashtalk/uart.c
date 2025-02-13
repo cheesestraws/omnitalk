@@ -69,7 +69,7 @@ void tt_uart_rx_runloop(void* dummy) {
 		/* TODO: this is stupid, read a byte at a time instead and wait for MAX_DELAY */
 		const int len = uart_read_bytes(uart_num, uart_buffer, 1, 1000 / portTICK_PERIOD_MS);
 		
-		stats.tashtalk_raw_uart_in_octets += len;
+		stats.transport_in_octets__transport_localtalk += len;
 		if (len > 0) {
 			tashtalk_feed_all(rxstate, uart_buffer, len);
 		}
@@ -156,6 +156,7 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 		if (tashtalk_enable_uart_tx) {
 			uart_write_bytes(uart_num, "\x01", 1);
 			uart_write_bytes(uart_num, (const char*)packet->data, packet->length);
+			stats.transport_out_octets__transport_localtalk += packet->length;
 		}
 skip_processing:
 		freebuf(packet);

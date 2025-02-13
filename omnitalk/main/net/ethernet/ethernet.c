@@ -100,7 +100,7 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
     }
 #endif
 
-	stats.eth_input_path_ifInOctets += (unsigned long)length;
+	stats.transport_in_octets__transport_ethernet += (unsigned long)length;
 
 	// Is this an AppleTalk frame?
 	if (is_appletalk_frame(buffer, length)) {

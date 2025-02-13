@@ -119,6 +119,8 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 				goto free_and_continue;
 			}
 			
+			stats.transport_in_octets__transport_b2udp += len;
+			
 			// TODO: sanity check sender IP address
 						
 			buf->length = len;
@@ -187,6 +189,8 @@ static void b2udptunnel_outbound_runloop(void* dummy) {
 			(struct sockaddr*)&dest_addr, sizeof(dest_addr)) < 0) {
 		
 			stats.b2eth_err_tx_sendto_failed++;
+		} else {
+			stats.transport_out_octets__transport_b2udp+=buf->length;
 		}
 		
 	skip_processing:
