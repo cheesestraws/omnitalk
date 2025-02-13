@@ -122,13 +122,13 @@ void udp_rx_runloop(void *pvParameters) {
 										 // 4 bytes LToUDP header
 			int len = recv(udp_sock, buffer, sizeof(buffer), 0);
 			if (len < 0) {
-				stats.ltoudp_err_rx_recv_error++;
+				stats.transport_in_errors__transport_ltoudp__err_recv_failed++;
 				break;
 			}
 			stats.transport_in_octets__transport_ltoudp += len;
 			stats.transport_in_frames__transport_ltoudp++;
 			if (len > 609) {
-				stats.ltoudp_err_rx_packet_too_long++;
+				stats.transport_in_errors__transport_ltoudp__err_packet_too_long++;
 				ESP_LOGE(TAG, "packet too long: %d", len);
 				continue;
 			}
@@ -144,7 +144,7 @@ void udp_rx_runloop(void *pvParameters) {
 				
 					BaseType_t err = xQueueSendToBack(ltoudp_inbound_queue, &buf, (TickType_t)0);
 					if (err != pdTRUE) {
-						stats.ltoudp_err_rx_queue_full++;
+						stats.transport_in_errors__transport_ltoudp__err_lap_queue_full++;
 						freebuf(buf);
 					}
 				}
@@ -182,7 +182,7 @@ void udp_tx_runloop(void *pvParameters) {
 				(struct sockaddr *)&dest_addr, sizeof(dest_addr));
 			if (err < 0) {
 				ESP_LOGE(TAG, "error: sendto: errno %d", errno);
-				stats.ltoudp_err_tx_send_error++;
+				stats.transport_out_errors__transport_ltoudp__err_send_failed++;
 			} else {
 				stats.transport_out_octets__transport_ltoudp += packet->length + 4;
 				stats.transport_out_frames__transport_ltoudp++;

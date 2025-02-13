@@ -29,10 +29,10 @@ COUNTER_FIELD(req, transport_in_octets__transport_ltoudp, transport_in_octets, "
 COUNTER_FIELD(req, transport_out_octets__transport_ltoudp, transport_out_octets, "transport=\"ltoudp\"", "");
 COUNTER_FIELD(req, transport_in_frames__transport_ltoudp, transport_in_frames, "transport=\"ltoudp\"", "");
 COUNTER_FIELD(req, transport_out_frames__transport_ltoudp, transport_out_frames, "transport=\"ltoudp\"", "");
-COUNTER_FIELD(req, ltoudp_err_rx_recv_error, ltoudp_err_rx_recv_error, "", "");
-COUNTER_FIELD(req, ltoudp_err_rx_packet_too_long, ltoudp_err_rx_packet_too_long, "", "");
-COUNTER_FIELD(req, ltoudp_err_rx_queue_full, ltoudp_err_rx_queue_full, "", "");
-COUNTER_FIELD(req, ltoudp_err_tx_send_error, ltoudp_err_tx_send_error, "", "");
+COUNTER_FIELD(req, transport_in_errors__transport_ltoudp__err_recv_failed, transport_in_errors, "transport=\"ltoudp\",err=\"recv failed\"", "");
+COUNTER_FIELD(req, transport_in_errors__transport_ltoudp__err_packet_too_long, transport_in_errors, "transport=\"ltoudp\",err=\"packet too long\"", "");
+COUNTER_FIELD(req, transport_in_errors__transport_ltoudp__err_lap_queue_full, transport_in_errors, "transport=\"ltoudp\",err=\"lap queue full\"", "");
+COUNTER_FIELD(req, transport_out_errors__transport_ltoudp__err_send_failed, transport_out_errors, "transport=\"ltoudp\",err=\"send failed\"", "");
 COUNTER_FIELD(req, transport_in_octets__transport_b2udp, transport_in_octets, "transport=\"b2udp\"", "");
 COUNTER_FIELD(req, transport_out_octets__transport_b2udp, transport_out_octets, "transport=\"b2udp\"", "");
 COUNTER_FIELD(req, transport_in_frames__transport_b2udp, transport_in_frames, "transport=\"b2udp\"", "");
