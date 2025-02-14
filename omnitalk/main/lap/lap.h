@@ -16,6 +16,7 @@ typedef esp_err_t(*lap_void_handler)(lap_t*);
 struct lap_s {
 	void* private_data;
 	void* stats;
+	char* name;
 	transport_t* transport;
 	
 	lap_void_handler enable;
