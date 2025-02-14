@@ -33,8 +33,13 @@ esp_err_t disable_transport(transport_t* transport);
 // blocking until a frame is available.
 buffer_t* trecv(transport_t* transport);
 
+buffer_t* trecv_with_timeout(transport_t* transport, TickType_t timeout);
+
 // tsend is a utility function to send a frame through a transport,
 // never blocking at all.  It returns true if the frame was sent and
 // ownership of the buffer was transferred to the transport, false
 // otherwise
 bool tsend(transport_t* transport, buffer_t *buff);
+
+// tsend_and_block is like tsend but blocks indefinitely
+bool tsend_and_block(transport_t* transport, buffer_t *buff);
