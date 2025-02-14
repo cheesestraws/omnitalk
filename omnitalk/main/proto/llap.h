@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-#define LLAP_TYPE_ENQ 0x81;
-#define LLAP_TYPE_ACK 0x82;
+#define LLAP_TYPE_ENQ 0x81
+#define LLAP_TYPE_ACK 0x82
 
 struct llap_hdr_s {
 	uint8_t dst;
