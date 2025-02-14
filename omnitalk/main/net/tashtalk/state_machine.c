@@ -10,6 +10,7 @@
 #include "net/common.h"
 #include "net/tashtalk/state_machine.h"
 #include "net/tashtalk/uart.h"
+#include "proto/llap.h"
 #include "util/crc.h"
 #include "web/stats.h"
 
@@ -51,8 +52,10 @@ static void do_something_sensible_with_packet(tashtalk_rx_state_t* state) {
 			return;
 		}
 		
-		// We do not want to forward control frames
-		if (state->packet_in_progress->length == 3) {
+		// We do not want to forward RTS or CTS
+		if (state->packet_in_progress->length == 3 &&
+			(state->packet_in_progress->data[2] == LLAP_TYPE_RTS ||
+			 state->packet_in_progress->data[2] == LLAP_TYPE_CTS)) {
 			stats.tashtalk_rx_control_packets_not_forwarded++;
 			freebuf(state->packet_in_progress);
 			return;
