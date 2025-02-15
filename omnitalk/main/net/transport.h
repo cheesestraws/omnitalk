@@ -19,6 +19,8 @@ struct transport_s {
 	char* kind;
 	void* private_data;
 	
+	_Atomic bool ready;
+	
 	transport_handler enable;
 	transport_handler disable;
 		
@@ -28,6 +30,8 @@ struct transport_s {
 
 esp_err_t enable_transport(transport_t* transport);
 esp_err_t disable_transport(transport_t* transport);
+
+void wait_for_transport_ready(transport_t* transport);
 
 // trecv is a utility function to receive a frame from a transport,
 // blocking until a frame is available.

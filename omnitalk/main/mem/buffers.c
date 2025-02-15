@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 buffer_t *newbuf(size_t capacity) {
-	uint8_t *data = (uint8_t*)malloc(capacity);
+	uint8_t *data = (uint8_t*)calloc(1, capacity);
 	buffer_t *buff = (buffer_t*)calloc(1, sizeof(buffer_t));
 	
 	buff->data = data;

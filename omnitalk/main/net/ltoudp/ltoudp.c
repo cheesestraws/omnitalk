@@ -21,6 +21,7 @@ TaskHandle_t udp_tx_task = NULL;
 QueueHandle_t ltoudp_outbound_queue = NULL;
 QueueHandle_t ltoudp_inbound_queue = NULL;
 
+static transport_t ltoudp_transport;
 static _Atomic bool ltoudp_transport_enabled = false;
 
 void init_udp(void) {
@@ -29,6 +30,9 @@ void init_udp(void) {
 	int err = 0;
 	struct in_addr outgoing_addr = { 0 };
 	esp_netif_ip_info_t ip_info = { 0 };
+	
+	ESP_LOGI(TAG, "waiting for IP connectivity");
+	wait_for_ip_ready();
 	
 	/* bail out early if we don't have a wifi network interface yet */
 	
@@ -109,6 +113,8 @@ void udp_rx_runloop(void *pvParameters) {
 	ESP_LOGI(TAG, "starting LToUDP listener");
 	init_udp();
 	
+	ltoudp_transport.ready = true;
+	
 	while(1) {
 		/* retry if we need to */
 		while(udp_sock == -1) {
@@ -132,7 +138,7 @@ void udp_rx_runloop(void *pvParameters) {
 				ESP_LOGE(TAG, "packet too long: %d", len);
 				continue;
 			}
-			if (len > 7 && ltoudp_transport_enabled) {
+			if (len >= 7 && ltoudp_transport_enabled) {
 				// fetch an empty buffer from the pool and fill it with
 				// packet info
 				// length is wrong but it'll do for now
@@ -158,7 +164,7 @@ void udp_rx_runloop(void *pvParameters) {
 
 void udp_tx_runloop(void *pvParameters) {
 	buffer_t* packet = NULL;
-	unsigned char outgoing_buffer[605 + 4] = { 0 }; // LToUDP has 4 byte header
+	buffer_t* outgoing_buffer = newbuf(4096); //fuck it 
 	struct sockaddr_in dest_addr = {0};
 	int err = 0;
 		
@@ -170,15 +176,18 @@ void udp_tx_runloop(void *pvParameters) {
 	
 	while(1) {
 		xQueueReceive(ltoudp_outbound_queue, &packet, portMAX_DELAY);
-				
+						
 		if (packet == NULL) {
+			continue;
+		}
+		
+		if (packet->data == NULL) {
 			continue;
 		}
 		   
 		if (udp_sock != -1 && ltoudp_transport_enabled) {
-			memcpy(outgoing_buffer+4, packet->data, packet->length);
-			
-			err = sendto(udp_sock, outgoing_buffer, packet->length+4, 0, 
+			memcpy(outgoing_buffer->data+4, packet->data, packet->length);
+				err = sendto(udp_sock, outgoing_buffer->data, packet->length+4, 0, 
 				(struct sockaddr *)&dest_addr, sizeof(dest_addr));
 			if (err < 0) {
 				ESP_LOGE(TAG, "error: sendto: errno %d", errno);

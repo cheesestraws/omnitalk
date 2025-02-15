@@ -12,6 +12,14 @@ esp_err_t disable_transport(transport_t* transport) {
 	return transport->disable(transport);
 }
 
+void wait_for_transport_ready(transport_t* transport) {
+	while (1) {
+		if (transport->ready) { return; }
+		
+		vTaskDelay(100 / portTICK_PERIOD_MS);
+	}
+}
+
 buffer_t* trecv(transport_t* transport) {
 	buffer_t *buff = NULL;
 	xQueueReceive(transport->inbound, &buff, portMAX_DELAY);
@@ -27,7 +35,7 @@ buffer_t* trecv_with_timeout(transport_t* transport, TickType_t timeout) {
 
 bool tsend(transport_t* transport, buffer_t *buff) {
 	BaseType_t err = xQueueSendToBack(transport->outbound,
-		buff, 0);
+		&buff, 0);
 	
 	if (err != pdTRUE) {
 		return false;
@@ -38,7 +46,7 @@ bool tsend(transport_t* transport, buffer_t *buff) {
 
 bool tsend_and_block(transport_t* transport, buffer_t *buff) {
 	BaseType_t err = xQueueSendToBack(transport->outbound,
-		buff, portMAX_DELAY);
+		&buff, portMAX_DELAY);
 	
 	if (err != pdTRUE) {
 		return false;

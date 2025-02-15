@@ -33,6 +33,8 @@ void llap_acquire_address(lap_t *lap) {
 		// Pick a random address
 		candidate = (uint8_t)(esp_random() % 127);
 		candidate += 128; // server addresses go 128 and above
+		
+		ESP_LOGI(TAG, "addr acq candidate %d", (int)candidate);
 				
 		// send a burst of ENQs
 		for (int i = 0; i < 10; i++) {
@@ -41,7 +43,7 @@ void llap_acquire_address(lap_t *lap) {
 			((llap_hdr_t*)enq_buffer->data)->src = candidate;
 			((llap_hdr_t*)enq_buffer->data)->dst = candidate;
 			((llap_hdr_t*)enq_buffer->data)->llap_type = LLAP_TYPE_ENQ;
-		
+					
 			if (!tsend_and_block(transport, enq_buffer)) {
 				// TODO: stat tickup
 				freebuf(enq_buffer);
@@ -51,12 +53,12 @@ void llap_acquire_address(lap_t *lap) {
 	
 		// Wait for reply
 		int64_t start_time = esp_timer_get_time();
-		while (esp_timer_get_time() < start_time + 10000) {
+		while (esp_timer_get_time() < start_time + 100000) {
 			ack_buffer = trecv_with_timeout(transport, 1);
 			if (ack_buffer == NULL) {
 				continue;
 			}
-		
+			
 			// Is the packet we got actually an ack?
 		
 			if (ack_buffer->length != 3) {
@@ -70,6 +72,7 @@ void llap_acquire_address(lap_t *lap) {
 				goto ack_loop_continue;	
 			}
 		
+			ESP_LOGI(TAG, "got ack for %d", (int)candidate);
 			// bummer, someone's got our address.  try again with another.
 			got_ack = true;
 		
@@ -143,7 +146,7 @@ void llap_acquire_netinfo(lap_t *lap) {
 			goto rtmp_resp_loop_continue;
 		}
 		
-		info->discovered_net = body->senders_network;
+		info->discovered_net = ntohs(body->senders_network);
 		free(rtmp_resp);
 		break;
 	
@@ -151,7 +154,7 @@ void llap_acquire_netinfo(lap_t *lap) {
 		free(rtmp_resp);
 	}
 	
-	ESP_LOGI(TAG, "got network %d", (int)info->discovered_net);
+	ESP_LOGI(TAG, "got network 0x%x (%d)", (int)info->discovered_net,  (int)info->discovered_net);
 	
 	info->state = LLAP_RUNNING;
 }
@@ -160,8 +163,9 @@ void llap_inbound_runloop(void* lapParam) {
 	lap_t *lap = (lap_t*)lapParam;
 	transport_t *transport = lap->transport;
 	llap_info_t *info = (llap_info_t*)lap->info;
-
-	vTaskDelay(portMAX_DELAY);
+	
+	wait_for_transport_ready(transport);
+	ESP_LOGI(TAG, "transport ready, inbound llap is go");
 	
 	while(1) {
 		if (info->state == LLAP_ACQUIRING_ADDRESS) {
@@ -180,6 +184,8 @@ void llap_outbound_runloop(void* lapParam) {
 	lap_t *lap = (lap_t*)lapParam;
 	transport_t *transport = lap->transport;
 
+	wait_for_transport_ready(transport);
+	ESP_LOGI(TAG, "transport ready, outbound llap is go");
 
 	vTaskDelay(portMAX_DELAY);
 }
@@ -201,6 +207,8 @@ lap_t *start_llap(char* name, transport_t *transport) {
 	lap->info = (void*)info;
 	lap->name = name;
 	lap->transport = transport;
+	
+	enable_transport(transport);
 	
 	// start runloop
 	char* task_name;

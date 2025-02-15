@@ -139,6 +139,12 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
     }
 }
 
+static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
+                                 int32_t event_id, void *event_data) {
+	ESP_LOGI(TAG, "eth got ip, kicking off dependent tasks");
+	ip_ready = true;
+}
+
 void start_ethernet(void) {
 	/* set up ESP32 internal MAC */
 	eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
@@ -180,6 +186,9 @@ void start_ethernet(void) {
 	// Install our custom input and output path
 	ESP_ERROR_CHECK(esp_eth_update_input_path(eth_handle, ethernet_input_path, global_netif));
 	munge_ethernet_output_path(eth_handle, global_netif);
+	
+	// register handler for when we get an IP
+	ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
 
 	ESP_ERROR_CHECK(esp_eth_start(eth_handle));
 	
