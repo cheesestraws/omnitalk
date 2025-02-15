@@ -5,10 +5,14 @@
 #include <esp_log.h>
 #include <esp_random.h>
 #include <esp_timer.h>
+#include <lwip/inet.h>
 
 #include "lap/lap.h"
 #include "mem/buffers.h"
+#include "proto/ddp.h"
 #include "proto/llap.h"
+#include "proto/rtmp.h"
+#include "util/require/goto.h"
 
 static const char* TAG = "LLAP";
 
@@ -74,8 +78,82 @@ void llap_acquire_address(lap_t *lap) {
 		}
 	} while (got_ack);
 	
+	ESP_LOGI(TAG, "got address %d", (int)candidate);
+	
 	info->node_addr = candidate;
 	info->state = LLAP_ACQUIRING_NETINFO;
+}
+
+void llap_acquire_netinfo(lap_t *lap) {
+	transport_t *transport = lap->transport;
+	llap_info_t *info = (llap_info_t*)lap->info;
+
+	buffer_t *rtmp_req;
+	buffer_t *rtmp_resp;
+
+	// Send a few RTMP requests.  See Inside Appletalk p5-17 et seq
+	for (int i = 0; i < 5; i++) {
+		rtmp_req = newbuf(sizeof(ddp_short_header_t) + 1);
+		rtmp_req->length = rtmp_req->capacity;
+		
+		ddp_short_header_t* hdr = (ddp_short_header_t*)rtmp_req->data;
+		
+		hdr->dst = DDP_ADDR_BROADCAST; // broadcast
+		hdr->src = info->node_addr;
+		hdr->always_one = 1;
+		hdr->datagram_length = htons(6);
+		hdr->dst_sock = DDP_SOCKET_RTMP;
+		hdr->src_sock = DDP_SOCKET_RTMP;
+		hdr->ddp_type = 5;
+		hdr->body[0] = 1;
+	
+		if (!tsend_and_block(transport, rtmp_req)) {
+			// TODO: stat tickup
+			freebuf(rtmp_req);
+		}
+	}
+
+	// Wait for reply
+	int64_t start_time = esp_timer_get_time();
+	while (esp_timer_get_time() < start_time + 100000) {
+		rtmp_resp = trecv_with_timeout(transport, 1);
+		if (rtmp_resp == NULL) {
+			continue;
+		}
+	
+		if (rtmp_resp->length < sizeof(ddp_short_header_t) + sizeof(rtmp_response_t)) {
+			goto rtmp_resp_loop_continue;
+		}
+		
+		ddp_short_header_t* hdr = (ddp_short_header_t*)rtmp_resp->data;
+		rtmp_response_t* body = (rtmp_response_t*)(&hdr->body[0]);
+		
+		// Is this an RTMP response we asked for?
+		REQUIRE(hdr->dst == info->node_addr, rtmp_resp_loop_continue);
+		REQUIRE(hdr->dst_sock == 1, rtmp_resp_loop_continue);
+		REQUIRE(hdr->src_sock == 1, rtmp_resp_loop_continue);
+		REQUIRE(hdr->ddp_type == 1, rtmp_resp_loop_continue);
+		// Playing a bit fast and loose, we'll ignore the datagram length,
+		// we've already checked the packet buffer size above and meh.
+		
+		// It's addressed to us, and it claims to be an RTMP response.  Hooray
+		if (body->id_length_bits != 8) {
+			ESP_LOGE(TAG, "got rtmp reply with invalid id_length_bits, wut?");
+			// TODO: tick stats up here
+			goto rtmp_resp_loop_continue;
+		}
+		
+		info->discovered_net = body->senders_network;
+		free(rtmp_resp);
+		break;
+	
+	rtmp_resp_loop_continue:
+		free(rtmp_resp);
+	}
+	
+	ESP_LOGI(TAG, "got network %d", (int)info->discovered_net);
+	
+	info->state = LLAP_RUNNING;
 }
 
 void llap_inbound_runloop(void* lapParam) {
@@ -88,6 +166,10 @@ void llap_inbound_runloop(void* lapParam) {
 	while(1) {
 		if (info->state == LLAP_ACQUIRING_ADDRESS) {
 			llap_acquire_address(lap);
+			continue;
+		}
+		if (info->state == LLAP_ACQUIRING_NETINFO) {
+			llap_acquire_netinfo(lap);
 			continue;
 		}
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
