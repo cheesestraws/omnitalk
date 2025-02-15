@@ -25,11 +25,11 @@ void llap_acquire_address(lap_t *lap) {
 
 	do {
 		got_ack = false;
+		
+		// Pick a random address
 		candidate = (uint8_t)(esp_random() % 127);
 		candidate += 128; // server addresses go 128 and above
-		
-		// allocate a new address here
-		
+				
 		// send a burst of ENQs
 		for (int i = 0; i < 10; i++) {
 			enq_buffer = newbuf(5);
