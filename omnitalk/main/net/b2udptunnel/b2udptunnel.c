@@ -239,6 +239,10 @@ transport_t* b2_get_transport(void) {
 	b2_transport.inbound = b2_inbound_queue;
 	b2_transport.outbound = b2_outbound_queue;
 	
+	if (b2_transport.ready_event == NULL) {
+		b2_transport.ready_event = xEventGroupCreate();
+	}
+	
 	return &b2_transport;
 	
 }

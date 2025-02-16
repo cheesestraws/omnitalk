@@ -1,5 +1,8 @@
 #include "net/transport.h"
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
+#include <freertos/queue.h>
 #include <esp_err.h>
 
 #include "mem/buffers.h"
@@ -13,15 +16,17 @@ esp_err_t disable_transport(transport_t* transport) {
 }
 
 void wait_for_transport_ready(transport_t* transport) {
-	while (1) {
-		if (transport->ready) { return; }
-		
-		vTaskDelay(100 / portTICK_PERIOD_MS);
-	}
+	xEventGroupWaitBits(
+		transport->ready_event,
+		1,
+		pdFALSE,
+		pdFALSE,
+		portMAX_DELAY
+	);
 }
 
 void mark_transport_ready(transport_t* transport) {
-	transport->ready = true;
+	xEventGroupSetBits(transport->ready_event, 1);
 }
 
 buffer_t* trecv(transport_t* transport) {

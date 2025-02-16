@@ -230,5 +230,10 @@ transport_t* ethertalkv2_get_transport(void) {
 	ethertalkv2_transport.inbound = ethertalkv2_inbound_queue;
 	ethertalkv2_transport.outbound = ethertalkv2_outbound_queue;
 	
+	if (ethertalkv2_transport.ready_event == NULL) {
+		ethertalkv2_transport.ready_event = xEventGroupCreate();
+	}
+
+	
 	return &ethertalkv2_transport;
 }

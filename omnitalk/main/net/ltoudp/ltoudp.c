@@ -241,6 +241,10 @@ transport_t* ltoudp_get_transport(void) {
 	ltoudp_transport.inbound = ltoudp_inbound_queue;
 	ltoudp_transport.outbound = ltoudp_outbound_queue;
 	
+	if (ltoudp_transport.ready_event == NULL) {
+		ltoudp_transport.ready_event = xEventGroupCreate();
+	}
+	
 	return &ltoudp_transport;
 	
 }

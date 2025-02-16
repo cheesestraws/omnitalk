@@ -7,8 +7,8 @@
 #include <esp_netif.h>
 #include <esp_netif_types.h>
 #include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 #include <freertos/event_groups.h>
+#include <freertos/task.h>
 
 #define BASE_HOSTNAME "omnitalk"
 

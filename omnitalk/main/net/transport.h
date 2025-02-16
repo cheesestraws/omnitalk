@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
 #include <freertos/queue.h>
 #include <esp_err.h>
 
@@ -19,7 +20,7 @@ struct transport_s {
 	char* kind;
 	void* private_data;
 	
-	_Atomic bool ready;
+	EventGroupHandle_t ready_event;
 	
 	transport_handler enable;
 	transport_handler disable;

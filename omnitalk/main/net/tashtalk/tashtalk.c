@@ -43,6 +43,9 @@ transport_t* tashtalk_get_transport(void) {
 	
 	tashtalk_transport.inbound = tashtalk_inbound_queue;
 	tashtalk_transport.outbound = tashtalk_outbound_queue;
+	if (tashtalk_transport.ready_event == NULL) {
+		tashtalk_transport.ready_event = xEventGroupCreate();
+	}
 	
 	return &tashtalk_transport;
 	
