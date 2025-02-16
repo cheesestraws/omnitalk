@@ -113,8 +113,8 @@ void udp_rx_runloop(void *pvParameters) {
 	ESP_LOGI(TAG, "starting LToUDP listener");
 	init_udp();
 	
-	ltoudp_transport.ready = true;
-	
+	mark_transport_ready(&ltoudp_transport);
+		
 	while(1) {
 		/* retry if we need to */
 		while(udp_sock == -1) {

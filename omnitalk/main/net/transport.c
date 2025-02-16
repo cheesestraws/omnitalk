@@ -20,6 +20,10 @@ void wait_for_transport_ready(transport_t* transport) {
 	}
 }
 
+void mark_transport_ready(transport_t* transport) {
+	transport->ready = true;
+}
+
 buffer_t* trecv(transport_t* transport) {
 	buffer_t *buff = NULL;
 	xQueueReceive(transport->inbound, &buff, portMAX_DELAY);
