@@ -1,20 +1,16 @@
 #include "net/net.h"
 
-#include <esp_event.h>
-#include <esp_netif.h>
-#include <esp_netif_types.h>
-
 #include "lap/llap/llap.h"
 #include "lap/sink/sink.h"
 #include "net/b2udptunnel/b2udptunnel.h"
 #include "net/ethernet/ethernet.h"
 #include "net/ltoudp/ltoudp.h"
 #include "net/tashtalk/tashtalk.h"
+#include "net/common.h"
 #include "net/mdns.h"
 
 void start_net(void) {
-	ESP_ERROR_CHECK(esp_netif_init());
-	ESP_ERROR_CHECK(esp_event_loop_create_default());
+	start_common();
 
 	start_ethernet();
 	start_mdns();
