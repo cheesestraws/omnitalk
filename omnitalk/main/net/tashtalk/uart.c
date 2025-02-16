@@ -149,7 +149,7 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 		packet->length += 2;
 		crc_state_t crc;
 		crc_state_init(&crc);
-		crc_state_append_all(&crc, packet->data, packet->length);
+		crc_state_append_all(&crc, packet->data, packet->length - 2);
 		packet->data[packet->length - 2] = crc_state_byte_1(&crc);
 		packet->data[packet->length - 1] = crc_state_byte_2(&crc);
 		
@@ -172,8 +172,8 @@ skip_processing:
 
 
 void tt_uart_start(void) {
-	tashtalk_inbound_queue = xQueueCreate(60, sizeof(buffer_t*));;
-	tashtalk_outbound_queue = xQueueCreate(60, sizeof(buffer_t*));;
+	tashtalk_inbound_queue = xQueueCreate(60, sizeof(buffer_t*));
+	tashtalk_outbound_queue = xQueueCreate(60, sizeof(buffer_t*));
 	xTaskCreate(&tt_uart_rx_runloop, "UART_RX", 4096, NULL, 20, &uart_rx_task);
 	xTaskCreate(&tt_uart_tx_runloop, "UART_TX", 4096, NULL, 20, &uart_tx_task);
 }

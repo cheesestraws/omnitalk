@@ -205,6 +205,7 @@ void udp_tx_runloop(void *pvParameters) {
 
 
 void start_ltoudp(void) {
+	ltoudp_transport.ready_event = xEventGroupCreate();
 	ltoudp_outbound_queue = xQueueCreate(LTOUDP_QUEUE_DEPTH, sizeof(buffer_t*));;
 	ltoudp_inbound_queue = xQueueCreate(LTOUDP_QUEUE_DEPTH, sizeof(buffer_t*));;
 	xTaskCreate(&udp_rx_runloop, "LToUDP-rx", 4096, NULL, 5, &udp_rx_task);
@@ -240,10 +241,6 @@ transport_t* ltoudp_get_transport(void) {
 	
 	ltoudp_transport.inbound = ltoudp_inbound_queue;
 	ltoudp_transport.outbound = ltoudp_outbound_queue;
-	
-	if (ltoudp_transport.ready_event == NULL) {
-		ltoudp_transport.ready_event = xEventGroupCreate();
-	}
 	
 	return &ltoudp_transport;
 	

@@ -19,9 +19,10 @@ void start_net(void) {
 	start_b2udptunnel();
 	
 	start_sink("SINK-eth", ethertalkv2_get_transport());
-	start_sink("SINK-tt", tashtalk_get_transport());
+//	start_sink("SINK-tt", tashtalk_get_transport());
 //	start_sink("SINK-ltoudp", ltoudp_get_transport());
 	start_sink("SINK-b2", b2_get_transport());
 	
+	start_llap("localtalk", tashtalk_get_transport());
 	start_llap("ltoudp", ltoudp_get_transport());
 }

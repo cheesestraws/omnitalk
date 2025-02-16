@@ -96,8 +96,8 @@ void llap_acquire_netinfo(lap_t *lap) {
 
 	// Send a few RTMP requests.  See Inside Appletalk p5-17 et seq
 	for (int i = 0; i < 5; i++) {
-		rtmp_req = newbuf(sizeof(ddp_short_header_t) + 1);
-		rtmp_req->length = rtmp_req->capacity;
+		rtmp_req = newbuf(sizeof(ddp_short_header_t) + 3);
+		rtmp_req->length = rtmp_req->capacity - 2;
 		
 		ddp_short_header_t* hdr = (ddp_short_header_t*)rtmp_req->data;
 		
@@ -118,11 +118,13 @@ void llap_acquire_netinfo(lap_t *lap) {
 
 	// Wait for reply
 	int64_t start_time = esp_timer_get_time();
-	while (esp_timer_get_time() < start_time + 100000) {
+	while (esp_timer_get_time() < start_time + 1000000) {
 		rtmp_resp = trecv_with_timeout(transport, 1);
 		if (rtmp_resp == NULL) {
 			continue;
 		}
+	
+		ESP_LOGI(TAG, "[%s] got %d bytes", lap->name, (int)rtmp_resp->length);
 	
 		if (rtmp_resp->length < sizeof(ddp_short_header_t) + sizeof(rtmp_response_t)) {
 			goto rtmp_resp_loop_continue;

@@ -147,6 +147,8 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
 }
 
 void start_ethernet(void) {
+	ethertalkv2_transport.ready_event = xEventGroupCreate();
+
 	/* set up ESP32 internal MAC */
 	eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
 	mac_config.sw_reset_timeout_ms = 1000;
@@ -229,11 +231,6 @@ transport_t* ethertalkv2_get_transport(void) {
 	
 	ethertalkv2_transport.inbound = ethertalkv2_inbound_queue;
 	ethertalkv2_transport.outbound = ethertalkv2_outbound_queue;
-	
-	if (ethertalkv2_transport.ready_event == NULL) {
-		ethertalkv2_transport.ready_event = xEventGroupCreate();
-	}
-
-	
+		
 	return &ethertalkv2_transport;
 }

@@ -7,11 +7,6 @@
 
 static const char* TAG="TASHTALK_TRANSPORT";
 
-void start_tashtalk(void) {
-	tt_uart_init();
-	tt_uart_start();
-}
-
 esp_err_t tashtalk_transport_enable(transport_t* dummy) {
 	tashtalk_enable_uart_tx = true;
 	rxstate->send_output_to_queue = true;
@@ -43,10 +38,13 @@ transport_t* tashtalk_get_transport(void) {
 	
 	tashtalk_transport.inbound = tashtalk_inbound_queue;
 	tashtalk_transport.outbound = tashtalk_outbound_queue;
-	if (tashtalk_transport.ready_event == NULL) {
-		tashtalk_transport.ready_event = xEventGroupCreate();
-	}
-	
-	return &tashtalk_transport;
-	
+
+	return &tashtalk_transport;	
+}
+
+void start_tashtalk(void) {
+	tashtalk_transport.ready_event = xEventGroupCreate();
+
+	tt_uart_init();
+	tt_uart_start();
 }

@@ -203,6 +203,7 @@ static void b2udptunnel_outbound_runloop(void* dummy) {
 }
 
 void start_b2udptunnel(void) {
+	b2_transport.ready_event = xEventGroupCreate();
 	b2_outbound_queue = xQueueCreate(B2UDPTUNNEL_QUEUE_DEPTH, sizeof(buffer_t*));;
 	b2_inbound_queue = xQueueCreate(B2UDPTUNNEL_QUEUE_DEPTH, sizeof(buffer_t*));;
 	xTaskCreate(&b2udptunnel_inbound_runloop, "B2UDP-rx", 4096, NULL, 5, &b2_inbound_task);
@@ -238,10 +239,6 @@ transport_t* b2_get_transport(void) {
 	
 	b2_transport.inbound = b2_inbound_queue;
 	b2_transport.outbound = b2_outbound_queue;
-	
-	if (b2_transport.ready_event == NULL) {
-		b2_transport.ready_event = xEventGroupCreate();
-	}
 	
 	return &b2_transport;
 	
