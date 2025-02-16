@@ -24,6 +24,7 @@
 #define REQUIRE(x) if(!(x)) { return false; }
 
 _Atomic bool ethernet_transport_enabled = false;
+static transport_t ethertalkv2_transport; 
 
 TaskHandle_t ethertalkv2_inbound_task = NULL;
 TaskHandle_t ethertalkv2_outbound_task = NULL;
@@ -193,6 +194,7 @@ void start_ethernet(void) {
 	ESP_ERROR_CHECK(esp_eth_start(eth_handle));
 	
 	active_ip_net_if = eth_handle;
+	mark_transport_ready(&ethertalkv2_transport);
 	
 	ethertalkv2_inbound_queue = xQueueCreate(ETHERNET_QUEUE_DEPTH, sizeof(buffer_t*));
 	ethertalkv2_outbound_queue = xQueueCreate(ETHERNET_QUEUE_DEPTH, sizeof(buffer_t*));

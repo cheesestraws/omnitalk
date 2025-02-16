@@ -9,6 +9,7 @@
 
 #include "mem/buffers.h"
 #include "net/common.h"
+#include "net/transport.h"
 #include "net/tashtalk/state_machine.h"
 #include "web/stats.h"
 #include "hw.h"
@@ -23,6 +24,8 @@ QueueHandle_t tashtalk_outbound_queue = NULL;
 tashtalk_rx_state_t* rxstate = NULL;
 
 _Atomic bool tashtalk_enable_uart_tx = false;
+
+extern transport_t tashtalk_transport;
 
 #define RX_BUFFER_SIZE 1024
 uint8_t uart_buffer[RX_BUFFER_SIZE];
@@ -55,6 +58,8 @@ void tt_uart_init(void) {
 	ESP_ERROR_CHECK(uart_driver_install(uart_num, 2048, 0, 0, NULL, 0));
 
 	tt_uart_init_tashtalk();
+	
+	mark_transport_ready(&tashtalk_transport);
 
 	ESP_LOGI(TAG, "tt_uart_init complete");
 }

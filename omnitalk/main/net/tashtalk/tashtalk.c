@@ -24,7 +24,7 @@ esp_err_t tashtalk_transport_disable(transport_t* dummy) {
 	return ESP_OK;
 }
 
-static transport_t tashtalk_transport = {
+transport_t tashtalk_transport = {
 	.kind = "tashtalk",
 	.private_data = NULL,
 	

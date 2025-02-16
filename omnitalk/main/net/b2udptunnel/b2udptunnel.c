@@ -20,6 +20,7 @@ static char* TAG="b2eth";
 
 static _Atomic int b2_udp_sock = -1;
 static _Atomic bool b2_transport_enabled = false;
+static transport_t b2_transport;
 
 QueueHandle_t b2_outbound_queue = NULL;
 QueueHandle_t b2_inbound_queue = NULL;
@@ -65,6 +66,7 @@ static void init_b2udptunnel(void) {
 	}
 
 	b2_udp_sock = sock;
+	mark_transport_ready(&b2_transport);
 	
 	return;
 	
