@@ -29,5 +29,6 @@ buffer_t *newbuf(size_t length);
 void freebuf(buffer_t *buffer_t);
 buffer_t *wrapbuf(void* data, size_t length);
 void resetbuf(buffer_t *buffer);
+void printbuf(buffer_t *buffer);
 
 bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type);

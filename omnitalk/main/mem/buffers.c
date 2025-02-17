@@ -1,6 +1,7 @@
 #include "mem/buffers.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 buffer_t *newbuf(size_t capacity) {
@@ -47,4 +48,13 @@ bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t d
 	buffer->ddp_ready = true;
 	
 	return true;
+}
+
+void printbuf(buffer_t *buffer) {
+	printf("buffer @ %p (data @ %p) length %d capacity %d\n", buffer, 
+		buffer->data, buffer->length, buffer->capacity);
+	for (int i = 0; i < buffer->length; i++) {
+		printf("%02x ", (int)buffer->data[i]);
+	}
+	printf("\n");
 }
