@@ -29,6 +29,13 @@ void mark_transport_ready(transport_t* transport) {
 	xEventGroupSetBits(transport->ready_event, 1);
 }
 
+esp_err_t set_transport_node_address(transport_t* transport, uint8_t node_address) {
+	if (transport->set_node_address != NULL) {
+		return transport->set_node_address(transport, node_address);
+	}
+	return ESP_OK;
+}
+
 buffer_t* trecv(transport_t* transport) {
 	buffer_t *buff = NULL;
 	xQueueReceive(transport->inbound, &buff, portMAX_DELAY);

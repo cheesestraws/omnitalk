@@ -15,6 +15,7 @@
 typedef struct transport_s transport_t;
 
 typedef esp_err_t(*transport_handler)(transport_t*);
+typedef esp_err_t(*transport_node_address_handler)(transport_t*, uint8_t);
 
 struct transport_s {
 	char* kind;
@@ -24,6 +25,7 @@ struct transport_s {
 	
 	transport_handler enable;
 	transport_handler disable;
+	transport_node_address_handler set_node_address;
 		
 	QueueHandle_t inbound;
 	QueueHandle_t outbound;
@@ -31,6 +33,8 @@ struct transport_s {
 
 esp_err_t enable_transport(transport_t* transport);
 esp_err_t disable_transport(transport_t* transport);
+esp_err_t set_transport_node_address(transport_t* transport, uint8_t node_address);
+
 
 void wait_for_transport_ready(transport_t* transport);
 void mark_transport_ready(transport_t* transport);
