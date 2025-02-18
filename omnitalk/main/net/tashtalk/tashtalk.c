@@ -19,12 +19,19 @@ esp_err_t tashtalk_transport_disable(transport_t* dummy) {
 	return ESP_OK;
 }
 
+static esp_err_t tashtalk_set_node_address(transport_t* dummy, uint8_t addr) {
+	ESP_LOGI(TAG, "setting address to %d", (int)addr);
+	tashtalk_node_address = addr;
+	return tt_uart_refresh_address();
+}
+
 transport_t tashtalk_transport = {
 	.kind = "tashtalk",
 	.private_data = NULL,
 	
 	.enable = &tashtalk_transport_enable,
 	.disable = &tashtalk_transport_disable,
+	.set_node_address = &tashtalk_set_node_address,
 };
 
 transport_t* tashtalk_get_transport(void) {

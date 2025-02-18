@@ -24,6 +24,7 @@ QueueHandle_t tashtalk_outbound_queue = NULL;
 tashtalk_rx_state_t* rxstate = NULL;
 
 _Atomic bool tashtalk_enable_uart_tx = false;
+uint8_t tashtalk_node_address = 0;
 
 extern transport_t tashtalk_transport;
 
@@ -139,19 +140,21 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 	while(1){
 		xQueueReceive(tashtalk_outbound_queue, &packet, portMAX_DELAY);
 		
-		// Append the CRC
-		if (packet->capacity < packet->length + 2) {
-			ESP_LOGE(TAG, "no room to add CRC");
-			stats.transport_out_errors__transport_localtalk__err_no_room_for_crc_in_buffer++;
-			goto skip_processing;
-		}
+		if (packet->transport_flags && TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME == 0) {
+			// Append the CRC to data packets
+			if (packet->capacity < packet->length + 2) {
+				ESP_LOGE(TAG, "no room to add CRC");
+				stats.transport_out_errors__transport_localtalk__err_no_room_for_crc_in_buffer++;
+				goto skip_processing;
+			}
 		
-		packet->length += 2;
-		crc_state_t crc;
-		crc_state_init(&crc);
-		crc_state_append_all(&crc, packet->data, packet->length - 2);
-		packet->data[packet->length - 2] = crc_state_byte_1(&crc);
-		packet->data[packet->length - 1] = crc_state_byte_2(&crc);
+			packet->length += 2;
+			crc_state_t crc;
+			crc_state_init(&crc);
+			crc_state_append_all(&crc, packet->data, packet->length - 2);
+			packet->data[packet->length - 2] = crc_state_byte_1(&crc);
+			packet->data[packet->length - 1] = crc_state_byte_2(&crc);
+		}
 		
 		if (!tashtalk_tx_validate(packet)) {
 			ESP_LOGE(TAG, "packet validation failed");
@@ -171,6 +174,40 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 skip_processing:
 		freebuf(packet);
 	}
+}
+
+esp_err_t tt_uart_refresh_address(void) {
+	buffer_t *buf = newbuf(33);
+	if (buf == NULL) {
+		return ESP_ERR_NO_MEM;
+	}
+	
+	buf->length = buf->capacity;
+	buf->data[0] = 0x02;
+	
+	if (tashtalk_node_address == 0 || tashtalk_node_address == 0xff) {
+		return ESP_FAIL;
+	}
+	
+	// set the bit corresponding to our address
+	uint8_t bit = tashtalk_node_address % 8;
+	uint8_t byte = (tashtalk_node_address - bit) / 8;
+	
+	// add 1 to byte to account for initial 0x02
+	byte++;
+	buf->data[byte] |= 1 << bit;
+	
+	// mark this as a control frame
+	buf->transport_flags = TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME;
+	
+	BaseType_t err = xQueueSendToFront(tashtalk_outbound_queue,
+		&buf, portMAX_DELAY);
+	if (err != pdTRUE) {
+		freebuf(buf);
+		return ESP_FAIL;
+	}
+	
+	return ESP_OK;
 }
 
 
