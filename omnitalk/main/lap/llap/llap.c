@@ -84,6 +84,7 @@ void llap_acquire_address(lap_t *lap) {
 	ESP_LOGI(TAG, "got address %d", (int)candidate);
 	
 	info->node_addr = candidate;
+	set_transport_node_address(transport, candidate);
 	info->state = LLAP_ACQUIRING_NETINFO;
 }
 
