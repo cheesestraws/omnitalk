@@ -140,7 +140,7 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 	while(1){
 		xQueueReceive(tashtalk_outbound_queue, &packet, portMAX_DELAY);
 		
-		if (packet->transport_flags && TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME == 0) {
+		if ((packet->transport_flags && TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME) == 0) {
 			// Append the CRC to data packets
 			if (packet->capacity < packet->length + 2) {
 				ESP_LOGE(TAG, "no room to add CRC");
@@ -154,15 +154,15 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 			crc_state_append_all(&crc, packet->data, packet->length - 2);
 			packet->data[packet->length - 2] = crc_state_byte_1(&crc);
 			packet->data[packet->length - 1] = crc_state_byte_2(&crc);
-		}
-		
-		if (!tashtalk_tx_validate(packet)) {
-			ESP_LOGE(TAG, "packet validation failed");
-			goto skip_processing;
+								
+			if (!tashtalk_tx_validate(packet)) {
+				ESP_LOGE(TAG, "packet validation failed");
+				goto skip_processing;
+			}
 		}
 		
 		if (tashtalk_enable_uart_tx) {
-			if (packet->transport_flags && TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME == 0) {
+			if ((packet->transport_flags && TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME) == 0) {
 				// if it's a data frame, send a 0x01 to signal a data frame to tashtalk.
 				uart_write_bytes(uart_num, "\x01", 1);
 			}
