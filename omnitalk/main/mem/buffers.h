@@ -9,9 +9,16 @@ typedef enum {
 	BUF_LONG_HEADER = 2
 } buffer_ddp_type_t;
 
+// If TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME is set on a buffer it will
+// be sent to tashtalk without the 0x01 prefix.
+#define TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME (1 << 0)
+
 // a buffer is a ... buffer which will hold a DDP packet and some
 // L2 framing around it.
 typedef struct buffer_s {
+	// Private flags set by transports
+	uint32_t transport_flags;
+
 	// details about the memory buffer as a whole
 	size_t length;
 	size_t capacity;

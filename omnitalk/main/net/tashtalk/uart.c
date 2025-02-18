@@ -159,7 +159,10 @@ void tt_uart_tx_runloop(void* buffer_pool) {
 		}
 		
 		if (tashtalk_enable_uart_tx) {
-			uart_write_bytes(uart_num, "\x01", 1);
+			if (packet->transport_flags && TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME == 0) {
+				// if it's a data frame, send a 0x01 to signal a data frame to tashtalk.
+				uart_write_bytes(uart_num, "\x01", 1);
+			}
 			uart_write_bytes(uart_num, (const char*)packet->data, packet->length);
 			
 			stats.transport_out_octets__transport_localtalk += packet->length + 1;
