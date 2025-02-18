@@ -33,9 +33,7 @@ void llap_acquire_address(lap_t *lap) {
 		// Pick a random address
 		candidate = (uint8_t)(esp_random() % 127);
 		candidate += 128; // server addresses go 128 and above
-		
-		ESP_LOGI(TAG, "addr acq candidate %d", (int)candidate);
-				
+						
 		// send a burst of ENQs
 		for (int i = 0; i < 10; i++) {
 			enq_buffer = newbuf(5);
@@ -72,7 +70,6 @@ void llap_acquire_address(lap_t *lap) {
 				goto ack_loop_continue;	
 			}
 		
-			ESP_LOGI(TAG, "got ack for %d", (int)candidate);
 			// bummer, someone's got our address.  try again with another.
 			got_ack = true;
 		
@@ -167,7 +164,6 @@ void llap_inbound_runloop(void* lapParam) {
 	llap_info_t *info = (llap_info_t*)lap->info;
 	
 	wait_for_transport_ready(transport);
-	ESP_LOGI(TAG, "transport ready, inbound llap is go");
 	
 	while(1) {
 		if (info->state == LLAP_ACQUIRING_ADDRESS) {
@@ -187,7 +183,6 @@ void llap_outbound_runloop(void* lapParam) {
 	transport_t *transport = lap->transport;
 
 	wait_for_transport_ready(transport);
-	ESP_LOGI(TAG, "transport ready, outbound llap is go");
 
 	vTaskDelay(portMAX_DELAY);
 }

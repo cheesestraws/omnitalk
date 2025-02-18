@@ -106,11 +106,9 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
 
 	// Is this an AppleTalk frame?
 	if (is_appletalk_frame(buffer, length)) {
-		ESP_LOGI(TAG, "got appletalk frame");
 		stats.eth_recv_elap_frames++;
 	}
 	if (is_aarp_frame(buffer, length)) {
-		ESP_LOGI(TAG, "got AARP frame");
 		stats.eth_recv_aarp_frames++;
 	}
 	
@@ -142,7 +140,6 @@ esp_err_t ethernet_input_path(esp_eth_handle_t eth_handle, uint8_t *buffer, uint
 
 static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
                                  int32_t event_id, void *event_data) {
-	ESP_LOGI(TAG, "eth got ip, kicking off dependent tasks");
 	mark_ip_ready();
 }
 
