@@ -84,7 +84,7 @@ void llap_acquire_address(lap_t *lap) {
 	ESP_LOGI(TAG, "got address %d", (int)candidate);
 	
 	info->node_addr = candidate;
-	set_transport_node_address(transport, candidate);
+	ESP_ERROR_CHECK(set_transport_node_address(transport, candidate));
 	info->state = LLAP_ACQUIRING_NETINFO;
 }
 
@@ -113,6 +113,7 @@ void llap_acquire_netinfo(lap_t *lap) {
 	
 		if (!tsend_and_block(transport, rtmp_req)) {
 			// TODO: stat tickup
+			ESP_LOGE(TAG, "couldn't send rtmp");
 			freebuf(rtmp_req);
 		}
 	}
@@ -124,9 +125,7 @@ void llap_acquire_netinfo(lap_t *lap) {
 		if (rtmp_resp == NULL) {
 			continue;
 		}
-	
-		ESP_LOGI(TAG, "[%s] got %d bytes", lap->name, (int)rtmp_resp->length);
-	
+		
 		if (rtmp_resp->length < sizeof(ddp_short_header_t) + sizeof(rtmp_response_t)) {
 			goto rtmp_resp_loop_continue;
 		}
@@ -157,7 +156,7 @@ void llap_acquire_netinfo(lap_t *lap) {
 		free(rtmp_resp);
 	}
 	
-	ESP_LOGI(TAG, "got network 0x%x (%d)", (int)info->discovered_net,  (int)info->discovered_net);
+	ESP_LOGI(TAG, "[%s] got network 0x%x (%d)", lap->name, (int)info->discovered_net,  (int)info->discovered_net);
 	
 	info->state = LLAP_RUNNING;
 }

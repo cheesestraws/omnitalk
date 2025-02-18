@@ -189,6 +189,8 @@ esp_err_t tt_uart_refresh_address(void) {
 		return ESP_FAIL;
 	}
 	
+	ESP_LOGI(TAG, "setting nodebits");
+	
 	// set the bit corresponding to our address
 	uint8_t bit = tashtalk_node_address % 8;
 	uint8_t byte = (tashtalk_node_address - bit) / 8;
@@ -199,6 +201,8 @@ esp_err_t tt_uart_refresh_address(void) {
 	
 	// mark this as a control frame
 	buf->transport_flags = TRANSPORT_FLAG_TASHTALK_CONTROL_FRAME;
+	
+	printbuf(buf);
 	
 	BaseType_t err = xQueueSendToFront(tashtalk_outbound_queue,
 		&buf, portMAX_DELAY);
