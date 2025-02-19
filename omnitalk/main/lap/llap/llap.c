@@ -1,5 +1,6 @@
 #include "lap/llap/llap.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include <esp_log.h>
@@ -14,6 +15,7 @@
 #include "proto/llap.h"
 #include "proto/rtmp.h"
 #include "util/require/goto.h"
+#include "web/stats.h"
 
 static const char* TAG = "LLAP";
 
@@ -83,6 +85,8 @@ void llap_acquire_address(lap_t *lap) {
 	
 	info->node_addr = candidate;
 	ESP_ERROR_CHECK(set_transport_node_address(transport, candidate));
+	stats_lap_metadata[lap->id].node_address=candidate;
+	stats_lap_metadata[lap->id].state="acquiring network info";
 	info->state = LLAP_ACQUIRING_NETINFO;
 }
 
@@ -156,6 +160,9 @@ void llap_acquire_netinfo(lap_t *lap) {
 	
 	ESP_LOGI(TAG, "[%s] got network 0x%x (%d)", lap->name, (int)info->discovered_net,  (int)info->discovered_net);
 	
+	stats_lap_metadata[lap->id].discovered_network=info->discovered_net;
+	stats_lap_metadata[lap->id].state="running";
+	
 	info->state = LLAP_RUNNING;
 }
 
@@ -206,6 +213,11 @@ lap_t *start_llap(char* name, transport_t *transport) {
 	lap->info = (void*)info;
 	lap->name = name;
 	lap->transport = transport;
+	
+	// enable metadata metric
+	stats_lap_metadata[lap->id].name = name;
+	stats_lap_metadata[lap->id].state="acquiring address";
+	stats_lap_metadata[lap->id].ok = true;
 	
 	enable_transport(transport);
 	
