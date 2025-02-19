@@ -102,5 +102,5 @@ extern stats_omnitalk_metadata_t stats_omnitalk_metadata;
 extern stats_lap_metadata_t stats_lap_metadata[MAX_LAP_COUNT];
 
 // Other gubbins
-void start_stats_workers(void);
+void start_stats(void);
 esp_err_t http_metrics_handler(httpd_req_t *req);

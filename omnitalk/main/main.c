@@ -17,7 +17,7 @@ void app_main(void)
 
 	printf("Welcome to OmniTalk\n");
 	printf("Version: %s\n", GIT_VERSION);
-	start_stats_workers();
+	start_stats();
 
 	start_net();	
 	start_web();

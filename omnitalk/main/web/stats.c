@@ -1,10 +1,13 @@
 #include "web/stats.h"
 
+#include <stdbool.h>
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_err.h>
 #include <esp_heap_caps.h>
 #include <esp_http_server.h>
+#include <esp_idf_version.h>
 
 #include "web/stats_memory.h"
 
@@ -75,7 +78,12 @@ void uptime_task_runloop(void* dummy) {
 	}
 }
 
-void start_stats_workers(void) {
+void start_stats(void) {
+	// Set our software version in stats
+	stats_omnitalk_metadata.git_commit = GIT_VERSION;
+	stats_omnitalk_metadata.esp_version = esp_get_idf_version();
+	stats_omnitalk_metadata.ok = true;
+
 	xTaskCreate(uptime_task_runloop, "UPTIME", 768, NULL, tskIDLE_PRIORITY,
 		&uptime_task);
 }
