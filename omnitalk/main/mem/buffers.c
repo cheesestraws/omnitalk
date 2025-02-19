@@ -54,7 +54,14 @@ bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t d
 void printbuf(buffer_t *buffer) {
 	printf("buffer @ %p (data @ %p) length %d capacity %d\n", buffer, 
 		buffer->data, buffer->length, buffer->capacity);
-	printf("transport-flags %" PRIu32 "\n", buffer->transport_flags);
+	printf("transport-flags %" PRIu32 ".  ", buffer->transport_flags);
+	if (buffer->ddp_ready) {
+		printf("ddp ready\n");
+		printf("ddp @ %p length %d capacity %d\n", buffer->ddp_data,
+			buffer->ddp_length, buffer->ddp_capacity);
+	} else {
+		printf("ddp not ready.\n");
+	}
 	for (int i = 0; i < buffer->length; i++) {
 		printf("%02x ", (int)buffer->data[i]);
 	}

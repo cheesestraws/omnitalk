@@ -166,6 +166,56 @@ void llap_acquire_netinfo(lap_t *lap) {
 	info->state = LLAP_RUNNING;
 }
 
+void llap_run_for_a_while(lap_t *lap) {
+	transport_t *transport = lap->transport;
+	llap_info_t *info = (llap_info_t*)lap->info;
+	buffer_t *recvbuf;
+	
+	int64_t start_time = esp_timer_get_time();
+	while (esp_timer_get_time() < start_time + 15000000) {
+		recvbuf = trecv_with_timeout(transport, 1000 / portTICK_PERIOD_MS);
+		llap_hdr_t *hdr = ((llap_hdr_t*)recvbuf->data);
+		
+		// is this an ENQ?
+		if (hdr->llap_type == LLAP_TYPE_ENQ && hdr->dst == info->node_addr) {
+			ESP_LOGI(TAG, "someone's trying to steal our address, we should do something about that");
+			
+			// turn our received ENQ into an ACK
+			hdr->llap_type = LLAP_TYPE_ACK;
+			BaseType_t err = xQueueSendToFront(transport->outbound, &recvbuf, portMAX_DELAY);
+			if (err == pdTRUE) {
+				continue;
+			} else {
+				ESP_LOGE(TAG, "failed to push ack");
+				goto discard;
+			}
+		}
+		
+		// Extract DDP packet
+		if (hdr->llap_type == LLAP_TYPE_DDP_SHORT) {
+			recvbuf->ddp_type = BUF_SHORT_HEADER;
+			recvbuf->ddp_length = recvbuf->length;
+			recvbuf->ddp_capacity = recvbuf->capacity;
+			recvbuf->ddp_data = recvbuf->data;
+		} else if (hdr->llap_type == LLAP_TYPE_DDP_LONG) {
+			recvbuf->ddp_type = BUF_LONG_HEADER;
+			recvbuf->ddp_length = recvbuf->length - 3;
+			recvbuf->ddp_capacity = recvbuf->capacity - 3;
+			recvbuf->ddp_data = recvbuf->data + 3;
+		} else {
+			goto discard;
+		}
+		
+		recvbuf->ddp_ready = true;
+		
+		printbuf(recvbuf);
+				
+	discard:
+		// TODO: tick stat up
+		free(recvbuf);
+	}
+}
+
 void llap_inbound_runloop(void* lapParam) {
 	lap_t *lap = (lap_t*)lapParam;
 	transport_t *transport = lap->transport;
