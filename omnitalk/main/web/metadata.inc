@@ -3,3 +3,12 @@ if (stats_omnitalk_metadata.ok) {
 	httpd_resp_send_chunk(req, statsbuffer, HTTPD_RESP_USE_STRLEN);
 }
 
+int metadata_vars_index = 0;
+
+for (metadata_vars_index = 0; metadata_vars_index < MAX_LAP_COUNT; metadata_vars_index++) {
+	if (stats_lap_metadata[metadata_vars_index].ok) {
+		snprintf(statsbuffer, STATSBUFFER_SIZE, "lap_metadata{address=\"%" PRIu8 "\",discovered_network=\"%" PRIu16 "\",name=\"%s\",state=\"%s\"} 1\n", stats_lap_metadata[metadata_vars_index].address, stats_lap_metadata[metadata_vars_index].discovered_network, stats_lap_metadata[metadata_vars_index].name, stats_lap_metadata[metadata_vars_index].state);
+		httpd_resp_send_chunk(req, statsbuffer, HTTPD_RESP_USE_STRLEN);
+	}
+}
+

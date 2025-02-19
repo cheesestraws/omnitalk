@@ -19,6 +19,7 @@ my %format_specifiers = (
 my %metadata_types = ();
 my %format_strings = ();
 my @metadata_scalar_vars = ();
+my @metadata_array_vars = ();
 my $accum = {};
 my $in_struct = 0;
 
@@ -62,6 +63,11 @@ while (my $line = <$fh>) {
 		
 		if ($var !~ /\[/) {
 			push @metadata_scalar_vars, [ $var, $type ];
+		} else {
+			$var =~ /\[(\S+)\]/;
+			my $idx = $1;
+			$var =~ s/\[(\S)+\]//;
+			push @metadata_array_vars, [ $var, $idx, $type ];
 		}
 	}
 }
@@ -93,7 +99,7 @@ for my $mdtype (keys %metadata_types) {
 }
 
 for my $varpair (@metadata_scalar_vars) {
-	my ($var, $type) = ($varpair->[0], $varpair->[1]);
+	my ($var, $type) = @$varpair;
 
 	my $fmt = $format_strings{$type};
 	die "no format string or typedef found for $type" unless $fmt;
@@ -107,5 +113,30 @@ for my $varpair (@metadata_scalar_vars) {
 	print $out "if ($var.ok) {\n";
 	print $out "\tsnprintf(statsbuffer, STATSBUFFER_SIZE, $fmt);\n";
 	print $out "\thttpd_resp_send_chunk(req, statsbuffer, HTTPD_RESP_USE_STRLEN);\n";
-	print $out "}\n\n";
+	print $out "}\n\n";	
+}
+
+if (@metadata_array_vars) {
+	print $out "int metadata_vars_index = 0;\n\n";
+	for my $v (@metadata_array_vars) {
+		my ($var, $max, $type) = @$v;
+		
+		my $fmt = $format_strings{$type};
+		die "no format string or typedef found for $type" unless $fmt;
+		
+		my $metric = $var;
+		$metric =~ s/^stats_//;
+				
+		$var .= "[metadata_vars_index]";
+		
+		$fmt =~ s/%%VAR%%/$var/g;
+		$fmt =~ s/%%METRIC%%/$metric/g;
+		
+		print $out "for (metadata_vars_index = 0; metadata_vars_index < $max; metadata_vars_index++) {\n";
+		print $out "\tif ($var.ok) {\n";
+		print $out "\t\tsnprintf(statsbuffer, STATSBUFFER_SIZE, $fmt);\n";
+		print $out "\t\thttpd_resp_send_chunk(req, statsbuffer, HTTPD_RESP_USE_STRLEN);\n";
+		print $out "\t}\n";	
+		print $out "}\n\n";
+	}
 }
