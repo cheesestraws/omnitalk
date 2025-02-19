@@ -7,16 +7,18 @@
 
 #include "lap/id.h"
 
+#define PROMETHEUS_METADATA
+
 typedef _Atomic unsigned long prometheus_counter_t;
 typedef _Atomic unsigned long prometheus_gauge_t;
 
-typedef struct stats_omnitalk_metadata_s {
+typedef PROMETHEUS_METADATA struct stats_omnitalk_metadata_s {
 	_Atomic bool ok;
 	char* git_commit;
-	char* esp_version;
+	const char* esp_version;
 } stats_omnitalk_metadata_t;
 
-typedef struct stats_lap_metadata_s {
+typedef PROMETHEUS_METADATA struct stats_lap_metadata_s {
 	_Atomic bool ok;
 	_Atomic(char*) name;
 	_Atomic(char*) state;
@@ -98,8 +100,8 @@ typedef struct stats {
 // to prometheus.
 extern stats_t stats;
 
-extern stats_omnitalk_metadata_t stats_omnitalk_metadata;
-extern stats_lap_metadata_t stats_lap_metadata[MAX_LAP_COUNT];
+extern PROMETHEUS_METADATA stats_omnitalk_metadata_t stats_omnitalk_metadata;
+extern PROMETHEUS_METADATA stats_lap_metadata_t stats_lap_metadata[MAX_LAP_COUNT];
 
 // Other gubbins
 void start_stats(void);

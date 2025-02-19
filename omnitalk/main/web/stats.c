@@ -55,7 +55,7 @@ char statsbuffer[STATSBUFFER_SIZE];
 esp_err_t http_metrics_handler(httpd_req_t *req) {
 	httpd_resp_set_type(req, "text/plain; version=0.0.4; charset=utf-8");
 	
-	httpd_resp_send_chunk(req, "omnitalk_metadata{} 1\n", HTTPD_RESP_USE_STRLEN);
+#include "metadata.inc"
 	
 #include "stats.inc"	
 	
