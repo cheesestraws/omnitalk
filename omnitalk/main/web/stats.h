@@ -10,6 +10,12 @@
 typedef _Atomic unsigned long prometheus_counter_t;
 typedef _Atomic unsigned long prometheus_gauge_t;
 
+typedef struct stats_omnitalk_metadata_s {
+	_Atomic bool ok;
+	char* git_commit;
+	char* esp_version;
+} stats_omnitalk_metadata_t;
+
 typedef struct stats_lap_metadata_s {
 	_Atomic bool ok;
 	_Atomic(char*) name;
@@ -91,7 +97,9 @@ typedef struct stats {
 // stats is the variable to stuff all our stats in.  It'll be exported
 // to prometheus.
 extern stats_t stats;
-extern stats_lap_metadata_t stats_lap_metadata[MAX_MAX_LAP_COUNT];
+
+extern stats_omnitalk_metadata_t stats_omnitalk_metadata;
+extern stats_lap_metadata_t stats_lap_metadata[MAX_LAP_COUNT];
 
 // Other gubbins
 void start_stats_workers(void);
