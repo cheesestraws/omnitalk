@@ -33,3 +33,8 @@ set(srcs
 
 idf_component_register(SRCS "${srcs}"
                     INCLUDE_DIRS ".")
+
+execute_process(COMMAND git describe --always --tags --dirty
+                OUTPUT_VARIABLE GIT_VERSION
+                ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+add_definitions("-DGIT_VERSION=\"${GIT_VERSION}\"")

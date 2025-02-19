@@ -16,6 +16,7 @@ void app_main(void)
 	runloop_info_t router;
 
 	printf("Welcome to OmniTalk\n");
+	printf("Version: %s\n", GIT_VERSION);
 	start_stats_workers();
 
 	start_net();	
