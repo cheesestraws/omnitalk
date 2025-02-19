@@ -1,6 +1,7 @@
 set(srcs
 	"lap/llap/llap.c"
 	"lap/sink/sink.c"
+	"lap/id.c"
 	"lap/lap.c"
 
 	"mem/buffers.c"

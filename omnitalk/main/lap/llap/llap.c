@@ -7,6 +7,7 @@
 #include <esp_timer.h>
 #include <lwip/inet.h>
 
+#include "lap/id.h"
 #include "lap/lap.h"
 #include "mem/buffers.h"
 #include "proto/ddp.h"
@@ -201,6 +202,7 @@ lap_t *start_llap(char* name, transport_t *transport) {
 	}
 	
 	// fill in LAP fields
+	lap->id = get_next_lap_id();
 	lap->info = (void*)info;
 	lap->name = name;
 	lap->transport = transport;

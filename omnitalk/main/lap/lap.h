@@ -14,6 +14,8 @@ typedef esp_err_t(*lap_void_handler)(lap_t*);
 // LAPs take in l2 frames/protocols from a transport
 // and turn them into DDP frames.
 struct lap_s {
+	int id;
+
 	void* info; // protocol-specific
 	void* stats; // protocol-specific
 	char* name;

@@ -1,12 +1,21 @@
 #pragma once
 
 #include <stdatomic.h>
+#include <stdint.h>
 
 #include <esp_http_server.h>
+
+#include "lap/id.h"
 
 typedef _Atomic unsigned long prometheus_counter_t;
 typedef _Atomic unsigned long prometheus_gauge_t;
 
+typedef struct lap_metadata_s {
+	_Atomic(char*) name;
+	_Atomic(char*) state;
+	_Atomic uint8_t address;
+	_Atomic uint16_t discovered_network;	
+} lap_metadata_t;
 
 typedef struct stats {
 	prometheus_counter_t uptime_seconds; // help: system uptime in seconds
