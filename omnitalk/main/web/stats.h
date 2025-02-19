@@ -10,12 +10,13 @@
 typedef _Atomic unsigned long prometheus_counter_t;
 typedef _Atomic unsigned long prometheus_gauge_t;
 
-typedef struct lap_metadata_s {
+typedef struct stats_lap_metadata_s {
+	_Atomic bool ok;
 	_Atomic(char*) name;
 	_Atomic(char*) state;
 	_Atomic uint8_t address;
-	_Atomic uint16_t discovered_network;	
-} lap_metadata_t;
+	_Atomic uint16_t discovered_network;
+} stats_lap_metadata_t;
 
 typedef struct stats {
 	prometheus_counter_t uptime_seconds; // help: system uptime in seconds
@@ -90,6 +91,7 @@ typedef struct stats {
 // stats is the variable to stuff all our stats in.  It'll be exported
 // to prometheus.
 extern stats_t stats;
+extern stats_lap_metadata_t stats_lap_metadata[MAX_MAX_LAP_COUNT];
 
 // Other gubbins
 void start_stats_workers(void);

@@ -8,8 +8,8 @@
 
 #include "web/stats_memory.h"
 
-
 stats_t stats;
+lap_metadata_t stats_lap_metadata[MAX_MAX_LAP_COUNT];
 
 // Have a reserved stats buffer so that we can't run out of memory mid-flow
 #define STATSBUFFER_SIZE 256
