@@ -30,6 +30,7 @@ typedef struct buffer_s {
 	size_t ddp_length;
 	size_t ddp_capacity;
 	uint8_t* ddp_data;
+	size_t ddp_payload_length;
 	uint8_t* ddp_payload;
 } buffer_t;
 

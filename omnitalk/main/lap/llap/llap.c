@@ -40,6 +40,7 @@ static bool llap_extract_ddp_packet(buffer_t *buf) {
 		buf->ddp_capacity = buf->capacity;
 		buf->ddp_data = buf->data;
 		buf->ddp_payload = buf->ddp_data + sizeof(ddp_short_header_t);
+		buf->ddp_payload_length = buf->ddp_length - sizeof(ddp_short_header_t);
 	} else if (buf->length > sizeof(llap_hdr_t) + sizeof(ddp_long_header_t) &&
 	           llap_hdr->llap_type == LLAP_TYPE_DDP_LONG) {
 		buf->ddp_type = BUF_LONG_HEADER;
@@ -47,6 +48,7 @@ static bool llap_extract_ddp_packet(buffer_t *buf) {
 		buf->ddp_capacity = buf->capacity - 3;
 		buf->ddp_data = buf->data + 3;
 		buf->ddp_payload = buf->ddp_data + sizeof(ddp_long_header_t);
+		buf->ddp_payload_length = buf->ddp_length - sizeof(ddp_long_header_t);
 	} else {
 		return false;
 	}
