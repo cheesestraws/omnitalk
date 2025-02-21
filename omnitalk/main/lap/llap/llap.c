@@ -19,6 +19,42 @@
 
 static const char* TAG = "LLAP";
 
+static bool llap_extract_ddp_packet(buffer_t *buf) {
+	llap_hdr_t *llap_hdr;
+
+	// Does the packet have room for an LLAP header?
+	if (buf->length < sizeof(llap_hdr_t)) {
+		return false;
+	}
+	llap_hdr = (llap_hdr_t*)buf->data;
+	
+	// Yep - is it a ddp packet?
+	// For short headers, it's sizeof(ddp_short_header_t) not
+	// sizeof(llap_hdr_t) + sizeof(ddp_short_header_t) because
+	// the short ddp header subsumes the llap header entirely.
+	if (buf->length > sizeof(ddp_short_header_t) &&
+	    llap_hdr->llap_type == LLAP_TYPE_DDP_SHORT) {
+	    
+		buf->ddp_type = BUF_SHORT_HEADER;
+		buf->ddp_length = buf->length;
+		buf->ddp_capacity = buf->capacity;
+		buf->ddp_data = buf->data;
+		buf->ddp_payload = buf->ddp_data + sizeof(ddp_short_header_t);
+	} else if (buf->length > sizeof(llap_hdr_t) + sizeof(ddp_long_header_t) &&
+	           llap_hdr->llap_type == LLAP_TYPE_DDP_LONG) {
+		buf->ddp_type = BUF_LONG_HEADER;
+		buf->ddp_length = buf->length - 3;
+		buf->ddp_capacity = buf->capacity - 3;
+		buf->ddp_data = buf->data + 3;
+		buf->ddp_payload = buf->ddp_data + sizeof(ddp_long_header_t);
+	} else {
+		return false;
+	}
+	
+	buf->ddp_ready = true;
+	return true;
+}
+
 void llap_acquire_address(lap_t *lap) {
 	transport_t *transport = lap->transport;
 	llap_info_t *info = (llap_info_t*)lap->info;
@@ -177,7 +213,7 @@ void llap_run_for_a_while(lap_t *lap) {
 		llap_hdr_t *hdr = ((llap_hdr_t*)recvbuf->data);
 		
 		// is this an ENQ?
-		if (hdr->llap_type == LLAP_TYPE_ENQ && hdr->dst == info->node_addr) {
+		if (recvbuf->length == 3 && hdr->llap_type == LLAP_TYPE_ENQ && hdr->dst == info->node_addr) {
 			ESP_LOGI(TAG, "someone's trying to steal our address, we should do something about that");
 			
 			// turn our received ENQ into an ACK
@@ -192,21 +228,11 @@ void llap_run_for_a_while(lap_t *lap) {
 		}
 		
 		// Extract DDP packet
-		if (hdr->llap_type == LLAP_TYPE_DDP_SHORT) {
-			recvbuf->ddp_type = BUF_SHORT_HEADER;
-			recvbuf->ddp_length = recvbuf->length;
-			recvbuf->ddp_capacity = recvbuf->capacity;
-			recvbuf->ddp_data = recvbuf->data;
-		} else if (hdr->llap_type == LLAP_TYPE_DDP_LONG) {
-			recvbuf->ddp_type = BUF_LONG_HEADER;
-			recvbuf->ddp_length = recvbuf->length - 3;
-			recvbuf->ddp_capacity = recvbuf->capacity - 3;
-			recvbuf->ddp_data = recvbuf->data + 3;
-		} else {
+		if (!llap_extract_ddp_packet(recvbuf)) {
 			goto discard;
 		}
 		
-		recvbuf->ddp_ready = true;
+		ESP_LOGI(TAG, "src %d dst %d", (int)DDP_SRC(recvbuf), (int)DDP_DST(recvbuf));
 		
 		printbuf(recvbuf);
 				
