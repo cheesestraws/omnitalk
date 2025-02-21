@@ -192,6 +192,7 @@ void llap_acquire_netinfo(lap_t *lap) {
 		}
 		
 		info->discovered_net = ntohs(body->senders_network);
+		info->discovered_seeding_node = body->node_id;
 		free(rtmp_resp);
 		break;
 	

@@ -15,6 +15,7 @@ typedef struct {
 	
 	_Atomic uint8_t node_addr;
 	_Atomic uint16_t discovered_net;
+	_Atomic uint16_t discovered_seeding_node;
 } llap_info_t;
 
 lap_t *start_llap(char* name, transport_t *transport);
