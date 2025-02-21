@@ -166,33 +166,36 @@ void llap_acquire_netinfo(lap_t *lap) {
 			continue;
 		}
 		
-		if (rtmp_resp->length < sizeof(ddp_short_header_t) + sizeof(rtmp_response_t)) {
-			goto rtmp_resp_loop_continue;
+		if (!llap_extract_ddp_packet(rtmp_resp)) {
+			goto discard;
 		}
 		
-		ddp_short_header_t* hdr = (ddp_short_header_t*)rtmp_resp->data;
-		rtmp_response_t* body = (rtmp_response_t*)(&hdr->body[0]);
+		// Is the payload long enough?
+		if (rtmp_resp->ddp_payload_length < sizeof(rtmp_response_t)) {
+			goto discard;
+		}
 		
-		// Is this an RTMP response we asked for?
-		REQUIRE(hdr->dst == info->node_addr, rtmp_resp_loop_continue);
-		REQUIRE(hdr->dst_sock == 1, rtmp_resp_loop_continue);
-		REQUIRE(hdr->src_sock == 1, rtmp_resp_loop_continue);
-		REQUIRE(hdr->ddp_type == 1, rtmp_resp_loop_continue);
+		REQUIRE(DDP_DST(rtmp_resp) == info->node_addr, discard);
+		REQUIRE(DDP_DSTSOCK(rtmp_resp) == 1, discard);
+		REQUIRE(DDP_SRCSOCK(rtmp_resp) == 1, discard);
+		REQUIRE(DDP_TYPE(rtmp_resp) == 1, discard);
+
 		// Playing a bit fast and loose, we'll ignore the datagram length,
 		// we've already checked the packet buffer size above and meh.
+		rtmp_response_t *body = (rtmp_response_t*)(rtmp_resp->ddp_payload);
 		
 		// It's addressed to us, and it claims to be an RTMP response.  Hooray
 		if (body->id_length_bits != 8) {
 			ESP_LOGE(TAG, "got rtmp reply with invalid id_length_bits, wut?");
 			// TODO: tick stats up here
-			goto rtmp_resp_loop_continue;
+			goto discard;
 		}
 		
 		info->discovered_net = ntohs(body->senders_network);
 		free(rtmp_resp);
 		break;
 	
-	rtmp_resp_loop_continue:
+	discard:
 		free(rtmp_resp);
 	}
 	

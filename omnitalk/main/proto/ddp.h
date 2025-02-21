@@ -47,3 +47,5 @@ typedef struct ddp_long_header_s ddp_long_header_t;
 #define DDP_SRCNET(b) (b)->ddp_type == BUF_SHORT_HEADER ? 0 : ((ddp_long_header_t*)((b)->ddp_data))->src_network)
 #define DDP_DSTSOCK(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->dst_sock : ((ddp_long_header_t*)((b)->ddp_data))->dst_sock)
 #define DDP_SRCSOCK(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->src_sock : ((ddp_long_header_t*)((b)->ddp_data))->src_sock)
+#define DDP_TYPE(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->ddp_type : ((ddp_long_header_t*)((b)->ddp_data))->ddp_type)
+
