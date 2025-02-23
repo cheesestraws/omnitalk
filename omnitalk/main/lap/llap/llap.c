@@ -205,6 +205,11 @@ void llap_acquire_netinfo(lap_t *lap) {
 	stats_lap_metadata[lap->id].discovered_network=info->discovered_net;
 	stats_lap_metadata[lap->id].state="running";
 	
+	lap->my_address = info->node_addr;
+	lap->my_network = info->discovered_net;
+	lap->network_range_start = info->discovered_net;
+	lap->network_range_end = info->discovered_net;
+	
 	info->state = LLAP_RUNNING;
 }
 
@@ -239,6 +244,11 @@ void llap_run_for_a_while(lap_t *lap) {
 		}
 		
 		ESP_LOGI(TAG, "src %d dst %d", (int)DDP_SRC(recvbuf), (int)DDP_DST(recvbuf));
+		
+		if (ddp_packet_is_mine(lap, recvbuf)) {
+			ESP_LOGI(TAG, "packet is addressed to me!");
+			// do something
+		}
 		
 		printbuf(recvbuf);
 				

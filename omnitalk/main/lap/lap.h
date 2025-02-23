@@ -25,4 +25,9 @@ struct lap_s {
 	
 	QueueHandle_t inbound;
 	QueueHandle_t outbound;
+	
+	uint8_t my_address;
+	uint16_t my_network;
+	uint16_t network_range_start;
+	uint16_t network_range_end;
 };
