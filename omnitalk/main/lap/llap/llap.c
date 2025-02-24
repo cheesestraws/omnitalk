@@ -221,6 +221,9 @@ void llap_run_for_a_while(lap_t *lap) {
 	int64_t start_time = esp_timer_get_time();
 	while (esp_timer_get_time() < start_time + 15000000) {
 		recvbuf = trecv_with_timeout(transport, 1000 / portTICK_PERIOD_MS);
+		if (recvbuf == NULL) {
+			continue;
+		}
 		llap_hdr_t *hdr = ((llap_hdr_t*)recvbuf->data);
 		
 		// is this an ENQ?
@@ -247,10 +250,9 @@ void llap_run_for_a_while(lap_t *lap) {
 		
 		if (ddp_packet_is_mine(lap, recvbuf)) {
 			ESP_LOGI(TAG, "packet is addressed to me!");
+			printbuf(recvbuf);
 			// do something
-		}
-		
-		printbuf(recvbuf);
+		}		
 				
 	discard:
 		// TODO: tick stat up
@@ -274,7 +276,9 @@ void llap_inbound_runloop(void* lapParam) {
 			llap_acquire_netinfo(lap);
 			continue;
 		}
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		if (info->state == LLAP_RUNNING) {
+			llap_run_for_a_while(lap);
+		}
 	}
 }
 

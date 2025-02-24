@@ -44,13 +44,13 @@ typedef struct ddp_long_header_s ddp_long_header_t;
 
 #define DDP_DST(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->dst : ((ddp_long_header_t*)((b)->ddp_data))->dst)
 #define DDP_SRC(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->src : ((ddp_long_header_t*)((b)->ddp_data))->src)
-#define DDP_DSTNET(b) ((b)->ddp_type == BUF_SHORT_HEADER ? 0 : ((ddp_long_header_t*)((b)->ddp_data))->dst_network)
-#define DDP_SRCNET(b) ((b)->ddp_type == BUF_SHORT_HEADER ? 0 : ((ddp_long_header_t*)((b)->ddp_data))->src_network)
+#define DDP_DSTNET(b) (ntohs((b)->ddp_type == BUF_SHORT_HEADER ? 0 : ((ddp_long_header_t*)((b)->ddp_data))->dst_network))
+#define DDP_SRCNET(b) (ntohs((b)->ddp_type == BUF_SHORT_HEADER ? 0 : ((ddp_long_header_t*)((b)->ddp_data))->src_network))
 #define DDP_DSTSOCK(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->dst_sock : ((ddp_long_header_t*)((b)->ddp_data))->dst_sock)
 #define DDP_SRCSOCK(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->src_sock : ((ddp_long_header_t*)((b)->ddp_data))->src_sock)
 #define DDP_TYPE(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->ddp_type : ((ddp_long_header_t*)((b)->ddp_data))->ddp_type)
 
-static inline bool ddp_packet_is_mine(lap_t *lap, buffer_t *packet) {
+static inline bool ddp_packet_is_mine(lap_t *lap, buffer_t *packet) {		
 	if (packet->ddp_type == BUF_SHORT_HEADER && DDP_DST(packet) == lap->my_address) {
 	
 		return true;   
@@ -86,5 +86,9 @@ static inline bool ddp_packet_is_mine(lap_t *lap, buffer_t *packet) {
 		return true;
 	}
 
+	return false;
+}
+
+static inline bool packet_should_be_routed(lap_t *in_lap, buffer_t *packet) {
 	return false;
 }
