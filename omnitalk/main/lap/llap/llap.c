@@ -256,7 +256,7 @@ void llap_run_for_a_while(lap_t *lap) {
 				
 	discard:
 		// TODO: tick stat up
-		free(recvbuf);
+		freebuf(recvbuf);
 	}
 }
 
