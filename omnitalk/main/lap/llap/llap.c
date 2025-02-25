@@ -225,6 +225,11 @@ void llap_run_for_a_while(lap_t *lap) {
 		if (recvbuf == NULL) {
 			continue;
 		}
+		
+		// update the receive chain for the packet so we know where it came from
+		recvbuf->recv_chain.transport = transport;
+		recvbuf->recv_chain.lap = lap;
+		
 		llap_hdr_t *hdr = ((llap_hdr_t*)recvbuf->data);
 		
 		// is this an ENQ?

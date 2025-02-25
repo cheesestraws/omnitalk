@@ -34,6 +34,10 @@ typedef struct buffer_s {
 	uint8_t* ddp_data;
 	size_t ddp_payload_length;
 	uint8_t* ddp_payload;
+	
+	// Details about how we got this buffer.  Setting details in here is the
+	// responsibility of the receiving LAP.
+	net_chain_t recv_chain;
 } buffer_t;
 
 buffer_t *newbuf(size_t length);
