@@ -94,6 +94,9 @@ typedef struct stats {
 	prometheus_counter_t eth_recv_elap_frames; // help: ethernet: received ELAP frames (raw count)
 	prometheus_counter_t eth_recv_aarp_frames; // help: ethernet: received AARP frames (raw count)
 	prometheus_counter_t transport_in_errors__transport_ethernet__err_lap_queue_full;
+	
+	// Control plane metrics
+	prometheus_counter_t controlplane_inbound_queue_full;
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported
