@@ -4,7 +4,7 @@
 #include <freertos/queue.h>
 #include <esp_err.h>
 
-#include "net/transport.h"
+#include "net/transport_types.h"
 
 typedef struct lap_s lap_t;
 

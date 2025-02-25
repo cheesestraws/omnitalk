@@ -12,24 +12,8 @@
 // transport.{c,h} defines the interface for a transport; a transport
 // is something that can ship l2-ish frames out of the router.
 
-typedef struct transport_s transport_t;
-
-typedef esp_err_t(*transport_handler)(transport_t*);
-typedef esp_err_t(*transport_node_address_handler)(transport_t*, uint8_t);
-
-struct transport_s {
-	char* kind;
-	void* private_data;
-	
-	EventGroupHandle_t ready_event;
-	
-	transport_handler enable;
-	transport_handler disable;
-	transport_node_address_handler set_node_address;
-		
-	QueueHandle_t inbound;
-	QueueHandle_t outbound;
-};
+// The types are defined in transport_types.h, to break a circular dependency
+#include "net/transport_types.h"
 
 esp_err_t enable_transport(transport_t* transport);
 esp_err_t disable_transport(transport_t* transport);

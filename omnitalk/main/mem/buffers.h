@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "net/chain.h"
+
 typedef enum {
 	BUF_SHORT_HEADER = 1,
 	BUF_LONG_HEADER = 2

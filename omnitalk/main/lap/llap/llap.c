@@ -11,6 +11,7 @@
 #include "lap/id.h"
 #include "lap/lap.h"
 #include "mem/buffers.h"
+#include "net/transport.h"
 #include "proto/ddp.h"
 #include "proto/llap.h"
 #include "proto/rtmp.h"
