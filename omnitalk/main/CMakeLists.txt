@@ -28,6 +28,7 @@ set(srcs
 
 	"controlplane_runloop.c"
 	"router_runloop.c"
+	"runloop.c"
 	"main.c"
 )
 
