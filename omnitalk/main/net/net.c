@@ -9,7 +9,7 @@
 #include "net/common.h"
 #include "net/mdns.h"
 
-void start_net(void) {
+void start_net(runloop_info_t* controlplane, runloop_info_t* dataplane) {
 	start_common();
 
 	start_ethernet();

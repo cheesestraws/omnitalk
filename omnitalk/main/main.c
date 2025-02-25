@@ -18,12 +18,12 @@ void app_main(void)
 	printf("Welcome to OmniTalk\n");
 	printf("Version: %s\n", GIT_VERSION);
 	start_stats();
-
-	start_net();	
-	start_web();
 	
 	controlplane = start_controlplane_runloop();
 	router = start_router_runloop();
+
+	start_net(&controlplane, &router);	
+	start_web();
 	
 	controlplane=controlplane;
 	router = router;
