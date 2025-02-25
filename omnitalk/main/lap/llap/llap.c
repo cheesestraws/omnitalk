@@ -17,6 +17,7 @@
 #include "proto/rtmp.h"
 #include "util/require/goto.h"
 #include "web/stats.h"
+#include "runloop.h"
 
 static const char* TAG = "LLAP";
 
@@ -258,8 +259,14 @@ void llap_run_for_a_while(lap_t *lap) {
 			ESP_LOGI(TAG, "packet is addressed to me!");
 			printbuf(recvbuf);
 			// do something
-		}		
-				
+			
+			if (rlsend(lap->controlplane, recvbuf)) {
+				continue;
+			} else {
+				stats.controlplane_inbound_queue_full++;
+			}
+		}
+		
 	discard:
 		// TODO: tick stat up
 		freebuf(recvbuf);
@@ -298,7 +305,7 @@ void llap_outbound_runloop(void* lapParam) {
 }
 
 
-lap_t *start_llap(char* name, transport_t *transport) {
+lap_t *start_llap(char* name, transport_t *transport, runloop_info_t *controlplane, runloop_info_t *dataplane) {
 	lap_t *lap = calloc(1, sizeof(lap_t));
 	if (lap == NULL) {
 		return NULL;
@@ -315,6 +322,9 @@ lap_t *start_llap(char* name, transport_t *transport) {
 	lap->info = (void*)info;
 	lap->name = name;
 	lap->transport = transport;
+	
+	lap->controlplane = controlplane;
+	lap->dataplane = dataplane;
 	
 	// enable metadata metric
 	stats_lap_metadata[lap->id].name = name;

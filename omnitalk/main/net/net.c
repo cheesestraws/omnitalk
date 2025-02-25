@@ -23,6 +23,6 @@ void start_net(runloop_info_t* controlplane, runloop_info_t* dataplane) {
 //	start_sink("SINK-ltoudp", ltoudp_get_transport());
 	start_sink("SINK-b2", b2_get_transport());
 	
-	start_llap("localtalk", tashtalk_get_transport());
-	start_llap("ltoudp", ltoudp_get_transport());
+	start_llap("localtalk", tashtalk_get_transport(), controlplane, dataplane);
+	start_llap("ltoudp", ltoudp_get_transport(), controlplane, dataplane);
 }

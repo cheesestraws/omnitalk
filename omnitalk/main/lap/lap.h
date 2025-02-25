@@ -5,6 +5,7 @@
 #include <esp_err.h>
 
 #include "net/transport_types.h"
+#include "runloop_types.h"
 
 typedef struct lap_s lap_t;
 
@@ -19,6 +20,9 @@ struct lap_s {
 	void* stats; // protocol-specific
 	char* name;
 	transport_t* transport;
+	
+	runloop_info_t* controlplane;
+	runloop_info_t* dataplane;
 	
 	lap_void_handler enable;
 	lap_void_handler disable;
