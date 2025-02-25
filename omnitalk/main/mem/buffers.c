@@ -55,6 +55,23 @@ void printbuf(buffer_t *buffer) {
 	printf("buffer @ %p (data @ %p) length %d capacity %d\n", buffer, 
 		buffer->data, buffer->length, buffer->capacity);
 	printf("transport-flags %" PRIu32 ".  ", buffer->transport_flags);
+	
+	if (buffer->recv_chain.transport != NULL || buffer->recv_chain.lap != NULL) {
+		printf("chain: ");
+		if (buffer->recv_chain.transport != NULL) {
+			printf("%s", buffer->recv_chain.transport->kind);
+		} else {
+			printf("(NULL)");
+		}
+		printf(" -> ");
+		if (buffer->recv_chain.lap != NULL) {
+			printf("%s", buffer->recv_chain.lap->name);
+		} else {
+			printf("(NULL)");
+		}
+		printf(".  ");
+	}
+	
 	if (buffer->ddp_ready) {
 		printf("ddp ready\n");
 		printf("ddp @ %p length %d capacity %d\n", buffer->ddp_data,
