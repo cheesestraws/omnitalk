@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lap/lap.h"
+#include "lap/lap_types.h"
 #include "net/transport_types.h"
 
 // A chain is the list of things a packet went through either on its way in

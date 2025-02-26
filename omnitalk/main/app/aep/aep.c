@@ -2,6 +2,7 @@
 
 #include <esp_log.h>
 
+#include "lap/lap.h"
 #include "mem/buffers.h"
 #include "proto/ddp.h"
 
@@ -28,9 +29,6 @@ void app_aep_handler(buffer_t *packet) {
 		goto cleanup;
 	}
 	
-	ESP_LOGI(TAG, "doing AEP. Before:");
-	printbuf(packet);
-
 	// Swap the src and dst addresses
 	
 	uint8_t srcaddr = DDP_SRC(packet);
@@ -55,9 +53,18 @@ void app_aep_handler(buffer_t *packet) {
 	// mark it as a reply
 	DDP_BODY(packet)[0] = 2;
 	
-	ESP_LOGI(TAG, "after:");
-	printbuf(packet);
 	
+	if (packet->recv_chain.lap == NULL) {
+		ESP_LOGE(TAG, "don't know where this packet came from, ignoring it");
+		goto cleanup;
+	}
+	
+	if (!lsend(packet->recv_chain.lap, packet)) {
+		ESP_LOGE(TAG, "no send");
+		goto cleanup;
+	}
+	
+	return;
 cleanup:
 	freebuf(packet);
 }
