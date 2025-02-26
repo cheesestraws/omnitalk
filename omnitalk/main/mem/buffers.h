@@ -40,6 +40,8 @@ typedef struct buffer_s {
 	net_chain_t recv_chain;
 } buffer_t;
 
+#define BUFFER_HEADER_ROOM(b) ((b)->ddp_data - (b)->data)
+
 buffer_t *newbuf(size_t length);
 void freebuf(buffer_t *buffer_t);
 buffer_t *wrapbuf(void* data, size_t length);

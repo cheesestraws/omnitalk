@@ -296,10 +296,57 @@ void llap_inbound_runloop(void* lapParam) {
 }
 
 void llap_outbound_runloop(void* lapParam) {
+	buffer_t *packet = NULL;
 	lap_t *lap = (lap_t*)lapParam;
 	transport_t *transport = lap->transport;
 
 	wait_for_transport_ready(transport);
+	
+	while (1) {
+		xQueueReceive(lap->outbound, &packet, portMAX_DELAY);
+		if (packet == NULL) {
+			continue;
+		}
+		if (!packet->ddp_ready) {
+			goto cleanup;
+		}
+		
+		// If the DDP packet has short headers, the LLAP header
+		// is already part of that, we can just send it through
+		// to the transport.  (We should perhaps do a bit more
+		// verification here, though.)
+		if (packet->ddp_type == BUF_SHORT_HEADER) {
+			if (!tsend(transport, buf)) {
+				goto cleanup;
+			}
+			
+			continue;
+		} else if (packet->ddp_type == BUF_LONG_HEADER) {
+			// Otherwise, we need to create an LLAP header.
+			if (BUFFER_HEADER_ROOM(packet) != 3) {
+				ESP_LOGE(TAG, "fix memory management please");
+				goto cleanup;
+			}
+			
+			if (DDP_DSTNET(packet) != lap->my_network) {
+				ESP_LOGE(TAG, "we're not a router yet");
+				goto cleanup;
+			}
+			
+			packet->data[0] = DDP_DST(packet);
+			packet->data[1] = lap->my_address;
+			packet->data[2] = 2;
+						
+		} else {
+			goto cleanup;
+		}
+		
+		
+		
+		continue;
+	cleanup:
+		freebuf(packet);
+	}
 
 	vTaskDelay(portMAX_DELAY);
 }
