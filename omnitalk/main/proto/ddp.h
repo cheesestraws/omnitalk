@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -51,6 +52,51 @@ typedef struct ddp_long_header_s ddp_long_header_t;
 #define DDP_DSTSOCK(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->dst_sock : ((ddp_long_header_t*)((b)->ddp_data))->dst_sock)
 #define DDP_SRCSOCK(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->src_sock : ((ddp_long_header_t*)((b)->ddp_data))->src_sock)
 #define DDP_TYPE(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->ddp_type : ((ddp_long_header_t*)((b)->ddp_data))->ddp_type)
+#define DDP_BODY(b) ((b)->ddp_type == BUF_SHORT_HEADER ? ((ddp_short_header_t*)((b)->ddp_data))->body : ((ddp_long_header_t*)((b)->ddp_data))->body)
+#define DDP_BODYLEN(b) ((b)->ddp_type == BUF_SHORT_HEADER ? (b)->ddp_length - sizeof(ddp_short_header_t) : (b)->ddp_length - sizeof(ddp_long_header_t))
+
+static inline void ddp_set_dst(buffer_t *buf, uint8_t newdst) {
+	if (buf->ddp_type == BUF_SHORT_HEADER) {
+		((ddp_short_header_t*)(buf->ddp_data))->dst = newdst;
+	} else {
+		((ddp_long_header_t*)(buf->ddp_data))->dst = newdst;
+	}
+}
+
+static inline void ddp_set_src(buffer_t *buf, uint8_t newsrc) {
+	if (buf->ddp_type == BUF_SHORT_HEADER) {
+		((ddp_short_header_t*)(buf->ddp_data))->src = newsrc;
+	} else {
+		((ddp_long_header_t*)(buf->ddp_data))->src = newsrc;
+	}
+}
+
+static inline void ddp_set_dstnet(buffer_t *buf, uint16_t newdstnet) {
+	assert(buf->ddp_type == BUF_LONG_HEADER);
+	((ddp_long_header_t*)(buf->ddp_data))->dst_network = htons(newdstnet);
+}
+
+static inline void ddp_set_srcnet(buffer_t *buf, uint16_t newsrcnet) {
+	assert(buf->ddp_type == BUF_LONG_HEADER);
+	((ddp_long_header_t*)(buf->ddp_data))->src_network = htons(newsrcnet);
+}
+
+static inline void ddp_set_dstsock(buffer_t *buf, uint8_t newdstsock) {
+	if (buf->ddp_type == BUF_SHORT_HEADER) {
+		((ddp_short_header_t*)(buf->ddp_data))->dst_sock = newdstsock;
+	} else {
+		((ddp_long_header_t*)(buf->ddp_data))->dst_sock = newdstsock;
+	}
+}
+
+static inline void ddp_set_srcsock(buffer_t *buf, uint8_t newsrcsock) {
+	if (buf->ddp_type == BUF_SHORT_HEADER) {
+		((ddp_short_header_t*)(buf->ddp_data))->src_sock = newsrcsock;
+	} else {
+		((ddp_long_header_t*)(buf->ddp_data))->src_sock = newsrcsock;
+	}
+}
+
 
 static inline bool ddp_packet_is_mine(lap_t *lap, buffer_t *packet) {		
 	if (packet->ddp_type == BUF_SHORT_HEADER && DDP_DST(packet) == lap->my_address) {
