@@ -1,4 +1,7 @@
 set(srcs
+	"app/aep/aep.c"
+	"app/app.c"
+
 	"lap/llap/llap.c"
 	"lap/sink/sink.c"
 	"lap/id.c"

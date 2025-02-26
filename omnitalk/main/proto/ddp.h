@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <lwip/inet.h>
+
 #include "mem/buffers.h"
 
 #define DDP_ADDR_BROADCAST 0xFF
