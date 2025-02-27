@@ -316,7 +316,7 @@ void llap_outbound_runloop(void* lapParam) {
 		// to the transport.  (We should perhaps do a bit more
 		// verification here, though.)
 		if (packet->ddp_type == BUF_SHORT_HEADER) {
-			if (!tsend(transport, buf)) {
+			if (!tsend(transport, packet)) {
 				goto cleanup;
 			}
 			
