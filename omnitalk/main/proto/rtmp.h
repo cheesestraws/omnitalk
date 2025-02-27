@@ -32,13 +32,15 @@ void print_rtmp_tuple(rtmp_tuple_t *tuple);
 #define RTMP_TUPLE_RANGE_START(t) ntohs((t)->range_start)
 #define RTMP_TUPLE_RANGE_END(t) ntohs((t)->range_end)
 
+// The "dummy" tuple is the fake tuple on a nonextended network which carries the
+// version
+#define RTMP_TUPLE_IS_DUMMY(t) ((t)->range_start == 0 && (t)->ext_flag_and_distance == 0x82)
+
 
 struct rtmp_packet_s {
 	uint16_t router_network;
 	uint8_t id_len;
 	uint8_t router_node_id;
-	uint16_t zero_or_tuples;
-	uint8_t version;
 	uint8_t tuples[];
 } __attribute__((packed));
 
@@ -51,28 +53,6 @@ typedef struct rtmp_packet_s rtmp_packet_t;
 #define RTMP_TUPLES(b) ((rtmp_tuple_t*)&(((rtmp_packet_t*)(DDP_BODY((b))))->tuples[0]))
 #define RTMP_TUPLELEN(b) (DDP_BODYLEN((b)) - sizeof(rtmp_packet_t))
 
-static inline rtmp_tuple_t* get_first_rtmp_tuple(buffer_t *packet) {
-	rtmp_tuple_t *tuple = RTMP_TUPLES(packet);
-
-	// Is there room for one tuple?
-	if (RTMP_TUPLELEN(packet) < 3) {
-		return NULL;
-	}
-	
-	// A non-extended tuple fits in three bytes, we can
-	// return this pointer
-	if (!RTMP_TUPLE_IS_EXTENDED(tuple)) {
-		return tuple;
-	}
-	
-	// We must have an extended tuple now, do we have room for one?
-	if (RTMP_TUPLELEN(packet) < sizeof(rtmp_tuple_t)) {
-		return NULL;
-	}
-	
-	return tuple;
-}
-
 static inline rtmp_tuple_t* get_next_rtmp_tuple(buffer_t *packet, rtmp_tuple_t *current_tuple) {
 	uint8_t *tupleref = (uint8_t*)current_tuple;
 	
@@ -82,7 +62,9 @@ static inline rtmp_tuple_t* get_next_rtmp_tuple(buffer_t *packet, rtmp_tuple_t *
 	}
 
 	// is our current tuple extended?  Advance cursor appropriately.
-	if (RTMP_TUPLE_IS_EXTENDED((rtmp_tuple_t*)tupleref)) {
+	if (RTMP_TUPLE_IS_DUMMY((rtmp_tuple_t*)tupleref)) {
+		tupleref += 3;
+	} else if (RTMP_TUPLE_IS_EXTENDED((rtmp_tuple_t*)tupleref)) {
 		tupleref += sizeof(rtmp_tuple_t);
 	} else {
 		tupleref += 3;
@@ -99,4 +81,30 @@ static inline rtmp_tuple_t* get_next_rtmp_tuple(buffer_t *packet, rtmp_tuple_t *
 	}
 	
 	return NULL;
+}
+
+static inline rtmp_tuple_t* get_first_rtmp_tuple(buffer_t *packet) {
+	rtmp_tuple_t *tuple = RTMP_TUPLES(packet);
+
+	// Is there room for one tuple?
+	if (RTMP_TUPLELEN(packet) < 3) {
+		return NULL;
+	}
+	
+	if (RTMP_TUPLE_IS_DUMMY(tuple)) {
+		return get_next_rtmp_tuple(packet, tuple);
+	}
+	
+	// A non-extended tuple fits in three bytes, we can
+	// return this pointer
+	if (!RTMP_TUPLE_IS_EXTENDED(tuple)) {
+		return tuple;
+	}
+	
+	// We must have an extended tuple now, do we have room for one?
+	if (RTMP_TUPLELEN(packet) < sizeof(rtmp_tuple_t)) {
+		return NULL;
+	}
+	
+	return tuple;
 }
