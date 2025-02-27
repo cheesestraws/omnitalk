@@ -17,7 +17,7 @@ static void sink_rx_runloop(void* tp) {
 	while(1) {
 		xQueueReceive(transport->inbound, &buff, portMAX_DELAY);
 		if (buff != NULL) {
-			ESP_LOGI(TAG, "sink %s: received frame of %zu bytes", transport->kind, buff->length);
+			//ESP_LOGI(TAG, "sink %s: received frame of %zu bytes", transport->kind, buff->length);
 			freebuf(buff);
 		}
 	}

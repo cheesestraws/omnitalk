@@ -252,12 +252,8 @@ void llap_run_for_a_while(lap_t *lap) {
 		if (!llap_extract_ddp_packet(recvbuf)) {
 			goto discard;
 		}
-		
-		ESP_LOGI(TAG, "src %d dst %d", (int)DDP_SRC(recvbuf), (int)DDP_DST(recvbuf));
-		
+				
 		if (ddp_packet_is_mine(lap, recvbuf)) {
-			ESP_LOGI(TAG, "packet is addressed to me!");
-			printbuf(recvbuf);
 			// do something
 			
 			if (rlsend(lap->controlplane, recvbuf)) {
