@@ -372,6 +372,7 @@ lap_t *start_llap(char* name, transport_t *transport, runloop_info_t *controlpla
 	
 	lap->controlplane = controlplane;
 	lap->dataplane = dataplane;
+	lap->outbound = xQueueCreate(LLAP_OUTBOUND_QUEUE_SIZE, sizeof(buffer_t*));
 	
 	// enable metadata metric
 	stats_lap_metadata[lap->id].name = name;

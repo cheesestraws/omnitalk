@@ -5,6 +5,8 @@
 #include "lap/lap.h"
 #include "runloop_types.h"
 
+#define LLAP_OUTBOUND_QUEUE_SIZE 60
+
 typedef enum {
 	LLAP_ACQUIRING_ADDRESS = 0,
 	LLAP_ACQUIRING_NETINFO,

@@ -1,5 +1,6 @@
 set(srcs
 	"app/aep/aep.c"
+	"app/rtmp/rtmp.c"
 	"app/app.c"
 
 	"lap/llap/llap.c"
@@ -20,6 +21,8 @@ set(srcs
 	"net/mdns.c"
 	"net/net.c"
 	"net/transport.c"
+	
+	"proto/rtmp.c"
 	
 	"util/crc.c"
 	"util/crc32.c"

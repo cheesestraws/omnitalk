@@ -97,6 +97,12 @@ typedef struct stats {
 	
 	// Control plane metrics
 	prometheus_counter_t controlplane_inbound_queue_full;
+	
+	// RTMP
+	prometheus_counter_t rtmp_update_packets;
+	prometheus_counter_t rtmp_errors__err_packet_too_short;
+	prometheus_counter_t rtmp_errors__err_wrong_id_len;
+
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported

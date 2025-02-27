@@ -27,7 +27,6 @@ struct lap_s {
 	lap_void_handler enable;
 	lap_void_handler disable;
 	
-	QueueHandle_t inbound;
 	QueueHandle_t outbound;
 	
 	uint8_t my_address;
