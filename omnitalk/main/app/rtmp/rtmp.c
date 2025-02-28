@@ -30,10 +30,7 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 		ESP_LOGE(TAG, "wrong ID length in RTMP packet: %d", (int)(RTMP_ID_LEN(packet)));
 		return;		
 	}
-	
-	ESP_LOGI(TAG, "update from %d.%d, %d bytes of tuples", (int)(RTMP_ROUTER_NETWORK(packet)),
-		(int)(RTMP_ROUTER_NODE_ID(packet)), (int)(RTMP_TUPLELEN(packet)));
-		
+			
 	rtmp_tuple_t *cursor = get_first_rtmp_tuple(packet);
 	
 	while (cursor != NULL) {
@@ -57,7 +54,6 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 		
 		rt_touch(global_routing_table, route);
 	
-		print_rtmp_tuple(cursor);
 		cursor = get_next_rtmp_tuple(packet, cursor);
 	}
 	
