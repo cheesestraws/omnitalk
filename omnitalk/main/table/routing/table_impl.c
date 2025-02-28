@@ -39,11 +39,24 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 			break;
 		}
 		
-		if (rt_routes_match(&curr->route, &r)) {
+		if (rt_routes_equal(&curr->route, &r)) {
 			found = true;
 			curr->last_touched_timestamp = esp_timer_get_time();
-			curr->route.distance = r.distance;
 			break;
+		}
+		
+		// If the routes aren't equal, but they match, then the distance
+		// has changed: we need to remove the old route and free it and
+		// replace it with the new one.
+		if (rt_routes_match(&curr->route, &r)) {
+			struct rt_node_s *new_curr = curr->next;
+			prev->next = curr->next;
+			free(curr);
+			curr = new_curr;
+			
+			// Don't fall through or we will skip new_curr; re-loop
+			// with the same 'prev'.
+			continue;
 		}
 	
 	next_item:
@@ -73,8 +86,31 @@ void rt_touch(rt_routing_table_t* table, rt_route_t r) {
 	xSemaphoreGive(table->mutex);
 }
 
-bool rt_lookup(rt_routing_table_t* table, uint16_t network_number, rt_route_t *out) {
+static bool rt_lookup_unguarded(rt_routing_table_t* table, uint16_t network_number, rt_route_t *out) {
+	for (struct rt_node_s *curr = &table->list; curr != NULL; curr = curr->next) {
+		// skip dummy node
+		if (curr->dummy) {
+			continue;
+		}
+		
+		if (network_number >= curr->route.range_start && network_number <= curr->route.range_end) {
+			memcpy(out, &curr->route, sizeof(rt_route_t));
+			return true;
+		}
+	}
+	
 	return false;
+}
+
+
+bool rt_lookup(rt_routing_table_t* table, uint16_t network_number, rt_route_t *out) {
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+
+	bool result = rt_lookup_unguarded(table, network_number, out);
+	
+	xSemaphoreGive(table->mutex);
+	
+	return result;
 }
 
 static void rt_route_print(rt_route_t *a) {
@@ -90,11 +126,10 @@ void rt_print(rt_routing_table_t* table) {
 	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
 
 	int64_t now = esp_timer_get_time();
-	struct rt_node_s *curr = &table->list;
-	
+
 	printf("routing table:\n");
 	
-	for (;curr != NULL; curr = curr->next) {
+	for (struct rt_node_s *curr = &table->list; curr != NULL; curr = curr->next) {
 		if (curr->dummy) {
 			continue;
 		}

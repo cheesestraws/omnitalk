@@ -51,9 +51,14 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 				.network = RTMP_ROUTER_NETWORK(packet),
 				.node = RTMP_ROUTER_NODE_ID(packet),
 			},
-	
-			.distance = RTMP_TUPLE_DISTANCE(cursor)
 		};
+		
+		// Distance 31 is code for "bad route", so we don't increment
+		if (RTMP_TUPLE_DISTANCE(cursor) == 31) {
+			route.distance = 31;
+		} else {
+			route.distance = RTMP_TUPLE_DISTANCE(cursor) + 1;
+		}
 		
 		rt_touch(temporary_routing_table, route);
 	
