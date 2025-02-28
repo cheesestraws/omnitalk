@@ -24,6 +24,8 @@ set(srcs
 	
 	"proto/rtmp.c"
 	
+	"table/routing/table_impl.c"
+	
 	"util/crc.c"
 	"util/crc32.c"
 

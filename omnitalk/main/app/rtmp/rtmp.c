@@ -6,11 +6,20 @@
 #include "mem/buffers.h"
 #include "proto/ddp.h"
 #include "proto/rtmp.h"
+#include "table/routing/route.h"
+#include "table/routing/table.h"
+
 #include "web/stats.h"
 
 static const char* TAG = "RTMP";
 
+static rt_routing_table_t *temporary_routing_table;
+
 static void handle_rtmp_update_packet(buffer_t *packet) {
+	if (temporary_routing_table == NULL) {
+		temporary_routing_table = rt_new();
+	}
+
 	stats.rtmp_update_packets++;
 	ESP_LOGI(TAG, "got rtmp update");
 	
@@ -33,9 +42,26 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 	rtmp_tuple_t *cursor = get_first_rtmp_tuple(packet);
 	
 	while (cursor != NULL) {
+		rt_route_t route = {
+			.range_start = RTMP_TUPLE_RANGE_START(cursor),
+			.range_end = RTMP_TUPLE_RANGE_END(cursor),
+	
+			.outbound_lap = packet->recv_chain.lap,
+			.nexthop = {
+				.network = RTMP_ROUTER_NETWORK(packet),
+				.node = RTMP_ROUTER_NODE_ID(packet),
+			},
+	
+			.distance = RTMP_TUPLE_DISTANCE(cursor)
+		};
+		
+		rt_touch(temporary_routing_table, route);
+	
 		print_rtmp_tuple(cursor);
 		cursor = get_next_rtmp_tuple(packet, cursor);
 	}
+	
+	rt_print(temporary_routing_table);
 }
 
 void app_rtmp_handler(buffer_t *packet) {

@@ -30,7 +30,7 @@ void print_rtmp_tuple(rtmp_tuple_t *tuple);
 #define RTMP_TUPLE_DISTANCE(t) ((t)->ext_flag_and_distance & 0x7f)
 #define RTMP_TUPLE_NETWORK(t) ntohs((t)->range_start)
 #define RTMP_TUPLE_RANGE_START(t) ntohs((t)->range_start)
-#define RTMP_TUPLE_RANGE_END(t) ntohs((t)->range_end)
+#define RTMP_TUPLE_RANGE_END(t) (RTMP_TUPLE_IS_EXTENDED((t)) ? ntohs((t)->range_end) : RTMP_TUPLE_RANGE_START((t)))
 
 // The "dummy" tuple is the fake tuple on a nonextended network which carries the
 // version
