@@ -18,6 +18,10 @@ typedef enum {
 // a buffer is a ... buffer which will hold a DDP packet and some
 // L2 framing around it.
 typedef struct buffer_s {
+	// The memory area the buffer points into
+	size_t mem_capacity;
+	uint8_t* mem_top;
+
 	// Private flags set by transports
 	uint32_t transport_flags;
 
@@ -45,7 +49,6 @@ typedef struct buffer_s {
 buffer_t *newbuf(size_t length);
 void freebuf(buffer_t *buffer_t);
 buffer_t *wrapbuf(void* data, size_t length);
-void resetbuf(buffer_t *buffer);
 void printbuf(buffer_t *buffer);
 
 bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type);
