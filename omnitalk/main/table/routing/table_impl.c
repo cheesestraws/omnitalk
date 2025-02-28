@@ -115,6 +115,19 @@ void rt_touch(rt_routing_table_t* table, rt_route_t r) {
 	xSemaphoreGive(table->mutex);
 }
 
+void rt_touch_direct(rt_routing_table_t* table, uint16_t start, uint16_t end, lap_t *lap) {
+	rt_route_t route = {
+		.range_start = start,
+		.range_end = end,
+
+		.outbound_lap = lap,
+		.nexthop = { 0 },
+		.distance = 0,
+	};
+	
+	rt_touch(table, route);	
+}
+
 static bool rt_lookup_unguarded(rt_routing_table_t* table, uint16_t network_number, rt_route_t *out) {
 	for (struct rt_node_s *curr = &table->list; curr != NULL; curr = curr->next) {
 		// skip dummy node
