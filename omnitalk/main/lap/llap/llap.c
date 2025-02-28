@@ -12,11 +12,13 @@
 #include "lap/lap.h"
 #include "mem/buffers.h"
 #include "net/transport.h"
+#include "table/routing/table.h"
 #include "proto/ddp.h"
 #include "proto/llap.h"
 #include "proto/rtmp.h"
 #include "util/require/goto.h"
 #include "web/stats.h"
+#include "global_state.h"
 #include "runloop.h"
 
 static const char* TAG = "LLAP";
@@ -211,6 +213,10 @@ void llap_acquire_netinfo(lap_t *lap) {
 	lap->my_network = info->discovered_net;
 	lap->network_range_start = info->discovered_net;
 	lap->network_range_end = info->discovered_net;
+	
+	if (lap->my_network != 0) { 
+		rt_touch_direct(global_routing_table, lap->my_network, lap->my_network, lap);
+	}
 	
 	info->state = LLAP_RUNNING;
 }
