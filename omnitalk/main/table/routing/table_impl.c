@@ -237,13 +237,25 @@ void rt_prune(rt_routing_table_t* table) {
 	xSemaphoreGive(table->mutex);
 }
 
+static char* rt_route_lap_name(rt_route_t *a) {
+	return a->outbound_lap != NULL ? a->outbound_lap->name : "NULL";
+}
+
+static char* rt_route_lap_kind(rt_route_t *a) {
+	return a->outbound_lap != NULL ? a->outbound_lap->kind : "NULL";
+}
+
+static char* rt_route_transport_name(rt_route_t *a) {
+	return a->outbound_lap != NULL && a->outbound_lap->transport != NULL ? a->outbound_lap->transport->kind : "NULL";
+}
+
 static void rt_route_print(rt_route_t *a) {
 	printf("    net range %d - %d dist %d via %d.%d (%s -> %s) ",
 		(int)a->range_start, (int)a->range_end,
 		(int)a->distance,
 		(int)a->nexthop.network, (int)a->nexthop.node,
-		(a->outbound_lap != NULL ? a->outbound_lap->name : "NULL"),
-		(a->outbound_lap != NULL && a->outbound_lap->transport != NULL ? a->outbound_lap->transport->kind : "NULL"));
+		rt_route_lap_name(a),
+		rt_route_transport_name(a));
 }
 
 void rt_print(rt_routing_table_t* table) {
@@ -276,4 +288,78 @@ void rt_print(rt_routing_table_t* table) {
 	}
 
 	xSemaphoreGive(table->mutex);
+}
+
+char* rt_stats(rt_routing_table_t* table) {
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+
+	// first, count the number of nodes (and while we're doing it,
+	// work out what's the longest LAP and transport names
+	struct rt_node_s *curr;
+	int node_count = 0;
+	int longest_lap_name = 0;
+	int longest_lap_kind = 0;
+	int longest_transport_name = 0;
+	
+	for (curr = &table->list; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		node_count++;
+		
+		int lap_len = strlen(rt_route_lap_name(&curr->route));
+		int lap_kind_len = strlen(rt_route_lap_kind(&curr->route));
+		int transport_len = strlen(rt_route_transport_name(&curr->route));
+		
+		if (lap_len > longest_lap_name) { longest_lap_name = lap_len; }
+		if (lap_kind_len > longest_lap_kind) { longest_lap_kind = lap_kind_len; }
+		if (transport_len > longest_transport_name) { longest_transport_name = transport_len; }
+	}
+
+	// Now, work out how much memory each route will take
+	char* fmt = "route{address_family=\"atalk\", "
+		"net_range_start=\"%" PRIu16 "\", net_range_end=\"" PRIu16 "\", "
+		"lap=\"%s\", lap_kind=\"%s\", transport=\"%s\", "
+		"nexthop=\"%" PRIu16 ".%" PRIu8 "\", distance=\"" PRIu8 "\". "
+		"status=\"%s\""
+		"} 1\n";
+	
+	int route_string_length = strlen(fmt);
+	
+	// As a pessimistic estimate, we assume that each byte might represent
+	// three bytes of ASCII digits
+	route_string_length += sizeof(rt_route_t) * 3;
+	
+	// Then add the strings
+	route_string_length += longest_lap_name + longest_lap_kind + longest_transport_name;
+	
+	// and 8 for the status
+	route_string_length += 7;
+	
+	// Now how much memory do we need for the whole lot?  Let's allocate
+	// a buffer.  +1 for the null.
+	char* strbuf = malloc((route_string_length * node_count) + 1);
+	assert(strbuf != NULL);
+	
+	// Fill buffer
+	char* cursor = strbuf;
+	for (curr = &table->list; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+	
+		int len = sprintf(cursor, fmt, 
+			curr->route.range_start, curr->route.range_end,
+			rt_route_lap_name(&curr->route), 
+			rt_route_lap_kind(&curr->route),
+			rt_route_transport_name(&curr->route),
+			curr->route.nexthop.network, curr->route.nexthop.node,
+			curr->route.distance,
+			rt_route_status_string(curr->status)
+		);
+		cursor += len;
+	}
+
+	xSemaphoreGive(table->mutex);
+	return strbuf;
 }

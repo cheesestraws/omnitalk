@@ -16,6 +16,20 @@ enum rt_route_status {
 	RT_BAD,
 };
 
+static inline char* rt_route_status_string(enum rt_route_status s) {
+	switch (s) {
+	case RT_DIRECT:
+		return "direct";
+	case RT_SUSPECT:
+		return "suspect";
+	case RT_GOOD:
+		return "good";
+	case RT_BAD:
+		return "bad";
+	}
+	return "unknown";
+}
+
 struct rt_node_s {
 	// Inserting a dummy node at the start of the list because it makes deleting easier.
 	bool dummy;

@@ -370,6 +370,7 @@ lap_t *start_llap(char* name, transport_t *transport, runloop_info_t *controlpla
 	lap->id = get_next_lap_id();
 	lap->info = (void*)info;
 	lap->name = name;
+	lap->kind = "llap";
 	lap->transport = transport;
 	
 	lap->controlplane = controlplane;

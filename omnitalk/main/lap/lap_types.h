@@ -18,6 +18,7 @@ struct lap_s {
 
 	void* info; // protocol-specific
 	void* stats; // protocol-specific
+	char* kind;
 	char* name;
 	transport_t* transport;
 	

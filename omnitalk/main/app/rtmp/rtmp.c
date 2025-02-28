@@ -1,5 +1,7 @@
 #include "app/rtmp/rtmp.h"
 
+#include <stdatomic.h>
+
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 
@@ -57,7 +59,9 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 		cursor = get_next_rtmp_tuple(packet, cursor);
 	}
 	
-	rt_print(global_routing_table);
+	char* stats = rt_stats(global_routing_table);
+	printf("%s", stats);
+	free(stats);
 }
 
 void app_rtmp_handler(buffer_t *packet) {
@@ -72,6 +76,10 @@ void app_rtmp_idle(void* dummy) {
 	while (1) {
 		vTaskDelay(20000 / portTICK_PERIOD_MS);
 		rt_prune(global_routing_table);
+		
+		char* new_stats = rt_stats(global_routing_table);
+		char* old_stats = atomic_exchange(&stats_routing_table, new_stats);
+		free(old_stats);
 	}
 }
 
