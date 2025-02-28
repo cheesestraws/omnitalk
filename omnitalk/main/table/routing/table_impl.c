@@ -39,7 +39,9 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 		if (rt_routes_equal(&curr->route, &r)) {
 			found = true;
 			curr->last_touched_timestamp = esp_timer_get_time();
-			curr->status = RT_GOOD;
+			if (r.distance != 31) {
+				curr->status = RT_GOOD;
+			}
 			break;
 		}
 		
@@ -76,6 +78,9 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 	// Direct routes have distance = 0
 	if (r.distance == 0) {
 		new_node->status = RT_DIRECT;
+	} else if (r.distance == 31) {
+		// 31 is "known BAD route"
+		new_node->status = RT_BAD;
 	} else {
 		new_node->status = RT_GOOD;
 	}
