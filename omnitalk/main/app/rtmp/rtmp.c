@@ -1,6 +1,7 @@
 #include "app/rtmp/rtmp.h"
 
 #include <esp_log.h>
+#include <freertos/FreeRTOS.h>
 
 #include "lap/lap.h"
 #include "mem/buffers.h"
@@ -75,4 +76,13 @@ void app_rtmp_handler(buffer_t *packet) {
 	}
 
 	freebuf(packet);
+}
+
+void app_rtmp_idle(void* dummy) {
+	ESP_LOGI(TAG, "started rtmp idle task");
+	vTaskDelay(portMAX_DELAY);
+}
+
+void app_rtmp_start(void) {
+	ESP_LOGI(TAG, "started rtmp");
 }

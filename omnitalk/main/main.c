@@ -4,6 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "app/app.h"
 #include "net/net.h"
 #include "web/stats.h"
 #include "web/web.h"
@@ -21,6 +22,8 @@ void app_main(void)
 	
 	controlplane = start_controlplane_runloop();
 	router = start_router_runloop();
+	
+	start_apps();
 
 	start_net(&controlplane, &router);	
 	start_web();
