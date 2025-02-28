@@ -35,6 +35,7 @@ set(srcs
 	"web/web.c"
 
 	"controlplane_runloop.c"
+	"global_state.c"
 	"router_runloop.c"
 	"runloop.c"
 	"main.c"
