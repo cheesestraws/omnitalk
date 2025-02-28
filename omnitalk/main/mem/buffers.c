@@ -5,14 +5,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-buffer_t *newbuf(size_t capacity) {
+#include <lwip/prot/ethernet.h>
+
+#include "proto/SNAP.h"
+
+
+static size_t longest_l2_hdr = sizeof(struct eth_hdr) + sizeof(snap_hdr_t);
+
+buffer_t *newbuf(size_t data_capacity) {
+	size_t capacity = data_capacity + longest_l2_hdr;
+
 	uint8_t *data = (uint8_t*)calloc(1, capacity);
 	buffer_t *buff = (buffer_t*)calloc(1, sizeof(buffer_t));
 	
 	buff->mem_top = data;
-	buff->data = data;
-	buff->mem_capacity = capacity;
-	buff->capacity = capacity;
+	buff->data = data + longest_l2_hdr;
+	buff->mem_capacity = data_capacity;
+	buff->capacity = data_capacity;
 	
 	return buff;
 }
