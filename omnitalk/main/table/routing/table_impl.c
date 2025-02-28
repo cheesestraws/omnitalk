@@ -39,6 +39,7 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 		if (rt_routes_equal(&curr->route, &r)) {
 			found = true;
 			curr->last_touched_timestamp = esp_timer_get_time();
+			curr->status = RT_GOOD;
 			break;
 		}
 		
@@ -72,7 +73,33 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 	memcpy(&new_node->route, &r, sizeof(rt_route_t));
 	new_node->last_touched_timestamp = esp_timer_get_time();
 	
-	// and insert it into the list
+	// Direct routes have distance = 0
+	if (r.distance == 0) {
+		new_node->status = RT_DIRECT;
+	} else {
+		new_node->status = RT_GOOD;
+	}
+	
+	// and insert it into the list in the right position
+	prev = NULL;
+	curr = &table->list;
+		
+	while (curr != NULL) {
+		// skip dummy entries
+		if (curr->dummy) {
+			goto next_item_ins;
+		}
+
+		// Is this beyond our new distance?
+		if (curr->route.distance > new_node->route.distance) {
+			break;
+		}
+		
+	next_item_ins:
+		prev = curr;
+		curr = curr->next;
+	}
+
 	new_node->next = curr;
 	prev->next = new_node;
 }
@@ -84,8 +111,6 @@ void rt_touch(rt_routing_table_t* table, rt_route_t r) {
 }
 
 static bool rt_lookup_unguarded(rt_routing_table_t* table, uint16_t network_number, rt_route_t *out) {
-	int64_t now = esp_timer_get_time();
-
 	for (struct rt_node_s *curr = &table->list; curr != NULL; curr = curr->next) {
 		// skip dummy node
 		if (curr->dummy) {
@@ -93,12 +118,6 @@ static bool rt_lookup_unguarded(rt_routing_table_t* table, uint16_t network_numb
 		}
 		
 		if (network_number >= curr->route.range_start && network_number <= curr->route.range_end) {
-			// Is the route fresh enough?  Note that esp_timer_get_time returns a signed
-			// result so we don't need to worry about being up for less than a minute here
-			if (curr->last_touched_timestamp < now - (NODE_DEAD_THRESHOLD_SECS * MICROSECONDS)) {
-				continue;
-			}
-		
 			memcpy(out, &curr->route, sizeof(rt_route_t));
 			return true;
 		}
@@ -119,8 +138,6 @@ bool rt_lookup(rt_routing_table_t* table, uint16_t network_number, rt_route_t *o
 }
 
 static void rt_prune_unguarded(rt_routing_table_t* table) {
-	int64_t now = esp_timer_get_time();
-
 	// Start at the top of the list
 	struct rt_node_s *prev = NULL;
 	struct rt_node_s *curr = &table->list;
@@ -133,14 +150,29 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 			goto next_item;
 		}
 		
-		if (curr->last_touched_timestamp < now - (NODE_DEAD_THRESHOLD_SECS * MICROSECONDS)) {
+		bool deleted = false;
+		
+		switch (curr->status) {
+		case RT_DIRECT:
+			// We never age out direct routes.
+			break;
+		case RT_SUSPECT:
+			// Routes that stay suspect get downgraded to bad
+			curr->status = RT_BAD;
+			break;
+		case RT_GOOD:
+			curr->status = RT_SUSPECT;
+			break;
+		case RT_BAD:
 			struct rt_node_s *new_curr = curr->next;
 			prev->next = curr->next;
 			free(curr);
 			curr = new_curr;
-			
-			// Don't fall through or we will skip new_curr; re-loop
-			// with the same 'prev'.
+			deleted = true;
+			break;
+		}
+		
+		if (deleted) {
 			continue;
 		}
 
@@ -180,12 +212,15 @@ void rt_print(rt_routing_table_t* table) {
 
 		rt_route_print(&curr->route);
 		
-		if (curr->last_touched_timestamp < now - (NODE_DEAD_THRESHOLD_SECS * MICROSECONDS)) {
-			printf(" (dead)");
-		} else if (curr->last_touched_timestamp < now - (NODE_BAD_THRESHOLD_SECS * MICROSECONDS)) {
-			printf(" (bad)");
-		} else {
-			printf(" (ok)");
+		switch (curr->status) {
+		case RT_DIRECT:
+			printf(" (direct)"); break;
+		case RT_SUSPECT:
+			printf(" (suspect)"); break;
+		case RT_GOOD:
+			printf(" (good)"); break;
+		case RT_BAD:
+			printf(" (bad)"); break;
 		}
 		
 		int64_t elapsed_millis = (now - curr->last_touched_timestamp) / 1000;

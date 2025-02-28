@@ -9,12 +9,20 @@
 //
 // This table is just a linked list, ordered approximately by distance.
 
+enum rt_route_status {
+	RT_DIRECT = 0,
+	RT_SUSPECT,
+	RT_GOOD,
+	RT_BAD,
+};
+
 struct rt_node_s {
 	// Inserting a dummy node at the start of the list because it makes deleting easier.
 	bool dummy;
 	
 	rt_route_t route;
 	int64_t last_touched_timestamp;
+	enum rt_route_status status;
 	
 	struct rt_node_s *next;
 };
