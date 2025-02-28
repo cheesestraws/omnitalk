@@ -166,7 +166,6 @@ void udp_rx_runloop(void *pvParameters) {
 
 void udp_tx_runloop(void *pvParameters) {
 	buffer_t* packet = NULL;
-	buffer_t* outgoing_buffer = newbuf(4096, 0); //fuck it 
 	struct sockaddr_in dest_addr = {0};
 	int err = 0;
 		
@@ -188,8 +187,8 @@ void udp_tx_runloop(void *pvParameters) {
 		}
 		   
 		if (udp_sock != -1 && ltoudp_transport_enabled) {
-			memcpy(outgoing_buffer->data+4, packet->data, packet->length);
-				err = sendto(udp_sock, outgoing_buffer->data, packet->length+4, 0, 
+			buf_give_me_extra_l2_hdr_bytes(packet, 4);
+			err = sendto(udp_sock, packet->data, packet->length, 0, 
 				(struct sockaddr *)&dest_addr, sizeof(dest_addr));
 			if (err < 0) {
 				ESP_LOGE(TAG, "error: sendto: errno %d", errno);

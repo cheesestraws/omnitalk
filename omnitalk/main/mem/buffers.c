@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 
 #include <lwip/prot/ethernet.h>
 
@@ -48,6 +49,17 @@ void buf_trim_l2_hdr_bytes(buffer_t *buffer, size_t bytes) {
 	buffer->data += bytes;
 	buffer->length -= bytes;
 	buffer->capacity -= bytes;
+}
+
+
+void buf_give_me_extra_l2_hdr_bytes(buffer_t *buffer, size_t bytes) {
+	assert(buffer->data - bytes >= buffer->mem_top);
+	
+	buffer->data -= bytes;
+	buffer->length += bytes;
+	buffer->capacity += bytes;
+	
+	bzero(buffer->data, bytes);
 }
 
 bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type) {

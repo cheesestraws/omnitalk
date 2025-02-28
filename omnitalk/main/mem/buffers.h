@@ -52,4 +52,5 @@ buffer_t *wrapbuf(void* data, size_t length);
 void printbuf(buffer_t *buffer);
 
 void buf_trim_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
+void buf_give_me_extra_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
 bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type);
