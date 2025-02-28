@@ -11,6 +11,8 @@
 
 #include "table/routing/route.h"
 
+#define MICROSECONDS 1000000
+
 rt_routing_table_t* rt_new() {
 	rt_routing_table_t* table = calloc(1, sizeof(rt_routing_table_t));
 	
@@ -87,6 +89,8 @@ void rt_touch(rt_routing_table_t* table, rt_route_t r) {
 }
 
 static bool rt_lookup_unguarded(rt_routing_table_t* table, uint16_t network_number, rt_route_t *out) {
+	int64_t now = esp_timer_get_time();
+
 	for (struct rt_node_s *curr = &table->list; curr != NULL; curr = curr->next) {
 		// skip dummy node
 		if (curr->dummy) {
@@ -94,6 +98,12 @@ static bool rt_lookup_unguarded(rt_routing_table_t* table, uint16_t network_numb
 		}
 		
 		if (network_number >= curr->route.range_start && network_number <= curr->route.range_end) {
+			// Is the route fresh enough?  Note that esp_timer_get_time returns a signed
+			// result so we don't need to worry about being up for less than a minute here
+			if (curr->last_touched_timestamp < now - (NODE_DEAD_THRESHOLD_SECS * MICROSECONDS)) {
+				continue;
+			}
+		
 			memcpy(out, &curr->route, sizeof(rt_route_t));
 			return true;
 		}
@@ -135,6 +145,15 @@ void rt_print(rt_routing_table_t* table) {
 		}
 
 		rt_route_print(&curr->route);
+		
+		if (curr->last_touched_timestamp < now - (NODE_DEAD_THRESHOLD_SECS * MICROSECONDS)) {
+			printf(" (dead)");
+		} else if (curr->last_touched_timestamp < now - (NODE_BAD_THRESHOLD_SECS * MICROSECONDS)) {
+			printf(" (bad)");
+		} else {
+			printf(" (ok)");
+		}
+		
 		int64_t elapsed_millis = (now - curr->last_touched_timestamp) / 1000;
 		printf(" [%" PRId64 "ms ago]\n", elapsed_millis);
 	}

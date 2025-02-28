@@ -19,6 +19,9 @@ struct rt_node_s {
 	struct rt_node_s *next;
 };
 
+#define NODE_BAD_THRESHOLD_SECS 40
+#define NODE_DEAD_THRESHOLD_SECS 60
+
 typedef struct {
 	SemaphoreHandle_t mutex;
 	
