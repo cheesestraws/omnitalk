@@ -107,7 +107,7 @@ static void b2udptunnel_inbound_runloop(void* dummy) {
 		struct sockaddr_storage cliaddr = { 0 };
 		socklen_t clilen = sizeof(cliaddr);
 		while (1) {
-			buf = newbuf(ETHERNET_FRAME_LEN);
+			buf = newbuf(ETHERNET_FRAME_LEN, sizeof(struct eth_hdr) + sizeof(snap_hdr_t));
 			
 			int len = recvfrom(b2_udp_sock, buf->data, buf->capacity, 0,
 				(struct sockaddr*)&cliaddr, &clilen);

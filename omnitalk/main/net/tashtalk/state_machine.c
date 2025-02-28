@@ -78,7 +78,7 @@ void tashtalk_feed(tashtalk_rx_state_t* state, unsigned char byte) {
 
 	// do we have a buffer?
 	if (state->packet_in_progress == NULL) {
-		state->packet_in_progress = newbuf(ETHERNET_FRAME_LEN);
+		state->packet_in_progress = newbuf(ETHERNET_FRAME_LEN, 3);
 		crc_state_init(&state->crc);
 	}
 	

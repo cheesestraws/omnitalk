@@ -79,7 +79,7 @@ void llap_acquire_address(lap_t *lap) {
 						
 		// send a burst of ENQs
 		for (int i = 0; i < 10; i++) {
-			enq_buffer = newbuf(5);
+			enq_buffer = newbuf(5, 0);
 			enq_buffer->length = 3;
 			((llap_hdr_t*)enq_buffer->data)->src = candidate;
 			((llap_hdr_t*)enq_buffer->data)->dst = candidate;
@@ -139,7 +139,7 @@ void llap_acquire_netinfo(lap_t *lap) {
 
 	// Send a few RTMP requests.  See Inside Appletalk p5-17 et seq
 	for (int i = 0; i < 5; i++) {
-		rtmp_req = newbuf(sizeof(ddp_short_header_t) + 3);
+		rtmp_req = newbuf(sizeof(ddp_short_header_t) + 3, 0);
 		rtmp_req->length = rtmp_req->capacity - 2;
 		
 		ddp_short_header_t* hdr = (ddp_short_header_t*)rtmp_req->data;

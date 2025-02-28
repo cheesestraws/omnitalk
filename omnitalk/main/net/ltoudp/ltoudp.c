@@ -142,7 +142,7 @@ void udp_rx_runloop(void *pvParameters) {
 				// fetch an empty buffer from the pool and fill it with
 				// packet info
 				// length is wrong but it'll do for now
-				buffer_t *buf = newbuf(ETHERNET_FRAME_LEN);
+				buffer_t *buf = newbuf(ETHERNET_FRAME_LEN, 0);
 				if (buf != NULL) {				
 					// copy the LLAP packet into the packet buffer
 					buf->length = len-4; // -4 for LToUDP tag
@@ -164,7 +164,7 @@ void udp_rx_runloop(void *pvParameters) {
 
 void udp_tx_runloop(void *pvParameters) {
 	buffer_t* packet = NULL;
-	buffer_t* outgoing_buffer = newbuf(4096); //fuck it 
+	buffer_t* outgoing_buffer = newbuf(4096, 0); //fuck it 
 	struct sockaddr_in dest_addr = {0};
 	int err = 0;
 		

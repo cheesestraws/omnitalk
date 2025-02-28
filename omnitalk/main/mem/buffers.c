@@ -12,14 +12,14 @@
 
 static size_t longest_l2_hdr = sizeof(struct eth_hdr) + sizeof(snap_hdr_t);
 
-buffer_t *newbuf(size_t data_capacity) {
-	size_t capacity = data_capacity + longest_l2_hdr;
+buffer_t *newbuf(size_t data_capacity, size_t l2_hdr_len) {
+	size_t capacity = data_capacity + (longest_l2_hdr - l2_hdr_len);
 
 	uint8_t *data = (uint8_t*)calloc(1, capacity);
 	buffer_t *buff = (buffer_t*)calloc(1, sizeof(buffer_t));
 	
 	buff->mem_top = data;
-	buff->data = data + longest_l2_hdr;
+	buff->data = data + (longest_l2_hdr - l2_hdr_len);
 	buff->mem_capacity = data_capacity;
 	buff->capacity = data_capacity;
 	

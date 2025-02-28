@@ -46,7 +46,7 @@ typedef struct buffer_s {
 
 #define BUFFER_HEADER_ROOM(b) ((b)->ddp_data - (b)->data)
 
-buffer_t *newbuf(size_t length);
+buffer_t *newbuf(size_t length, size_t l2_hdr_len);
 void freebuf(buffer_t *buffer_t);
 buffer_t *wrapbuf(void* data, size_t length);
 void printbuf(buffer_t *buffer);

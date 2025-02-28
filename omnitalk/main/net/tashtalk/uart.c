@@ -177,7 +177,7 @@ skip_processing:
 }
 
 esp_err_t tt_uart_refresh_address(void) {
-	buffer_t *buf = newbuf(33);
+	buffer_t *buf = newbuf(33, 0);
 	if (buf == NULL) {
 		return ESP_ERR_NO_MEM;
 	}
