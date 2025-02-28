@@ -35,12 +35,7 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 		if (curr->dummy) {
 			goto next_item;
 		}
-		
-		// if we've already passed our route's distance, bail out
-		if (curr->route.distance > r.distance) {
-			break;
-		}
-		
+				
 		if (rt_routes_equal(&curr->route, &r)) {
 			found = true;
 			curr->last_touched_timestamp = esp_timer_get_time();
@@ -121,6 +116,45 @@ bool rt_lookup(rt_routing_table_t* table, uint16_t network_number, rt_route_t *o
 	xSemaphoreGive(table->mutex);
 	
 	return result;
+}
+
+static void rt_prune_unguarded(rt_routing_table_t* table) {
+	int64_t now = esp_timer_get_time();
+
+	// Start at the top of the list
+	struct rt_node_s *prev = NULL;
+	struct rt_node_s *curr = &table->list;
+	
+	// Filter out dead routes
+	
+	while (curr != NULL) {
+		// skip dummy entries
+		if (curr->dummy) {
+			goto next_item;
+		}
+		
+		if (curr->last_touched_timestamp < now - (NODE_DEAD_THRESHOLD_SECS * MICROSECONDS)) {
+			struct rt_node_s *new_curr = curr->next;
+			prev->next = curr->next;
+			free(curr);
+			curr = new_curr;
+			
+			// Don't fall through or we will skip new_curr; re-loop
+			// with the same 'prev'.
+			continue;
+		}
+
+	next_item:
+		prev = curr;
+		curr = curr->next;
+	}
+
+}
+
+void rt_prune(rt_routing_table_t* table) {
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	rt_prune_unguarded(table);
+	xSemaphoreGive(table->mutex);
 }
 
 static void rt_route_print(rt_route_t *a) {

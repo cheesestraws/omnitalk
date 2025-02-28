@@ -14,13 +14,9 @@
 
 static const char* TAG = "RTMP";
 
-static rt_routing_table_t *temporary_routing_table;
+static rt_routing_table_t *routing_table;
 
 static void handle_rtmp_update_packet(buffer_t *packet) {
-	if (temporary_routing_table == NULL) {
-		temporary_routing_table = rt_new();
-	}
-
 	stats.rtmp_update_packets++;
 	ESP_LOGI(TAG, "got rtmp update");
 	
@@ -61,13 +57,13 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 			route.distance = RTMP_TUPLE_DISTANCE(cursor) + 1;
 		}
 		
-		rt_touch(temporary_routing_table, route);
+		rt_touch(routing_table, route);
 	
 		print_rtmp_tuple(cursor);
 		cursor = get_next_rtmp_tuple(packet, cursor);
 	}
 	
-	rt_print(temporary_routing_table);
+	rt_print(routing_table);
 }
 
 void app_rtmp_handler(buffer_t *packet) {
@@ -79,10 +75,12 @@ void app_rtmp_handler(buffer_t *packet) {
 }
 
 void app_rtmp_idle(void* dummy) {
-	ESP_LOGI(TAG, "started rtmp idle task");
-	vTaskDelay(portMAX_DELAY);
+	while (1) {
+		vTaskDelay(20000 / portTICK_PERIOD_MS);
+		rt_prune(routing_table);
+	}
 }
 
 void app_rtmp_start(void) {
-	ESP_LOGI(TAG, "started rtmp");
+	routing_table = rt_new();
 }
