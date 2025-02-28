@@ -143,12 +143,18 @@ bool rt_lookup(rt_routing_table_t* table, uint16_t network_number, rt_route_t *o
 }
 
 static void rt_prune_unguarded(rt_routing_table_t* table) {
+	// The "bad list" is the list of routes that have been downgraded to "bad".
+	// Their distance is downgraded to 31, and they're pushed to the bottom of the
+	// candidate list.
+	struct rt_node_s *bad_node_list_head = NULL;
+	struct rt_node_s *bad_node_list_tail = NULL;
+
 	// Start at the top of the list
 	struct rt_node_s *prev = NULL;
 	struct rt_node_s *curr = &table->list;
 	
 	// Filter out dead routes
-	
+	struct rt_node_s *new_curr;
 	while (curr != NULL) {
 		// skip dummy entries
 		if (curr->dummy) {
@@ -164,12 +170,32 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 		case RT_SUSPECT:
 			// Routes that stay suspect get downgraded to bad
 			curr->status = RT_BAD;
+			curr->route.distance = 31;
+			
+			struct rt_node_s *to_be_demoted = curr;
+			
+			// Remove it from the main routing table but DON'T free it
+			new_curr = curr->next;
+			prev->next = curr->next;
+			curr = new_curr;
+			deleted = true;
+			
+			// And instead add it to the bad route list
+			to_be_demoted->next = NULL;
+			if (bad_node_list_head == NULL) {
+				bad_node_list_head = to_be_demoted;
+				bad_node_list_tail = to_be_demoted;
+			} else {
+				bad_node_list_tail->next = to_be_demoted;
+				bad_node_list_tail = to_be_demoted;
+			}
+			
 			break;
 		case RT_GOOD:
 			curr->status = RT_SUSPECT;
 			break;
 		case RT_BAD:
-			struct rt_node_s *new_curr = curr->next;
+			new_curr = curr->next;
 			prev->next = curr->next;
 			free(curr);
 			curr = new_curr;
@@ -178,6 +204,7 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 		}
 		
 		if (deleted) {
+			// if we removed a node, we don't want to increase 'curr'.
 			continue;
 		}
 
@@ -185,7 +212,10 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 		prev = curr;
 		curr = curr->next;
 	}
-
+	
+	// Now we graft on the bad routes at the end
+	// prev will be the list tail
+	prev->next = bad_node_list_head;
 }
 
 void rt_prune(rt_routing_table_t* table) {
