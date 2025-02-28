@@ -1,5 +1,6 @@
 #include "mem/buffers.h"
 
+#include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -40,6 +41,13 @@ buffer_t *wrapbuf(void* data, size_t length) {
 	buff->length = length;
 	
 	return buff;
+}
+
+void buf_trim_l2_hdr_bytes(buffer_t *buffer, size_t bytes) {
+	assert(bytes <= buffer->capacity);
+	buffer->data += bytes;
+	buffer->length -= bytes;
+	buffer->capacity -= bytes;
 }
 
 bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type) {

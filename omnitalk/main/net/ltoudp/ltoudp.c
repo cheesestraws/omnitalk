@@ -114,7 +114,9 @@ void udp_rx_runloop(void *pvParameters) {
 	init_udp();
 	
 	mark_transport_ready(&ltoudp_transport);
-		
+	
+	buffer_t *recv_buf = NULL;
+	
 	while(1) {
 		/* retry if we need to */
 		while(udp_sock == -1) {
@@ -124,36 +126,36 @@ void udp_rx_runloop(void *pvParameters) {
 		}
 	
 		while(1) {
-			unsigned char buffer[603+4]; // 603 for LLAP (per Inside Appletalk) + 
-										 // 4 bytes LToUDP header
-			int len = recv(udp_sock, buffer, sizeof(buffer), 0);
+			if (recv_buf == NULL) {
+				// this buffer is too big but the size will do for now
+				// 7 => size of ltoudp header
+				recv_buf = newbuf(ETHERNET_FRAME_LEN, 7);
+			}
+		
+			int len = recv(udp_sock, recv_buf->data, recv_buf->capacity, 0);
 			if (len < 0) {
 				stats.transport_in_errors__transport_ltoudp__err_recv_failed++;
 				break;
 			}
 			stats.transport_in_octets__transport_ltoudp += len;
 			stats.transport_in_frames__transport_ltoudp++;
+			recv_buf->length = len;
+			
 			if (len > 609) {
 				stats.transport_in_errors__transport_ltoudp__err_packet_too_long++;
 				ESP_LOGE(TAG, "packet too long: %d", len);
 				continue;
 			}
 			if (len >= 7 && ltoudp_transport_enabled) {
-				// fetch an empty buffer from the pool and fill it with
-				// packet info
-				// length is wrong but it'll do for now
-				buffer_t *buf = newbuf(ETHERNET_FRAME_LEN, 0);
-				if (buf != NULL) {				
-					// copy the LLAP packet into the packet buffer
-					buf->length = len-4; // -4 for LToUDP tag
-					memcpy(buf->data, buffer+4, len-4);
-				
-					BaseType_t err = xQueueSendToBack(ltoudp_inbound_queue, &buf, (TickType_t)0);
-					if (err != pdTRUE) {
-						stats.transport_in_errors__transport_ltoudp__err_lap_queue_full++;
-						freebuf(buf);
-					}
+				// trim off the LToUDP tag
+				buf_trim_l2_hdr_bytes(recv_buf, 4);
+				BaseType_t err = xQueueSendToBack(ltoudp_inbound_queue, &recv_buf, (TickType_t)0);
+				if (err != pdTRUE) {
+					stats.transport_in_errors__transport_ltoudp__err_lap_queue_full++;
+					freebuf(recv_buf);
 				}
+				
+				recv_buf = NULL;
 			}
 		}
 	
