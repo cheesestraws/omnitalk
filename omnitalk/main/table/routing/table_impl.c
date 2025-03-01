@@ -318,9 +318,9 @@ char* rt_stats(rt_routing_table_t* table) {
 
 	// Now, work out how much memory each route will take
 	char* fmt = "route{address_family=\"atalk\", "
-		"net_range_start=\"%" PRIu16 "\", net_range_end=\"" PRIu16 "\", "
+		"net_range_start=\"%" PRIu16 "\", net_range_end=\"%" PRIu16 "\", "
 		"lap=\"%s\", lap_kind=\"%s\", transport=\"%s\", "
-		"nexthop=\"%" PRIu16 ".%" PRIu8 "\", distance=\"" PRIu8 "\". "
+		"nexthop=\"%" PRIu16 ".%" PRIu8 "\", distance=\"%" PRIu8 "\", "
 		"status=\"%s\""
 		"} 1\n";
 	

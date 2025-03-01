@@ -18,7 +18,6 @@ static const char* TAG = "RTMP";
 
 static void handle_rtmp_update_packet(buffer_t *packet) {
 	stats.rtmp_update_packets++;
-	ESP_LOGI(TAG, "got rtmp update");
 	
 	// Is the packet long enough to be an actual DDP packet?
 	if(DDP_BODYLEN(packet) < sizeof(rtmp_packet_t)) {
@@ -58,10 +57,6 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 	
 		cursor = get_next_rtmp_tuple(packet, cursor);
 	}
-	
-	char* stats = rt_stats(global_routing_table);
-	printf("%s", stats);
-	free(stats);
 }
 
 void app_rtmp_handler(buffer_t *packet) {
@@ -74,12 +69,19 @@ void app_rtmp_handler(buffer_t *packet) {
 
 void app_rtmp_idle(void* dummy) {
 	while (1) {
+		// Every 20s...
 		vTaskDelay(20000 / portTICK_PERIOD_MS);
-		rt_prune(global_routing_table);
 		
+		// Send out stats (do it before aging so that good routes show as good)
 		char* new_stats = rt_stats(global_routing_table);
 		char* old_stats = atomic_exchange(&stats_routing_table, new_stats);
-		free(old_stats);
+		if (old_stats != NULL) {
+			free(old_stats);
+		}
+		
+		// And age out older routes
+		rt_prune(global_routing_table);
+		
 	}
 }
 
