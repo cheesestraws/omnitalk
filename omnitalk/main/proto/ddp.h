@@ -97,6 +97,11 @@ static inline void ddp_set_srcsock(buffer_t *buf, uint8_t newsrcsock) {
 	}
 }
 
+static inline void ddp_clear_checksum(buffer_t *buf) {
+	if (buf->ddp_type == BUF_LONG_HEADER) {
+		((ddp_long_header_t*)(buf->ddp_data))->ddp_checksum = 0;
+	}
+}
 
 static inline bool ddp_packet_is_mine(lap_t *lap, buffer_t *packet) {		
 	if (packet->ddp_type == BUF_SHORT_HEADER && DDP_DST(packet) == lap->my_address) {

@@ -25,7 +25,7 @@ typedef struct buffer_s {
 	// Private flags set by transports
 	uint32_t transport_flags;
 
-	// details about the memory buffer as a whole
+	// details about the packet as a whole
 	size_t length;
 	size_t capacity;
 	uint8_t* data;
@@ -42,6 +42,10 @@ typedef struct buffer_s {
 	// Details about how we got this buffer.  Setting details in here is the
 	// responsibility of the receiving LAP.
 	net_chain_t recv_chain;
+	
+	// Details about how we're sending this buffer
+	net_chain_t send_chain;
+	
 } buffer_t;
 
 #define BUFFER_HEADER_ROOM(b) ((b)->ddp_data - (b)->data)
@@ -53,4 +57,5 @@ void printbuf(buffer_t *buffer);
 
 void buf_trim_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
 void buf_give_me_extra_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
+void buf_set_l2_hdr_size(buffer_t *buffer, size_t bytes);
 bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type);

@@ -323,27 +323,27 @@ void llap_outbound_runloop(void* lapParam) {
 			}
 			
 			continue;
-		} else if (packet->ddp_type == BUF_LONG_HEADER) {
+		} else if (packet->ddp_type == BUF_LONG_HEADER) {		
+			buf_set_l2_hdr_size(packet, 3);
+		
 			// Otherwise, we need to create an LLAP header.
-			if (BUFFER_HEADER_ROOM(packet) != 3) {
-				ESP_LOGE(TAG, "fix memory management please");
-				goto cleanup;
-			}
-			
-			if (DDP_DSTNET(packet) != lap->my_network) {
-				ESP_LOGE(TAG, "we're not a router yet");
-				goto cleanup;
-			}
-			
-			packet->data[0] = DDP_DST(packet);
-			packet->data[1] = lap->my_address;
 			packet->data[2] = 2;
-						
+			packet->data[1] = lap->my_address;
+			
+			// Do we have a router to send it via?
+			if (packet->send_chain.via_net == 0 && packet->send_chain.via_node == 0) {
+				// Nope, just use the DDP packet's destination and hope for the best
+				packet->data[0] = DDP_DST(packet);
+			} else {
+				packet->data[0] = packet->send_chain.via_node;
+			}
+			
+			if (!tsend(transport, packet)) {
+				goto cleanup;
+			}
 		} else {
 			goto cleanup;
 		}
-		
-		
 		
 		continue;
 	cleanup:

@@ -49,7 +49,7 @@ typedef struct rtmp_packet_s rtmp_packet_t;
 // Macros take a buffer_t* NOT a rtmp_packet_t*
 #define RTMP_ROUTER_NETWORK(b) ntohs(((rtmp_packet_t*)(DDP_BODY((b))))->router_network)
 #define RTMP_ID_LEN(b) (((rtmp_packet_t*)(DDP_BODY((b))))->id_len)
-#define RTMP_ROUTER_NODE_ID(b) (((rtmp_packet_t*)(DDP_BODY((b))))->id_len)
+#define RTMP_ROUTER_NODE_ID(b) (((rtmp_packet_t*)(DDP_BODY((b))))->router_node_id)
 #define RTMP_TUPLES(b) ((rtmp_tuple_t*)&(((rtmp_packet_t*)(DDP_BODY((b))))->tuples[0]))
 #define RTMP_TUPLELEN(b) (DDP_BODYLEN((b)) - sizeof(rtmp_packet_t))
 

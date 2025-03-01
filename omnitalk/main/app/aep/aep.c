@@ -5,6 +5,9 @@
 #include "lap/lap.h"
 #include "mem/buffers.h"
 #include "proto/ddp.h"
+#include "table/routing/route.h"
+#include "table/routing/table.h"
+#include "global_state.h"
 
 static const char* TAG = "AEP";
 
@@ -28,7 +31,7 @@ void app_aep_handler(buffer_t *packet) {
 		ESP_LOGI(TAG, "got unknown AEP function, ignoring");
 		goto cleanup;
 	}
-	
+		
 	// Swap the src and dst addresses
 	
 	uint8_t srcaddr = DDP_SRC(packet);
@@ -50,18 +53,34 @@ void app_aep_handler(buffer_t *packet) {
 	ddp_set_dstsock(packet, srcsock);
 	ddp_set_srcsock(packet, dstsock);
 	
+	ddp_clear_checksum(packet);
+	
 	// mark it as a reply
 	DDP_BODY(packet)[0] = 2;
 	
-	
-	if (packet->recv_chain.lap == NULL) {
-		ESP_LOGE(TAG, "don't know where this packet came from, ignoring it");
-		goto cleanup;
-	}
-	
-	if (!lsend(packet->recv_chain.lap, packet)) {
-		ESP_LOGE(TAG, "no send");
-		goto cleanup;
+	// If this is a short header packet, just send the reply whence it came
+		
+	if (packet->ddp_type == BUF_SHORT_HEADER) {
+		if (!lsend(packet->recv_chain.lap, packet)) {
+			ESP_LOGE(TAG, "no send");
+			goto cleanup;
+		}
+	} else {
+		// We need to look up a route.
+		rt_route_t route = { 0 };
+
+		if (!rt_lookup(global_routing_table, srcnet, &route)) {
+			ESP_LOGE(TAG, "no route for aep reply");
+			goto cleanup;
+		}
+				
+		packet->send_chain.via_net = route.nexthop.network;
+		packet->send_chain.via_node = route.nexthop.node;
+		
+		if (!lsend(route.outbound_lap, packet)) {
+			ESP_LOGE(TAG, "lsend failed");
+			goto cleanup;
+		}
 	}
 	
 	return;

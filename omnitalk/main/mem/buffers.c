@@ -51,13 +51,23 @@ void buf_trim_l2_hdr_bytes(buffer_t *buffer, size_t bytes) {
 	buffer->capacity -= bytes;
 }
 
-
 void buf_give_me_extra_l2_hdr_bytes(buffer_t *buffer, size_t bytes) {
 	assert(buffer->data - bytes >= buffer->mem_top);
 	
 	buffer->data -= bytes;
 	buffer->length += bytes;
 	buffer->capacity += bytes;
+	
+	bzero(buffer->data, bytes);
+}
+
+void buf_set_l2_hdr_size(buffer_t *buffer, size_t bytes) {
+	assert(buffer->ddp_ready);
+	assert(buffer->ddp_data - bytes >= buffer->mem_top);
+	
+	buffer->data = buffer->ddp_data - bytes;
+	buffer->length = buffer->ddp_length + bytes;
+	buffer->capacity = buffer->ddp_capacity + bytes;
 	
 	bzero(buffer->data, bytes);
 }
