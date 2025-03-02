@@ -38,6 +38,7 @@ set(srcs
 	"global_state.c"
 	"router_runloop.c"
 	"runloop.c"
+	"test.c"
 	"main.c"
 )
 
