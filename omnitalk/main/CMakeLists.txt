@@ -49,3 +49,18 @@ execute_process(COMMAND git describe --always --tags --dirty
                 OUTPUT_VARIABLE GIT_VERSION
                 ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 add_definitions("-DGIT_VERSION=\"${GIT_VERSION}\"")
+
+# Generate include files for tests, stats and metadata.
+# Technique from https://github.com/espressif/esp-idf/issues/9885 w/ tweaks.
+
+add_custom_command(OUTPUT test.inc
+                   COMMAND perl ${CMAKE_CURRENT_SOURCE_DIR}/mktests.pl)
+add_custom_target(tests_file ALL DEPENDS test.inc)
+
+add_custom_command(OUTPUT web/stats.inc
+                   COMMAND perl ${CMAKE_CURRENT_SOURCE_DIR}/web/mkstats.pl)
+add_custom_target(stats_file ALL DEPENDS web/stats.inc)
+
+add_custom_command(OUTPUT web/metadata.inc
+                   COMMAND perl ${CMAKE_CURRENT_SOURCE_DIR}/web/mkmetadata.pl)
+add_custom_target(metadata_file ALL DEPENDS web/metadata.inc)
