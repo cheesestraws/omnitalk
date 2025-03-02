@@ -2,6 +2,9 @@
 
 #include <stdbool.h>
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+
 #include "table/routing/route.h"
 
 // This file contains a really stupid routing table.  We can replace it with something

@@ -24,6 +24,8 @@ set(srcs
 	
 	"proto/rtmp.c"
 	
+	"table/aarp/table.c"
+	"table/aarp/table_test.c"
 	"table/routing/table_impl.c"
 	
 	"util/crc.c"
