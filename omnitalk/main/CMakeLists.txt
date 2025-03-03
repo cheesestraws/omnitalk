@@ -9,6 +9,7 @@ set(srcs
 	"lap/lap.c"
 
 	"mem/buffers.c"
+	"mem/buffers_test.c"
 
 	"net/b2udptunnel/b2udptunnel.c"
 	"net/ethernet/ethernet.c"
