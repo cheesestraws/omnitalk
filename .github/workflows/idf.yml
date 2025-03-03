@@ -17,5 +17,5 @@ jobs:
       with:
         esp_idf_version: v5.4
         target: esp32
-        path: './'
+        path: './omnitalk'
 
