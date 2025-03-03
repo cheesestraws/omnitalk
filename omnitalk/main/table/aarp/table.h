@@ -36,4 +36,3 @@ aarp_table_t* aarp_new_table();
 size_t aarp_table_entry_count(aarp_table_t* table);
 void aarp_touch(aarp_table_t* table, uint16_t network, uint8_t node, struct eth_addr hwaddr);
 bool aarp_lookup(aarp_table_t* table, uint16_t network, uint8_t node, struct eth_addr* out);
-
