@@ -14,6 +14,24 @@
 
 static size_t longest_l2_hdr = sizeof(struct eth_hdr) + sizeof(snap_hdr_t);
 
+static bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type) {
+	if (buffer == NULL || buffer->data == NULL) {
+		return false;
+	}
+	
+	if (ddp_offset > buffer->length) {
+		return false;
+	}
+	
+	buffer->ddp_type = ddp_type;
+	buffer->ddp_length = buffer->length - ddp_offset;
+	buffer->ddp_capacity = buffer->capacity - ddp_offset;
+	buffer->ddp_data = buffer->data + ddp_offset;
+	buffer->ddp_ready = true;
+	
+	return true;
+}
+
 buffer_t *newbuf(size_t data_capacity, size_t l2_hdr_len) {
 	size_t capacity = data_capacity + (longest_l2_hdr - l2_hdr_len);
 
@@ -72,23 +90,6 @@ void buf_set_l2_hdr_size(buffer_t *buffer, size_t bytes) {
 	bzero(buffer->data, bytes);
 }
 
-bool buf_set_ddp_info(buffer_t *buffer, uint32_t ddp_offset, buffer_ddp_type_t ddp_type) {
-	if (buffer == NULL || buffer->data == NULL) {
-		return false;
-	}
-	
-	if (ddp_offset > buffer->length) {
-		return false;
-	}
-	
-	buffer->ddp_type = ddp_type;
-	buffer->ddp_length = buffer->length - ddp_offset;
-	buffer->ddp_capacity = buffer->capacity - ddp_offset;
-	buffer->ddp_data = buffer->data + ddp_offset;
-	buffer->ddp_ready = true;
-	
-	return true;
-}
 
 void printbuf(buffer_t *buffer) {
 	printf("buffer @ %p (data @ %p) length %d capacity %d\n", buffer, 
