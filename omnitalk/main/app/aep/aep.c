@@ -32,8 +32,6 @@ void app_aep_handler(buffer_t *packet) {
 		goto cleanup;
 	}
 	
-	printbuf_as_c_literal(packet);
-	
 	// Swap the src and dst addresses
 	
 	uint8_t srcaddr = DDP_SRC(packet);
