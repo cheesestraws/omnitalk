@@ -53,6 +53,9 @@ TEST_FUNCTION(test_buf_l2hdr_shenanigans) {
 	buf = newbuf(1024, 0);
 	max_headroom = buf->data - buf->mem_top;
 	old_data_ptr = buf->data;
+	// Fake DDP readiness
+	buf->ddp_ready = true;
+	buf->ddp_data = buf->data;
 	
 	// Let's ask for some more l2 hdr space and check we've reduced our headroom
 	buf_give_me_extra_l2_hdr_bytes(buf, 3);
@@ -60,17 +63,17 @@ TEST_FUNCTION(test_buf_l2hdr_shenanigans) {
 	TEST_ASSERT((buf->data - buf->mem_top) == (max_headroom - 7));
 
 	// And that our data pointer has indeed moved by 7 bytes
-	TEST_ASSERT((buf->data - old_data_ptr) == 7);
+	TEST_ASSERT((old_data_ptr - buf->data) == 7);
 	
 	// Now reverse course, we've decided we don't want that much space
 	buf_trim_l2_hdr_bytes(buf, 2);
 	TEST_ASSERT((buf->data - buf->mem_top) == (max_headroom - 5));
-	TEST_ASSERT((buf->data - old_data_ptr) == 5);
+	TEST_ASSERT((old_data_ptr - buf->data) == 5);
 	
 	// And finally, ask for a specific amount.
 	buf_set_l2_hdr_size(buf, 12);
 	TEST_ASSERT((buf->data - buf->mem_top) == (max_headroom - 12));
-	TEST_ASSERT((buf->data - old_data_ptr) == 12);
+	TEST_ASSERT((old_data_ptr - buf->data) == 12);
 
 	freebuf(buf);
 	
@@ -79,6 +82,9 @@ TEST_FUNCTION(test_buf_l2hdr_shenanigans) {
 	// and we won't have the ghosts of departed l2 headers (with apologies to Bishop
 	// Berkeley) turn up.
 	buf = newbuf(1024, 0);
+	// Fake DDP readiness
+	buf->ddp_ready = true;
+	buf->ddp_data = buf->data;
 	
 	// Fill the headroom with something that isn't zeroes.
 	for (uint8_t* cursor = buf->mem_top; cursor < buf->data; cursor++) {
