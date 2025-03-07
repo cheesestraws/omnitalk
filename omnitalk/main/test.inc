@@ -14,6 +14,10 @@ RUN_TEST(test_buf_ddp_setup);
 
 RUN_TEST(test_aarp_table);
 
+#include "table/routing/table_test.h"
+
+RUN_TEST(test_routing_table_basics);
+
 #include "test.h"
 
 RUN_TEST(test_tests);

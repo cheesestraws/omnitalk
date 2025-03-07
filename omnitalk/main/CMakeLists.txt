@@ -29,6 +29,7 @@ set(srcs
 	"table/aarp/table.c"
 	"table/aarp/table_test.c"
 	"table/routing/table_impl.c"
+	"table/routing/table_test.c"
 	
 	"util/crc.c"
 	"util/crc32.c"
