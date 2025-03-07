@@ -3,9 +3,23 @@
 
 #include <lwip/prot/ethernet.h>
 
+#include "proto/ddp.h"
 #include "proto/SNAP.h"
 #include "web/stats.h"
 #include "test.h"
+
+// buf_from_string generates a buffer from a string (literal) to assist in testing
+// with real packet data.
+buffer_t* buf_from_string(char* str, size_t l2_hdr_length, size_t frame_length) {
+	buffer_t *buf = newbuf(frame_length, l2_hdr_length);
+	
+	// we are *deliberately* not copying the \0 termination, since it's not part of the
+	// packet.
+	memcpy(buf->data, str, frame_length);
+	buf->length = frame_length;
+	
+	return buf;
+}
 
 TEST_FUNCTION(test_newbuf) {
 	buffer_t* buf;
@@ -102,6 +116,56 @@ TEST_FUNCTION(test_buf_l2hdr_shenanigans) {
 	for (int i = 0; i < sizeof(struct eth_hdr) + sizeof(snap_hdr_t); i++) {
 		TEST_ASSERT(buf->data[i] == 0);
 	}
+	
+	TEST_OK();
+}
+
+TEST_FUNCTION(test_buf_ddp_setup) {
+	char* packet;
+	size_t packet_len;
+	buffer_t *buf;
+	bool result;
+	
+	// We test with real packet data here.
+	
+	// First, a packet with short headers, delivered over LLAP.  This is an RTMP 
+	// broadcast packet.
+	packet="\xff\x01\x01\x00\x18\x01\x01\x01\x00\x0c\x08\x01\x00\x00\x82\x00\x03\x80\x00\x0a\x82\x00\x0b\x00\x00\x0c\x00";
+	packet_len = 27;
+	buf = buf_from_string(packet, 3, packet_len);
+	result = buf_setup_ddp(buf, 3, BUF_SHORT_HEADER);
+	
+	// Did we manage to extract the DDP packet?
+	TEST_ASSERT(result);
+	TEST_ASSERT(DDP_DST(buf) == 0xFF);
+	TEST_ASSERT(DDP_SRC(buf) == 0x01);
+	TEST_ASSERT(DDP_DSTSOCK(buf) == 0x01);
+	freebuf(buf);
+	
+	// Long headers, delivered over LLAP.  This is an AEP packet.
+	packet="\x87\x01\x02\x00\x22\xf1\x96\x00\x0c\x00\x08\x87\x1f\x04\x88\x04\x01\x00\x00\x00\x00\x03\xde\xca\x67\x00\x00\x00\x00\xf2\x73\x09\x00\x00\x00\x00\x00";
+	packet_len=37;
+	buf = buf_from_string(packet, 3, packet_len);
+	result = buf_setup_ddp(buf, 3, BUF_LONG_HEADER);
+
+	TEST_ASSERT(result);
+	TEST_ASSERT(DDP_DSTSOCK(buf) == 4);
+	TEST_ASSERT(DDP_DST(buf) == 135);
+	TEST_ASSERT(DDP_DSTNET(buf) == 12);
+	TEST_ASSERT(DDP_TYPE(buf) == 4);
+	freebuf(buf);
+	
+	// Long headers, delivered over Ethernet.  This is an NBP packet
+	packet="\t\000\a\377\377\377\000\f)\016\0245\000)\252\252\003\b\000\a\200\233\000!4G\000\000\000\004\377s\002\002\002!\001\000\004s\200\000\001=\001=\bEthernet\000\000\000\000\000";
+	packet_len = 60;
+	buf = buf_from_string(packet, 3, packet_len);
+	result = buf_setup_ddp(buf, sizeof(struct eth_hdr) + sizeof(snap_hdr_t) , BUF_LONG_HEADER);
+	
+	TEST_ASSERT(result);
+	TEST_ASSERT(DDP_SRC(buf) == 115);
+	TEST_ASSERT(DDP_SRCNET(buf) == 4);
+	TEST_ASSERT(DDP_DSTSOCK(buf) == 2);	
+	freebuf(buf);
 	
 	TEST_OK();
 }

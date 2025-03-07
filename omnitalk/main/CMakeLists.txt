@@ -4,6 +4,7 @@ set(srcs
 	"app/app.c"
 
 	"lap/llap/llap.c"
+	"lap/llap/llap_test.c"
 	"lap/sink/sink.c"
 	"lap/id.c"
 	"lap/lap.c"

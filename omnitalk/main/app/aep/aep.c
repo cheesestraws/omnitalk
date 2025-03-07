@@ -31,7 +31,9 @@ void app_aep_handler(buffer_t *packet) {
 		ESP_LOGI(TAG, "got unknown AEP function, ignoring");
 		goto cleanup;
 	}
-		
+	
+	printbuf_as_c_literal(packet);
+	
 	// Swap the src and dst addresses
 	
 	uint8_t srcaddr = DDP_SRC(packet);

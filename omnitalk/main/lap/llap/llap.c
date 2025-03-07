@@ -23,7 +23,7 @@
 
 static const char* TAG = "LLAP";
 
-static bool llap_extract_ddp_packet(buffer_t *buf) {
+bool llap_extract_ddp_packet(buffer_t *buf) {
 	llap_hdr_t *llap_hdr;
 
 	// Does the packet have room for an LLAP header?
@@ -32,33 +32,16 @@ static bool llap_extract_ddp_packet(buffer_t *buf) {
 	}
 	llap_hdr = (llap_hdr_t*)buf->data;
 	
-	// Yep - is it a ddp packet?
-	// For short headers, it's sizeof(ddp_short_header_t) not
-	// sizeof(llap_hdr_t) + sizeof(ddp_short_header_t) because
-	// the short ddp header subsumes the llap header entirely.
-	if (buf->length > sizeof(ddp_short_header_t) &&
-	    llap_hdr->llap_type == LLAP_TYPE_DDP_SHORT) {
-	    
-		buf->ddp_type = BUF_SHORT_HEADER;
-		buf->ddp_length = buf->length;
-		buf->ddp_capacity = buf->capacity;
-		buf->ddp_data = buf->data;
-		buf->ddp_payload = buf->ddp_data + sizeof(ddp_short_header_t);
-		buf->ddp_payload_length = buf->ddp_length - sizeof(ddp_short_header_t);
-	} else if (buf->length > sizeof(llap_hdr_t) + sizeof(ddp_long_header_t) &&
-	           llap_hdr->llap_type == LLAP_TYPE_DDP_LONG) {
-		buf->ddp_type = BUF_LONG_HEADER;
-		buf->ddp_length = buf->length - 3;
-		buf->ddp_capacity = buf->capacity - 3;
-		buf->ddp_data = buf->data + 3;
-		buf->ddp_payload = buf->ddp_data + sizeof(ddp_long_header_t);
-		buf->ddp_payload_length = buf->ddp_length - sizeof(ddp_long_header_t);
+	buffer_ddp_type_t buf_type;
+	if (llap_hdr->llap_type == LLAP_TYPE_DDP_SHORT) {
+		buf_type = BUF_SHORT_HEADER;
+	} else if (llap_hdr->llap_type == LLAP_TYPE_DDP_LONG) {
+		buf_type = BUF_LONG_HEADER;
 	} else {
 		return false;
 	}
 	
-	buf->ddp_ready = true;
-	return true;
+	return buf_setup_ddp(buf, 3, buf_type);
 }
 
 void llap_acquire_address(lap_t *lap) {
