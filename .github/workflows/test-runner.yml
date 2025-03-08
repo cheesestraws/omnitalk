@@ -13,5 +13,5 @@ jobs:
       with:
         submodules: 'recursive'
     - name: run tests
-      uses: cheesestraws/omnitalk_test_runner
+      uses: cheesestraws/omnitalk_test_runner@master
 
