@@ -1,8 +1,11 @@
 #include "test.h"
 
 #include <esp_log.h>
+#include <esp_system.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+
+#include "tunables.h"
 
 static const char* TAG = "test_main";
 
@@ -11,12 +14,14 @@ TEST_FUNCTION(test_tests) {
 }
 
 void real_test_ok(char* test_name) {
-	ESP_LOGI(test_name, "OK");
+	ESP_LOGI(TAG, "[TEST %s] OK", test_name);
 }
 
 void real_test_fail(char* test_name, char* msg) {
-	ESP_LOGE(test_name, "FAIL: %s", msg);
+	ESP_LOGE(TAG, "[TEST %s] FAIL: %s", test_name, msg);
+#ifndef TESTS_NO_HANG_ON_FAIL
 	vTaskDelay(portMAX_DELAY);
+#endif
 }
 
 void test_main(void) {
@@ -28,4 +33,8 @@ void test_main(void) {
 #include "test.inc"
 	
 	printf("\n\n\n");
+	
+#ifdef TESTS_REBOOT_AFTERWARDS
+	esp_restart();
+#endif
 }
