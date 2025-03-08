@@ -10,8 +10,11 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - name: run tests
+    - name: Run tests
       uses: cheesestraws/omnitalk_test_runner@master
       with:
         path: "omnitalk/"
-
+    - name: Test report
+      run: |
+        cd omnitalk/main
+        cat ${GITHUB_WORKSPACE}/run.log | perl report_on_tests.pl
