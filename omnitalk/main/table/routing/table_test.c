@@ -82,6 +82,65 @@ TEST_FUNCTION(test_routing_table_basics) {
 }
 
 TEST_FUNCTION(test_routing_table_distance_and_replacement) {
+	bool result;
+	rt_route_t out = { 0 };
+	rt_route_t in = { 0 };
+	rt_routing_table_t* table = rt_new();
+	
+	// Add an RTMP-learned route.
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &canary_lap_1,
+		.distance = 10,
+	};
+	rt_touch(table, in);
+	result = rt_lookup(table, 15, &out);
+	TEST_ASSERT(result);
+	TEST_ASSERT(out.outbound_lap == &canary_lap_1);
+	TEST_ASSERT(out.distance == 10);
+	TEST_ASSERT(rt_count(table) == 1);
+	
+	// If we change the distance, but leave the LAP and nexthop the same,
+	// then the route should be replaced and the count should not increase.
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &canary_lap_1,
+		.distance = 20,
+	};
+	rt_touch(table, in);
+	result = rt_lookup(table, 15, &out);
+	TEST_ASSERT(result);
+	TEST_ASSERT(out.outbound_lap == &canary_lap_1);
+	TEST_ASSERT(out.distance == 20);
+	TEST_ASSERT(rt_count(table) == 1);
+	
+	// But, if we add one with another LAP, the count should tick up
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &canary_lap_2,
+		.distance = 20,
+	};
+	rt_touch(table, in);
+	TEST_ASSERT(rt_count(table) == 2);
+	
+	// Now, if we prune the table a couple of times to give the old routes time
+	// to become bad, and re-touch the new one, we should get the new one returned
+	// and the old ones will fall out
+	rt_prune(table); 
+	rt_prune(table);
+	rt_touch(table, in);
+	result = rt_lookup(table, 15, &out);
+	TEST_ASSERT(result);
+	TEST_ASSERT(out.outbound_lap == &canary_lap_2);
+	TEST_ASSERT(out.distance == 20);
+	TEST_ASSERT(rt_count(table) == 2);
+	
+	rt_prune(table);
+	TEST_ASSERT(rt_count(table) == 1);
+
 	TEST_OK();
 }
 
