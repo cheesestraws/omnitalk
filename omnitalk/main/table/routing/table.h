@@ -16,3 +16,4 @@ bool rt_lookup(rt_routing_table_t* table, uint16_t network_number, rt_route_t *o
 void rt_prune(rt_routing_table_t* table);
 char* rt_stats(rt_routing_table_t* table);
 void rt_print(rt_routing_table_t* table);
+size_t rt_count(rt_routing_table_t* table);

@@ -363,3 +363,19 @@ char* rt_stats(rt_routing_table_t* table) {
 	xSemaphoreGive(table->mutex);
 	return strbuf;
 }
+
+size_t rt_count(rt_routing_table_t* table) {
+	size_t count = 0;
+	struct rt_node_s *curr;
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+
+	for (curr = &table->list; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		count++;
+	}
+
+	xSemaphoreGive(table->mutex);
+	return count;
+}
