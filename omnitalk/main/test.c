@@ -5,6 +5,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "test.inc.h"
 #include "tunables.h"
 
 static const char* TAG = "test_main";
