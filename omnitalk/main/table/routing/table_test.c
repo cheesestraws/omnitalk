@@ -224,6 +224,105 @@ TEST_FUNCTION(test_routing_table_aging) {
 	TEST_ASSERT(result);
 	TEST_ASSERT(out.outbound_lap == &canary_lap_2);
 	TEST_ASSERT(out.distance == 31);
-		
+	
+	TEST_OK();
+}
+
+static int touch_event_called = 0;
+static int delete_event_called = 0;
+static rt_route_t munged_route;
+
+static void test_touch_event_callback(void* route_ptr) {
+	touch_event_called++;
+	munged_route = *(rt_route_t*)route_ptr;
+}
+
+static void test_delete_event_callback(void* route_ptr) {
+	delete_event_called++;
+	munged_route = *(rt_route_t*)route_ptr;
+}
+
+
+TEST_FUNCTION(test_routing_table_events) {
+	rt_route_t in;
+	rt_routing_table_t* table = rt_new();
+	
+	// attach some quick callbacks
+	rt_attach_touch_callback(table, &test_touch_event_callback);
+	rt_attach_net_range_removed_callback(table, &test_delete_event_callback);
+
+
+	// direct routes should call callback	
+	rt_touch_direct(table, 1, 4, &canary_lap_1);
+	TEST_ASSERT(touch_event_called == 1);
+	TEST_ASSERT(delete_event_called == 0);
+
+	
+	// Add an RTMP-learned route.  Check callback called
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &canary_lap_2,
+		.distance = 10,
+	};
+	rt_touch(table, in);
+	TEST_ASSERT(touch_event_called == 2);
+	TEST_ASSERT(delete_event_called == 0);
+	TEST_ASSERT(rt_routes_equal(&in, &munged_route));
+	munged_route = (rt_route_t){ 0 };
+
+	// Wait for it to fall out of the table
+	rt_prune(table);
+	rt_prune(table);
+	rt_prune(table);
+	
+	// and verify that it has: 1 is our direct route from earlier
+	TEST_ASSERT(rt_count(table) == 1);
+	
+	// There will be no other route for this net range, so we should have fired the
+	// delete event.
+	TEST_ASSERT(touch_event_called == 2);
+	TEST_ASSERT(delete_event_called == 1);
+	// the route will have been demoted
+	in.distance = 31;
+	TEST_ASSERT(rt_routes_equal(&in, &munged_route));
+	
+	
+	// But if there's another route, we shouldn't fire the deleted net-range
+	// callback.  Let's add another RTMP route
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &canary_lap_2,
+		.distance = 10,
+	};
+	rt_touch(table, in);
+	
+	// Let it age to being suspect, then introduce a second route with a different LAP
+	// and distance
+	rt_prune(table);
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &canary_lap_3,
+		.distance = 20,
+	};
+	rt_touch(table, in);
+	
+	TEST_ASSERT(rt_count(table) == 3);
+	
+	// Now age out our first route.  No delete should fire.
+	rt_prune(table);
+	rt_prune(table);
+	TEST_ASSERT(rt_count(table) == 2);
+	TEST_ASSERT(delete_event_called == 1);
+	
+	// Then age out the second; only now should our delete fire
+	rt_prune(table);
+	TEST_ASSERT(rt_count(table) == 1);
+	TEST_ASSERT(delete_event_called == 2);
+	in.distance = 31;
+	TEST_ASSERT(rt_routes_equal(&in, &munged_route));
+
 	TEST_OK();
 }

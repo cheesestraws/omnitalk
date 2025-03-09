@@ -38,3 +38,5 @@ static inline bool rt_routes_match(rt_route_t *a, rt_route_t *b) {
 		a->nexthop.network == b->nexthop.network &&
 		a->nexthop.node == b->nexthop.node;
 }
+
+void rt_route_print(rt_route_t *a);

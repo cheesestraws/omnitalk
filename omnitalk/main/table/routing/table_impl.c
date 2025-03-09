@@ -10,6 +10,7 @@
 #include <freertos/semphr.h>
 
 #include "table/routing/route.h"
+#include "util/event/event.h"
 
 #define MICROSECONDS 1000000
 
@@ -107,6 +108,8 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 
 	new_node->next = curr;
 	prev->next = new_node;
+	
+	event_fire(&table->touch_event, &r);
 }
 
 void rt_touch(rt_routing_table_t* table, rt_route_t r) {
@@ -161,6 +164,14 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 	// candidate list.
 	struct rt_node_s *bad_node_list_head = NULL;
 	struct rt_node_s *bad_node_list_tail = NULL;
+	
+	// The "deleted list" is the list of routes that will be deleted from the routing
+	// table.
+	struct rt_node_s *deleted_node_list_head = NULL;
+	struct rt_node_s *deleted_node_list_tail = NULL;
+	
+	rt_route_t scratch_route;
+	rt_route_t deleted_route;
 
 	// Start at the top of the list
 	struct rt_node_s *prev = NULL;
@@ -174,7 +185,7 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 			goto next_item;
 		}
 		
-		bool deleted = false;
+		bool removed = false;
 		
 		switch (curr->status) {
 		case RT_DIRECT:
@@ -191,7 +202,7 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 			new_curr = curr->next;
 			prev->next = curr->next;
 			curr = new_curr;
-			deleted = true;
+			removed = true;
 			
 			// And instead add it to the bad route list
 			to_be_demoted->next = NULL;
@@ -208,15 +219,25 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 			curr->status = RT_SUSPECT;
 			break;
 		case RT_BAD:
+			struct rt_node_s *to_be_deleted = curr;
+		
 			new_curr = curr->next;
 			prev->next = curr->next;
-			free(curr);
 			curr = new_curr;
-			deleted = true;
+			removed = true;
+			
+			if (deleted_node_list_head == NULL) {
+				deleted_node_list_head = to_be_deleted;
+				deleted_node_list_tail = to_be_deleted;
+			} else {
+				deleted_node_list_tail->next = to_be_deleted;
+				deleted_node_list_tail = to_be_deleted;
+			}
+
 			break;
 		}
-		
-		if (deleted) {
+				
+		if (removed) {
 			// if we removed a node, we don't want to increase 'curr'.
 			continue;
 		}
@@ -229,6 +250,24 @@ static void rt_prune_unguarded(rt_routing_table_t* table) {
 	// Now we graft on the bad routes at the end
 	// prev will be the list tail
 	prev->next = bad_node_list_head;
+	
+	// Then iterate through the dead routes to see if we need to fire any delete
+	// events
+	curr = deleted_node_list_head;
+	while (curr != NULL) {
+		// if we deleted a route, we should check whether we have any other
+		// routes for that network range; if not, we should fire a 'network range
+		// deleted' event.  This is slow and we need to make it faster.
+		deleted_route = curr->route;
+		bool other_route_exists = rt_lookup_unguarded(table, deleted_route.range_start, &scratch_route);
+		if (!other_route_exists) {
+			event_fire(&table->network_range_deleted_event, &deleted_route);
+		}
+		
+		prev = curr;
+		curr = curr->next;
+		free(prev);
+	}
 }
 
 void rt_prune(rt_routing_table_t* table) {
@@ -238,18 +277,18 @@ void rt_prune(rt_routing_table_t* table) {
 }
 
 static char* rt_route_lap_name(rt_route_t *a) {
-	return a->outbound_lap != NULL ? a->outbound_lap->name : "NULL";
+	return a->outbound_lap != NULL && a->outbound_lap->name != NULL ? a->outbound_lap->name : "NULL";
 }
 
 static char* rt_route_lap_kind(rt_route_t *a) {
-	return a->outbound_lap != NULL ? a->outbound_lap->kind : "NULL";
+	return a->outbound_lap != NULL && a->outbound_lap->kind != NULL ? a->outbound_lap->kind : "NULL";
 }
 
 static char* rt_route_transport_name(rt_route_t *a) {
-	return a->outbound_lap != NULL && a->outbound_lap->transport != NULL ? a->outbound_lap->transport->kind : "NULL";
+	return a->outbound_lap != NULL && a->outbound_lap->transport != NULL && a->outbound_lap->transport->kind != NULL ? a->outbound_lap->transport->kind : "NULL";
 }
 
-static void rt_route_print(rt_route_t *a) {
+void rt_route_print(rt_route_t *a) {
 	printf("    net range %d - %d dist %d via %d.%d (%s -> %s) ",
 		(int)a->range_start, (int)a->range_end,
 		(int)a->distance,
@@ -378,4 +417,12 @@ size_t rt_count(rt_routing_table_t* table) {
 
 	xSemaphoreGive(table->mutex);
 	return count;
+}
+
+bool rt_attach_touch_callback(rt_routing_table_t* table, event_callback_t callback) {
+	return event_add_callback(&table->touch_event, callback);
+}
+
+bool rt_attach_net_range_removed_callback(rt_routing_table_t* table, event_callback_t callback) {
+	return event_add_callback(&table->network_range_deleted_event, callback);
 }

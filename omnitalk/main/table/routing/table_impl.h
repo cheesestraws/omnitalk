@@ -6,6 +6,7 @@
 #include <freertos/semphr.h>
 
 #include "table/routing/route.h"
+#include "util/event/event.h"
 
 // This file contains a really stupid routing table.  We can replace it with something
 // faster later if we need to.
@@ -48,4 +49,7 @@ typedef struct {
 	SemaphoreHandle_t mutex;
 	
 	struct rt_node_s list;
+	
+	event_t touch_event;
+	event_t network_range_deleted_event;
 } rt_routing_table_t;
