@@ -1,6 +1,8 @@
 #include "buffers_test.h"
 #include "buffers.h"
 
+#include <stdio.h>
+
 #include <lwip/prot/ethernet.h>
 
 #include "proto/ddp.h"
@@ -223,18 +225,18 @@ TEST_FUNCTION(test_buf_append) {
 	TEST_ASSERT(buffer->length == 50 + sizeof(ddp_long_header_t) + 3);
 	TEST_ASSERT(buffer->ddp_length == 50 + sizeof(ddp_long_header_t));
 	TEST_ASSERT(buffer->ddp_payload_length == 50);
-	
+		
 	// Adding another 50 should fail.
 	TEST_ASSERT(!buf_append_all(buffer, gibberish, 50));
 	TEST_ASSERT(buffer->length == 50 + sizeof(ddp_long_header_t) + 3);
 	TEST_ASSERT(buffer->ddp_length == 50 + sizeof(ddp_long_header_t));
 	TEST_ASSERT(buffer->ddp_payload_length == 50);
 	
-	// But adding 50 - sizeof(ddp_long_header_t) should be fine
-	TEST_ASSERT(buf_append_all(buffer, gibberish, 50 - sizeof(ddp_long_header_t)));
-	TEST_ASSERT(buffer->length == 103);
-	TEST_ASSERT(buffer->ddp_length == 100);
-	TEST_ASSERT(buffer->ddp_payload_length == 100 - sizeof(ddp_long_header_t));
+	// But adding 50 - sizeof(ddp_long_header_t) + 3 should be fine
+	TEST_ASSERT(buf_append_all(buffer, gibberish, 50 - (sizeof(ddp_long_header_t) + 3)));
+	TEST_ASSERT(buffer->length == 100);
+	TEST_ASSERT(buffer->ddp_length == 97);
+	TEST_ASSERT(buffer->ddp_payload_length == 97 - sizeof(ddp_long_header_t));
 	
 	freebuf(buffer);
 	

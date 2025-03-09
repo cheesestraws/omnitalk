@@ -136,6 +136,9 @@ void printbuf(buffer_t *buffer) {
 		printf("ddp ready\n");
 		printf("ddp @ %p length %d capacity %d\n", buffer->ddp_data,
 			buffer->ddp_length, buffer->ddp_capacity);
+		printf("ddp payload @ %p length %d capacity %d\n", buffer->ddp_payload,
+			buffer->ddp_payload_length, buffer->ddp_payload_capacity);
+
 	} else {
 		printf("ddp not ready.\n");
 	}
