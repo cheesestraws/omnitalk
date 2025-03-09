@@ -169,3 +169,75 @@ TEST_FUNCTION(test_buf_ddp_setup) {
 	
 	TEST_OK();
 }
+
+TEST_FUNCTION(test_buf_append) {
+	buffer_t *buffer;
+	bool result;
+	
+	buffer = newbuf(100, 0);
+	TEST_ASSERT(buffer->length == 0);
+	
+	// Append a single byte
+	result = buf_append(buffer, 'a');
+	TEST_ASSERT(result);
+	TEST_ASSERT(buffer->length == 1);
+	
+	// Reset the length and half-fill the packet with random gibberish
+	uint8_t *gibberish = malloc(100);
+	buffer->length = 0;
+	result = buf_append_all(buffer, gibberish, 50);
+	TEST_ASSERT(result);
+	TEST_ASSERT(buffer->length == 50);
+	
+	// Now if we try to add more than 50 more bytes it should fail
+	result = buf_append_all(buffer, gibberish, 51);
+	TEST_ASSERT(!result);
+	TEST_ASSERT(buffer->length == 50);
+
+	// But we can add 50 more, and the buffer will be full
+	result = buf_append_all(buffer, gibberish, 100);
+	TEST_ASSERT(result);
+	TEST_ASSERT(buffer->length == 100);
+	
+	// And even adding a single further byte should fail.
+	result = buf_append(buffer, 'a');
+	TEST_ASSERT(!result);
+	TEST_ASSERT(buffer->length == 100);
+
+	freebuf(buffer);
+	
+	// Now let's pretend we're doing DDP
+	buffer = newbuf(100, 3);
+	// Add a fake l2 header
+	TEST_ASSERT(buf_append_all(buffer, gibberish, 3));
+	// And a fake L3 header
+	TEST_ASSERT(buf_append_all(buffer, gibberish, sizeof(ddp_long_header_t)));
+	TEST_ASSERT(buf_setup_ddp(buffer, 3, BUF_LONG_HEADER));
+	
+	// And validate an assumption to avoid wild goose chases if we break buf_setup_ddp
+	TEST_ASSERT(buffer->ddp_length == sizeof(ddp_long_header_t));
+	TEST_ASSERT(buffer->ddp_payload_length == 0);
+	
+	// And append some gubbins.  The DDP details should be updated as well as the l2 ones
+	TEST_ASSERT(buf_append_all(buffer, gibberish, 50));
+	TEST_ASSERT(buffer->length == 50 + sizeof(ddp_long_header_t) + 3);
+	TEST_ASSERT(buffer->ddp_length == 50 + sizeof(ddp_long_header_t));
+	TEST_ASSERT(buffer->ddp_payload_length == 50);
+	
+	// Adding another 50 should fail.
+	TEST_ASSERT(!buf_append_all(buffer, gibberish, 50));
+	TEST_ASSERT(buffer->length == 50 + sizeof(ddp_long_header_t) + 3);
+	TEST_ASSERT(buffer->ddp_length == 50 + sizeof(ddp_long_header_t));
+	TEST_ASSERT(buffer->ddp_payload_length == 50);
+	
+	// But adding 50 - sizeof(ddp_long_header_t) should be fine
+	TEST_ASSERT(buf_append_all(buffer, gibberish, 50 - sizeof(ddp_long_header_t)));
+	TEST_ASSERT(buffer->length == 103);
+	TEST_ASSERT(buffer->ddp_length == 100);
+	TEST_ASSERT(buffer->ddp_payload_length == 100 - sizeof(ddp_long_header_t));
+	
+	freebuf(buffer);
+	
+	free(gibberish);
+	TEST_OK();
+}

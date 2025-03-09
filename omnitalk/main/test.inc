@@ -5,6 +5,7 @@ RUN_TEST(test_llap_extract_ddp_packet);
 RUN_TEST(test_newbuf);
 RUN_TEST(test_buf_l2hdr_shenanigans);
 RUN_TEST(test_buf_ddp_setup);
+RUN_TEST(test_buf_append);
 
 RUN_TEST(test_aarp_table);
 

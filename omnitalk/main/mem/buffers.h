@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "net/chain.h"
 
@@ -37,6 +38,7 @@ typedef struct buffer_s {
 	size_t ddp_capacity;
 	uint8_t* ddp_data;
 	size_t ddp_payload_length;
+	size_t ddp_payload_capacity;
 	uint8_t* ddp_payload;
 	
 	// Details about how we got this buffer.  Setting details in here is the
@@ -58,3 +60,30 @@ void printbuf_as_c_literal(buffer_t *buffer);
 void buf_trim_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
 void buf_give_me_extra_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
 void buf_set_l2_hdr_size(buffer_t *buffer, size_t bytes);
+
+static inline bool buf_append_all(buffer_t *buffer, uint8_t *data, size_t bytes) {
+	if (buffer == NULL || buffer->data == NULL) {
+		return false;
+	}
+	
+	// Do we have room for this?
+	if (buffer->length + bytes > buffer->capacity) {
+		return false;
+	}
+	
+	// Yes, so work out where to put it
+	uint8_t* insert_at = buffer->data + buffer->length;
+	memcpy(insert_at, data, bytes);
+	
+	buffer->length += bytes;
+	if (buffer->ddp_ready) {
+		buffer->ddp_length += bytes;
+		buffer->ddp_payload_length += bytes;
+	}
+	
+	return true;
+}
+
+static inline bool buf_append(buffer_t *buffer, uint8_t byte) {
+	return buf_append_all(buffer, &byte, 1);
+}

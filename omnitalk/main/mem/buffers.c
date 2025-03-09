@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #include <lwip/prot/ethernet.h>
 
@@ -93,6 +93,7 @@ bool buf_setup_ddp(buffer_t *buf, size_t l2_hdr_len, buffer_ddp_type_t ddp_heade
 		buf->ddp_data = buf->data;
 		buf->ddp_payload = buf->ddp_data + sizeof(ddp_short_header_t);
 		buf->ddp_payload_length = buf->ddp_length - sizeof(ddp_short_header_t);
+		buf->ddp_payload_capacity = buf->ddp_capacity - sizeof(ddp_short_header_t);
 	} else if (buf->length > l2_hdr_len + sizeof(ddp_long_header_t) &&
 	           ddp_header_type == BUF_LONG_HEADER) {
 		buf->ddp_type = BUF_LONG_HEADER;
@@ -101,6 +102,7 @@ bool buf_setup_ddp(buffer_t *buf, size_t l2_hdr_len, buffer_ddp_type_t ddp_heade
 		buf->ddp_data = buf->data + l2_hdr_len;
 		buf->ddp_payload = buf->ddp_data + sizeof(ddp_long_header_t);
 		buf->ddp_payload_length = buf->ddp_length - sizeof(ddp_long_header_t);
+		buf->ddp_payload_capacity = buf->ddp_capacity - sizeof(ddp_long_header_t);
 	} else {
 		return false;
 	}
