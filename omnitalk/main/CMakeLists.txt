@@ -24,6 +24,7 @@ set(srcs
 	"net/net.c"
 	"net/transport.c"
 	
+	"proto/ddp_test.c"
 	"proto/rtmp.c"
 	
 	"table/aarp/table.c"

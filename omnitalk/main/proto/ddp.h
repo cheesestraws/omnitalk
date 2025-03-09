@@ -9,6 +9,7 @@
 #include "mem/buffers.h"
 
 #define DDP_ADDR_BROADCAST 0xFF
+#define DDP_MAX_PAYLOAD_LEN 586 // Inside Appletalk 2 ed. p. 4-15, 4-16
 
 #define DDP_SOCKET_RTMP 1
 
@@ -101,6 +102,21 @@ static inline void ddp_clear_checksum(buffer_t *buf) {
 	if (buf->ddp_type == BUF_LONG_HEADER) {
 		((ddp_long_header_t*)(buf->ddp_data))->ddp_checksum = 0;
 	}
+}
+
+static inline bool ddp_append_all(buffer_t *buf, uint8_t *data, size_t count) {
+	if (!buf->ddp_ready) {
+		return false;
+	}
+	
+	if (buf->ddp_payload_length + count > DDP_MAX_PAYLOAD_LEN) {
+		return false;
+	}
+	return buf_append_all(buf, data, count);
+}
+
+static inline bool ddp_append(buffer_t *buf, uint8_t data) {
+	return ddp_append_all(buf, &data, 1);
 }
 
 static inline bool ddp_packet_is_mine(lap_t *lap, buffer_t *packet) {		

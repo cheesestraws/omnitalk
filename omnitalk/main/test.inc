@@ -7,6 +7,8 @@ RUN_TEST(test_buf_l2hdr_shenanigans);
 RUN_TEST(test_buf_ddp_setup);
 RUN_TEST(test_buf_append);
 
+RUN_TEST(test_ddp_append);
+
 RUN_TEST(test_aarp_table);
 
 RUN_TEST(test_routing_table_basics);

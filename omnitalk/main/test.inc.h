@@ -4,6 +4,8 @@
 
 #include "mem/buffers_test.h"
 
+#include "proto/ddp_test.h"
+
 #include "table/aarp/table_test.h"
 
 #include "table/routing/table_test.h"
