@@ -195,7 +195,7 @@ TEST_FUNCTION(test_buf_append) {
 	TEST_ASSERT(buffer->length == 50);
 
 	// But we can add 50 more, and the buffer will be full
-	result = buf_append_all(buffer, gibberish, 100);
+	result = buf_append_all(buffer, gibberish, 50);
 	TEST_ASSERT(result);
 	TEST_ASSERT(buffer->length == 100);
 	
