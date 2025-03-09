@@ -12,3 +12,5 @@
 
 #include "test.h"
 
+#include "util/event/event_test.h"
+

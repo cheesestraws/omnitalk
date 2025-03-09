@@ -17,3 +17,6 @@ RUN_TEST(test_routing_table_aging);
 
 RUN_TEST(test_tests);
 
+RUN_TEST(test_event_add_callback);
+RUN_TEST(test_event_fire);
+

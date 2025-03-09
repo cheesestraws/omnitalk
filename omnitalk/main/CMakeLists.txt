@@ -32,6 +32,8 @@ set(srcs
 	"table/routing/table_impl.c"
 	"table/routing/table_test.c"
 	
+	"util/event/event.c"
+	"util/event/event_test.c"
 	"util/crc.c"
 	"util/crc32.c"
 
