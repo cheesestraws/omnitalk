@@ -29,10 +29,7 @@ tashtalk_rx_state_t* new_tashtalk_rx_state(QueueHandle_t output_queue) {
 }
 
 static void append(buffer_t* packet, unsigned char byte) {
-	if (packet->length < packet->capacity) {
-		packet->data[packet->length] = byte;
-		packet->length++;
-	} else {
+	if (!buf_append(packet, byte)) {
 		ESP_LOGE(TAG, "buffer overflow in packet");
 		stats.transport_in_errors__transport_localtalk__err_frame_too_long++;
 	}
