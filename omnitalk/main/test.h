@@ -7,7 +7,7 @@ typedef int test_must_ok_or_fail_t;
 #define RUN_TEST(X) X(#X)
 #define TEST_OK() real_test_ok(_test_name); return 0
 #define TEST_FAIL(MSG) real_test_fail(_test_name, MSG); return 0
-#define TEST_ASSERT(COND) {if (!(COND)) { real_test_fail(_test_name, "assertion failed: " #COND " (" __FILE__ ":" TEST_WRAPNUM(__LINE__) ")"); }}
+#define TEST_ASSERT(COND) {if (!(COND)) { real_test_fail(_test_name, "assertion failed: " #COND " (" __FILE__ ":" TEST_WRAPNUM(__LINE__) ")"); return 0; }}
 
 #define TEST_WRAPNUM(X) TEST_WRAPNUM2(X)
 #define TEST_WRAPNUM2(X) #X
