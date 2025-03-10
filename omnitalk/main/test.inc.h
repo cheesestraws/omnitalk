@@ -10,6 +10,8 @@
 
 #include "table/routing/table_test.h"
 
+#include "table/zip/table_test.h"
+
 #include "test.h"
 
 #include "util/event/event_test.h"

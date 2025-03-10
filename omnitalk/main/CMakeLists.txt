@@ -1,6 +1,7 @@
 set(srcs
 	"app/aep/aep.c"
 	"app/rtmp/rtmp.c"
+	"app/zip/zip.c"
 	"app/app.c"
 
 	"lap/llap/llap.c"
@@ -31,6 +32,8 @@ set(srcs
 	"table/aarp/table_test.c"
 	"table/routing/table_impl.c"
 	"table/routing/table_test.c"
+	"table/zip/table_impl.c"
+	"table/zip/table_test.c"
 	
 	"util/event/event.c"
 	"util/event/event_test.c"

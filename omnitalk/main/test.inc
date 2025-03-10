@@ -16,6 +16,8 @@ RUN_TEST(test_routing_table_distance_and_replacement);
 RUN_TEST(test_routing_table_aging);
 RUN_TEST(test_routing_table_events);
 
+RUN_TEST(test_zip_table_networks);
+
 RUN_TEST(test_tests);
 
 RUN_TEST(test_event_add_callback);
