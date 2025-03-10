@@ -2,10 +2,12 @@
 
 #include "app/aep/aep.h"
 #include "app/rtmp/rtmp.h"
+#include "app/zip/zip.h"
 
 app_t unicast_apps[] = {
 	{ .socket_number = 1, .name = "app/rtmp", .handler = &app_rtmp_handler, .idle = &app_rtmp_idle, .start = &app_rtmp_start },
 	{ .socket_number = 4, .handler = &app_aep_handler },
+	{ .socket_number = 6, .name = "app/zip", .handler = &app_zip_handler, .idle = &app_zip_idle },
 	{ .socket_number = 0, .handler = NULL }
 };
 
