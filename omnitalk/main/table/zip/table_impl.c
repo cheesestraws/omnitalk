@@ -58,7 +58,7 @@ bool zt_contains_net(zt_zip_table_t *table, uint16_t network) {
 	return found;
 }
 
-bool zt_add_net_range_unguarded(zt_zip_table_t *table, uint16_t net_start, uint16_t net_end) {
+static bool zt_add_net_range_unguarded(zt_zip_table_t *table, uint16_t net_start, uint16_t net_end) {
 	struct zip_network_node_s* curr;
 	struct zip_network_node_s* prev = NULL;
 	
@@ -99,6 +99,49 @@ bool zt_add_net_range(zt_zip_table_t *table, uint16_t net_start, uint16_t net_en
 	xSemaphoreGive(table->mutex);
 
 	return result;
+}
+
+static void free_all_zones_for(struct zip_network_node_s* n) {
+	struct zip_zone_node_s *curr = n->root.next;
+	while (curr != NULL) {
+		assert(false); // FIX THIS LATER
+	}
+}
+
+static bool zt_delete_network_unguarded(zt_zip_table_t *table, uint16_t network) {
+	bool deleted = false;
+	struct zip_network_node_s* curr;
+	struct zip_network_node_s* prev = NULL;
+
+	for (curr = &table->root; curr != NULL; prev = curr, curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		if (curr->net_start <= network && curr->net_end >= network) {
+			free_all_zones_for(curr);
+			prev->next = curr->next;
+			free(curr);
+			deleted = true;
+		}
+
+		if (curr->net_start > network) {
+			break;
+		}
+	}
+	
+	return deleted;
+}
+
+bool zt_delete_network(zt_zip_table_t *table, uint16_t network) {
+	bool result;
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	result = zt_delete_network_unguarded(table, network);
+	
+	xSemaphoreGive(table->mutex);
+	return result;
+
 }
 
 void zt_print(zt_zip_table_t *table) {
