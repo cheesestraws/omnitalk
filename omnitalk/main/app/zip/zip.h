@@ -4,3 +4,4 @@
 
 void app_zip_handler(buffer_t *packet);
 void app_zip_idle(void*);
+void app_zip_start(void);

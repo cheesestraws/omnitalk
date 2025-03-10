@@ -7,6 +7,7 @@
 
 #include "table/routing/route.h"
 #include "table/routing/table.h"
+#include "table/zip/table.h"
 #include "global_state.h"
 
 const static char* TAG = "ZIP";
@@ -62,10 +63,18 @@ void app_zip_idle(void*) {
 		xQueueReceive(zip_cmd_queue, &cmd, portMAX_DELAY);
 		switch (cmd->cmd) {
 			case ZIP_NETWORK_TOUCHED:
+				zt_add_net_range(global_zip_table, cmd->route.range_start, cmd->route.range_end);
+				printf("zip table:\n"); zt_print(global_zip_table);
 				break;
 			case ZIP_NETWORK_DELETED:
+				zt_delete_network(global_zip_table, cmd->route.range_start);
+				printf("zip table:\n"); zt_print(global_zip_table);
 				break;
 		}
 		free(cmd);
 	}
+}
+
+void app_zip_start(void) {
+	global_zip_table = zt_new();
 }
