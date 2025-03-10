@@ -23,11 +23,39 @@ size_t zt_count_net_ranges(zt_zip_table_t *table) {
 	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
 	
 	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
 		count++;
 	}
 	
 	xSemaphoreGive(table->mutex);
 	return count;
+}
+
+bool zt_contains_net(zt_zip_table_t *table, uint16_t network) {
+	bool found = false;
+	struct zip_network_node_s* curr;
+	
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+	
+		if (curr->net_start <= network && curr->net_end >= network) {
+			found = true;
+			break;
+		}
+		if (curr->net_start > network) {
+			break;
+		}
+	}
+	
+	xSemaphoreGive(table->mutex);
+	return found;
 }
 
 bool zt_add_net_range_unguarded(zt_zip_table_t *table, uint16_t net_start, uint16_t net_end) {
@@ -71,4 +99,21 @@ bool zt_add_net_range(zt_zip_table_t *table, uint16_t net_start, uint16_t net_en
 	xSemaphoreGive(table->mutex);
 
 	return result;
+}
+
+void zt_print(zt_zip_table_t *table) {
+	struct zip_network_node_s* curr;
+
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		printf("net %d - %d\n", curr->net_start, curr->net_end);
+	}
+
+	
+	xSemaphoreGive(table->mutex);
 }
