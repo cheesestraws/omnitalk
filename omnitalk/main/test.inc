@@ -9,6 +9,8 @@ RUN_TEST(test_buf_append);
 
 RUN_TEST(test_ddp_append);
 
+RUN_TEST(test_zip_qry_creation);
+
 RUN_TEST(test_aarp_table);
 
 RUN_TEST(test_routing_table_basics);

@@ -27,6 +27,7 @@ set(srcs
 	
 	"proto/ddp_test.c"
 	"proto/rtmp.c"
+	"proto/zip_test.c"
 	
 	"table/aarp/table.c"
 	"table/aarp/table_test.c"
