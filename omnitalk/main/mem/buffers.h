@@ -50,7 +50,8 @@ typedef struct buffer_s {
 	
 } buffer_t;
 
-buffer_t *newbuf(size_t length, size_t l2_hdr_len);
+buffer_t *newbuf(size_t data_capacity, size_t l2_hdr_len);
+buffer_t *newbuf_ddp();
 void freebuf(buffer_t *buffer_t);
 buffer_t *wrapbuf(void* data, size_t length);
 bool buf_setup_ddp(buffer_t *buf, size_t l2_hdr_len, buffer_ddp_type_t ddp_header_type);

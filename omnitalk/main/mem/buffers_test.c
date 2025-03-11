@@ -48,6 +48,14 @@ TEST_FUNCTION(test_newbuf) {
 	offset = buf->data - buf->mem_top;
 	TEST_ASSERT(offset >= ((sizeof(struct eth_hdr) + sizeof(snap_hdr_t)) - 3));
 	freebuf(buf);
+	
+	// We should be able to create an empty buffer for DDP use
+	buf = newbuf_ddp();
+	// Make sure we have room for a DDP header
+	TEST_ASSERT(DDP_BODY(buf) - buf->ddp_data == sizeof(ddp_long_header_t));
+	buf_set_l2_hdr_size(buf, sizeof(struct eth_hdr) + sizeof(snap_hdr_t));
+	// This will have failed assert() if there's no room for the header
+	freebuf(buf);
 
 	TEST_OK();
 }

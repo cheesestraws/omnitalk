@@ -9,6 +9,7 @@
 
 #include <lwip/prot/ethernet.h>
 
+#include "net/common.h"
 #include "proto/ddp.h"
 #include "proto/SNAP.h"
 
@@ -26,6 +27,13 @@ buffer_t *newbuf(size_t data_capacity, size_t l2_hdr_len) {
 	buff->mem_capacity = data_capacity;
 	buff->capacity = data_capacity;
 	
+	return buff;
+}
+
+buffer_t *newbuf_ddp() {
+	buffer_t *buff = newbuf(1500, 0);
+	buff->length = sizeof(ddp_long_header_t); // space for DDP header
+	buf_setup_ddp(buff, 0, BUF_LONG_HEADER);
 	return buff;
 }
 
