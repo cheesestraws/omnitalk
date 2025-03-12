@@ -119,6 +119,14 @@ bool buf_setup_ddp(buffer_t *buf, size_t l2_hdr_len, buffer_ddp_type_t ddp_heade
 	return true;
 }
 
+void buf_set_lengths_from_ddp_payload_length(buffer_t *buffer) {
+	size_t ddp_hdr_len = buffer->ddp_payload - buffer->ddp_data;
+	size_t l2_hdr_len = buffer->ddp_data - buffer->data;
+	
+	buffer->ddp_length = buffer->ddp_payload_length + ddp_hdr_len;
+	buffer->length = buffer->ddp_length + l2_hdr_len;
+}
+
 void printbuf(buffer_t *buffer) {
 	printf("buffer @ %p (data @ %p) length %d capacity %d\n", buffer, 
 		buffer->data, buffer->length, buffer->capacity);

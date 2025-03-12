@@ -58,6 +58,8 @@ bool buf_setup_ddp(buffer_t *buf, size_t l2_hdr_len, buffer_ddp_type_t ddp_heade
 void printbuf(buffer_t *buffer);
 void printbuf_as_c_literal(buffer_t *buffer);
 
+void buf_set_lengths_from_ddp_payload_length(buffer_t *buffer);
+
 void buf_trim_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
 void buf_give_me_extra_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
 void buf_set_l2_hdr_size(buffer_t *buffer, size_t bytes);
