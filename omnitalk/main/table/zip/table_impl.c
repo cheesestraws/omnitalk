@@ -16,6 +16,22 @@ zt_zip_table_t* zt_new() {
 	return table;
 }
 
+static struct zip_network_node_s* zt_lookup_unguarded(zt_zip_table_t *table, uint16_t network) {
+	struct zip_network_node_s* curr;
+
+	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+	
+		if (curr->net_start <= network && curr->net_end >= network) {
+			return curr;
+		}
+	}
+	
+	return NULL;
+}
+
 size_t zt_count_net_ranges(zt_zip_table_t *table) {
 	size_t count = 0;
 	struct zip_network_node_s* curr;
@@ -142,6 +158,28 @@ bool zt_delete_network(zt_zip_table_t *table, uint16_t network) {
 	xSemaphoreGive(table->mutex);
 	return result;
 
+}
+
+bool zt_get_network_complete(zt_zip_table_t *table, uint16_t network) {
+	struct zip_network_node_s *node;
+	bool complete;
+	
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	node = zt_lookup_unguarded(table, network);
+	if (node == NULL) {
+		// We return true if the network isn't in the table; this is really
+		// going to be a bug, but if we return false here, we'll generate unnecessary
+		// ZIP traffic in the presence of such a bug, which might effectively DoS
+		// the network.  Let's not do that.  It's rude.
+		complete = true;
+	} else {
+		complete = node->complete;
+	}
+	
+	
+	xSemaphoreGive(table->mutex);
+	return complete;	
 }
 
 void zt_print(zt_zip_table_t *table) {

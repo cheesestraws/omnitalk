@@ -14,6 +14,8 @@ bool zt_add_net_range(zt_zip_table_t *table, uint16_t net_start, uint16_t net_en
 // Delete a network range from the ZIP table.
 bool zt_delete_network(zt_zip_table_t *table, uint16_t network);
 
+bool zt_get_network_complete(zt_zip_table_t *table, uint16_t network);
+
 // Add a zone for the given network.  Copies 'zone'.
 void zt_add_zone_for(zt_zip_table_t *table, uint16_t network, char* zone);
 

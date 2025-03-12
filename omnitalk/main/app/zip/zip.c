@@ -5,6 +5,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
+#include "proto/zip.h"
 #include "table/routing/route.h"
 #include "table/routing/table.h"
 #include "table/zip/table.h"
@@ -50,6 +51,28 @@ static void network_deleted_callback(void* param) {
 	xQueueSendToBack(zip_cmd_queue, &cmd, 0);
 }
 
+static void zip_send_requests_if_necessary(rt_route_t *route) {
+	buffer_t *buff;
+
+	if (!zt_contains_net(global_zip_table, route->range_start)) {
+		ESP_LOGE(TAG, "saw network %d but this isn't in the ZIP table; probably a bug", route->range_start);
+		return;
+	}
+	
+	if (zt_get_network_complete(global_zip_table, route->range_start)) {
+		// We've already got the zones for this network, ignore this.
+		return;
+	}
+	
+	// This is a network we don't have all the zones for yet, let's ask for them
+	buff = newbuf_ddp();
+	zip_qry_setup_packet(buff, 1);
+	zip_qry_set_network(buff, 0, route->range_start);
+	
+	// todo: send packet here
+	freebuf(buff);
+}
+
 void app_zip_idle(void*) {
 	zip_internal_command_t* cmd;
 	
@@ -64,6 +87,7 @@ void app_zip_idle(void*) {
 		switch (cmd->cmd) {
 			case ZIP_NETWORK_TOUCHED:
 				zt_add_net_range(global_zip_table, cmd->route.range_start, cmd->route.range_end);
+				zip_send_requests_if_necessary(&cmd->route);
 				printf("zip table:\n"); zt_print(global_zip_table);
 				break;
 			case ZIP_NETWORK_DELETED:
