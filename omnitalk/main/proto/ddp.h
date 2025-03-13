@@ -12,6 +12,7 @@
 #define DDP_MAX_PAYLOAD_LEN 586 // Inside Appletalk 2 ed. p. 4-15, 4-16
 
 #define DDP_SOCKET_RTMP 1
+#define DDP_SOCKET_ZIP 6
 
 struct ddp_short_header_s {
 	uint8_t dst;
@@ -98,9 +99,28 @@ static inline void ddp_set_srcsock(buffer_t *buf, uint8_t newsrcsock) {
 	}
 }
 
+static inline void ddp_set_ddptype(buffer_t *buf, uint8_t newtype) {
+	if (buf->ddp_type == BUF_SHORT_HEADER) {
+		((ddp_short_header_t*)(buf->ddp_data))->ddp_type = newtype;
+	} else {
+		((ddp_long_header_t*)(buf->ddp_data))->ddp_type = newtype;
+	}
+}
+
 static inline void ddp_clear_checksum(buffer_t *buf) {
 	if (buf->ddp_type == BUF_LONG_HEADER) {
 		((ddp_long_header_t*)(buf->ddp_data))->ddp_checksum = 0;
+	}
+}
+
+static inline void ddp_set_datagram_length(buffer_t *buf, uint16_t length) {
+	if (buf->ddp_type == BUF_SHORT_HEADER) {
+		((ddp_short_header_t*)(buf->ddp_data))->datagram_length = length & 0x3ff;
+	} else {
+		// preserve hop count
+		uint16_t hop_count_and_length = ((ddp_long_header_t*)(buf->ddp_data))->hop_count_and_datagram_length;
+		uint16_t upper_bits = hop_count_and_length & 0xfc00;
+		((ddp_long_header_t*)(buf->ddp_data))->hop_count_and_datagram_length = upper_bits | (length & 0x3ff);
 	}
 }
 

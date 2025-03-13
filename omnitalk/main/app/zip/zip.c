@@ -9,6 +9,7 @@
 #include "table/routing/route.h"
 #include "table/routing/table.h"
 #include "table/zip/table.h"
+#include "ddp_send.h"
 #include "global_state.h"
 
 const static char* TAG = "ZIP";
@@ -69,8 +70,22 @@ static void zip_send_requests_if_necessary(rt_route_t *route) {
 	zip_qry_setup_packet(buff, 1);
 	zip_qry_set_network(buff, 0, route->range_start);
 	
-	// todo: send packet here
-	freebuf(buff);
+	// If the route is a direct route, we need to send this as a broadcast
+	// via the LAP it came in on.
+	bool buffer_no_longer_our_problem;
+	if (route->distance == 0) {
+		buffer_no_longer_our_problem = ddp_send_via(buff, DDP_SOCKET_ZIP,
+			0, 255, DDP_SOCKET_ZIP, 6, route->outbound_lap);
+	} else {
+		// If it's a distant route, we send this as a unicast to the corresponding
+		// nexthop.
+		buffer_no_longer_our_problem = ddp_send(buff, DDP_SOCKET_ZIP,
+			route->nexthop.network, route->nexthop.node, DDP_SOCKET_ZIP, 6);
+	}
+	
+	if (!buffer_no_longer_our_problem) {
+		freebuf(buff);
+	}
 }
 
 void app_zip_idle(void*) {
