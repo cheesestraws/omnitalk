@@ -115,12 +115,12 @@ static inline void ddp_clear_checksum(buffer_t *buf) {
 
 static inline void ddp_set_datagram_length(buffer_t *buf, uint16_t length) {
 	if (buf->ddp_type == BUF_SHORT_HEADER) {
-		((ddp_short_header_t*)(buf->ddp_data))->datagram_length = length & 0x3ff;
+		((ddp_short_header_t*)(buf->ddp_data))->datagram_length = htons(length & 0x3ff);
 	} else {
 		// preserve hop count
-		uint16_t hop_count_and_length = ((ddp_long_header_t*)(buf->ddp_data))->hop_count_and_datagram_length;
+		uint16_t hop_count_and_length = ntohs(((ddp_long_header_t*)(buf->ddp_data))->hop_count_and_datagram_length);
 		uint16_t upper_bits = hop_count_and_length & 0xfc00;
-		((ddp_long_header_t*)(buf->ddp_data))->hop_count_and_datagram_length = upper_bits | (length & 0x3ff);
+		((ddp_long_header_t*)(buf->ddp_data))->hop_count_and_datagram_length = htons(upper_bits | (length & 0x3ff));
 	}
 }
 
