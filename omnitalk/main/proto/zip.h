@@ -7,6 +7,7 @@
 
 #include "mem/buffers.h"
 #include "proto/ddp.h"
+#include "util/pstring.h"
 
 struct zip_query_packet_s {
 	uint8_t always_one;
@@ -50,3 +51,32 @@ static inline uint16_t zip_qry_get_network(buffer_t* buff, int idx) {
 	
 	return ntohs(packet->networks[idx]);
 }
+
+#define ZIP_REPLY 2
+#define ZIP_EXTENDED_REPLY 8
+
+struct zip_reply_packet_s {
+	uint8_t reply_type;
+	uint8_t network_count;
+	uint8_t zones[];
+} __attribute__((packed));
+
+typedef struct zip_reply_packet_s zip_reply_packet_t;
+
+static inline uint8_t* zip_reply_get_zones(buffer_t *buff) {
+	zip_reply_packet_t *packet = (zip_reply_packet_t*)(DDP_BODY(buff));
+	return &packet->zones[0];
+}
+
+struct zip_zone_tuple_s {
+	uint16_t network;
+	pstring zone_name;
+} __attribute__((packed));
+
+
+
+typedef struct zip_zone_tuple_s zip_zone_tuple_t;
+
+zip_zone_tuple_t* zip_reply_get_first_tuple(buffer_t *packet);
+zip_zone_tuple_t* zip_reply_get_next_tuple(buffer_t *packet, zip_zone_tuple_t* prev_tuple);
+

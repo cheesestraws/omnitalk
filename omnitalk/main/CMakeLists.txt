@@ -27,6 +27,7 @@ set(srcs
 	
 	"proto/ddp_test.c"
 	"proto/rtmp.c"
+	"proto/zip.c"
 	"proto/zip_test.c"
 	
 	"table/aarp/table.c"
@@ -40,6 +41,7 @@ set(srcs
 	"util/event/event_test.c"
 	"util/crc.c"
 	"util/crc32.c"
+	"util/pstring.c"
 
 	"web/stats.c"
 	"web/stats_memory.c"
