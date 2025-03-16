@@ -42,6 +42,7 @@ set(srcs
 	"util/crc.c"
 	"util/crc32.c"
 	"util/pstring.c"
+	"util/string.c"
 
 	"web/stats.c"
 	"web/stats_memory.c"

@@ -2,9 +2,12 @@
 #include "table/zip/table_impl.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
+
+#include "util/string.h"
 
 zt_zip_table_t* zt_new() {
 	zt_zip_table_t* table = calloc(1, sizeof(zt_zip_table_t));
@@ -119,8 +122,13 @@ bool zt_add_net_range(zt_zip_table_t *table, uint16_t net_start, uint16_t net_en
 
 static void free_all_zones_for(struct zip_network_node_s* n) {
 	struct zip_zone_node_s *curr = n->root.next;
+	struct zip_zone_node_s *to_be_deleted = NULL;
 	while (curr != NULL) {
-		assert(false); // FIX THIS LATER
+		to_be_deleted = curr;
+		curr = curr->next;
+		
+		free(to_be_deleted->zone_name);
+		free(to_be_deleted);
 	}
 }
 
@@ -180,6 +188,102 @@ bool zt_get_network_complete(zt_zip_table_t *table, uint16_t network) {
 	
 	xSemaphoreGive(table->mutex);
 	return complete;	
+}
+
+static void zt_add_zone_for_unguarded(zt_zip_table_t *table, uint16_t network, char* zone) {
+	struct zip_network_node_s* net_node = zt_lookup_unguarded(table, network);
+	if (net_node == NULL) {
+		return;
+	}
+	
+	struct zip_zone_node_s *prev = NULL;
+	struct zip_zone_node_s *curr;
+	// Iterate through the zonelist to see if we've found it
+	for(curr = &net_node->root; curr != NULL; prev = curr, curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+	
+		int cmp = strcmp(curr->zone_name, zone);
+		
+		// Is this zone name already in the zonelist?
+		if (cmp == 0) {
+			// Yes, return, leaving the zonelist untouched
+			return;
+		}
+		
+		if (cmp > 0) {
+			// We've reached a string later in lexical order than the zone name;
+			// we know it's not going to be here now.
+			break;
+		}
+	}
+	
+	// This should be impossible, but let's not bugger the heap if prev is unset
+	if (prev == NULL) { 
+		return;
+	}
+	
+	// If we reach here, we didn't find the zone, and prev will point to where we
+	// ought to put it.
+	char* new_zone_name = NULL;
+	struct zip_zone_node_s *new_node = calloc(1, sizeof(*new_node));
+	if (new_node == NULL) {
+		goto cleanup;
+	}
+	
+	new_zone_name = strclone(zone);
+	if (new_zone_name == NULL) {
+		goto cleanup;
+	}
+	
+	new_node->zone_name = new_zone_name;
+	new_node->next = curr;
+	prev->next = new_node;
+	
+	return;
+	
+cleanup:
+	if (new_node != NULL) {
+		free(new_node);
+	}
+	
+	if (new_zone_name != NULL) {
+		free(new_zone_name);
+	}
+}
+
+
+void zt_add_zone_for(zt_zip_table_t *table, uint16_t network, char* zone) {
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	zt_add_zone_for_unguarded(table, network, zone);
+	
+	xSemaphoreGive(table->mutex);
+}
+
+size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network) {
+	size_t count = 0;
+	
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	struct zip_network_node_s* net_node = zt_lookup_unguarded(table, network);
+	if (net_node == NULL) {
+		return 0;
+	}
+	
+	struct zip_zone_node_s *curr;
+	for(curr = &net_node->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		count++;
+	}
+	
+	xSemaphoreGive(table->mutex);
+	
+	return count;
 }
 
 void zt_print(zt_zip_table_t *table) {

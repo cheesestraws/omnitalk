@@ -20,6 +20,7 @@ RUN_TEST(test_routing_table_aging);
 RUN_TEST(test_routing_table_events);
 
 RUN_TEST(test_zip_table_networks);
+RUN_TEST(test_zip_table_zones);
 
 RUN_TEST(test_tests);
 

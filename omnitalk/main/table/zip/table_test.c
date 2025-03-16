@@ -75,3 +75,69 @@ TEST_FUNCTION(test_zip_table_networks) {
 
 	TEST_OK();
 }
+
+TEST_FUNCTION(test_zip_table_zones) {
+	long old_allocs;
+	long old_frees;
+	zt_zip_table_t* table = zt_new();
+	
+	TEST_ASSERT(zt_add_net_range(table, 5, 10));
+	
+	old_allocs = stats.mem_all_allocs;
+	
+	// Add a zone and check it got added
+	zt_add_zone_for(table, 5, "Zone1");
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 1);
+	
+	// Trying to add the same zone again shouldn't increase counter
+	zt_add_zone_for(table, 5, "Zone1");
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 1);
+	
+	zt_add_zone_for(table, 5, "Zone2");
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 2);
+
+	zt_add_zone_for(table, 5, "Zone3");
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
+
+	zt_add_zone_for(table, 5, "Zone3");
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
+
+	zt_add_zone_for(table, 5, "Zone2");
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
+
+	zt_add_zone_for(table, 5, "Zone1");
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
+	
+	// We've added three zones, so we should have allocated six times
+	TEST_ASSERT(stats.mem_all_allocs - old_allocs == 6);
+	
+	// Adding another network range should be independent
+	TEST_ASSERT(zt_add_net_range(table, 20, 30));
+	
+	old_allocs = stats.mem_all_allocs;
+	
+	zt_add_zone_for(table, 25, "1enoZ");
+	TEST_ASSERT(zt_count_zones_for(table, 25) == 1);
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
+	
+	zt_add_zone_for(table, 25, "2enoZ");
+	TEST_ASSERT(zt_count_zones_for(table, 25) == 2);
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
+	
+	zt_add_zone_for(table, 5, "Zone4");
+	TEST_ASSERT(zt_count_zones_for(table, 25) == 2);
+	TEST_ASSERT(zt_count_zones_for(table, 5) == 4);
+	
+	// We've added three more zones, so we should have allocated six times
+	TEST_ASSERT(stats.mem_all_allocs - old_allocs == 6);
+	
+	// Now remove a network, and check that it's freed the zones
+	old_frees = stats.mem_all_frees;
+	TEST_ASSERT(zt_delete_network(table, 5));
+	
+	// There are four zones associated with network 5, and one alloc
+	// for the network node itself (2 * 4 + 1), so:
+	TEST_ASSERT(stats.mem_all_frees - old_frees == 9);
+	
+	TEST_OK();
+}
