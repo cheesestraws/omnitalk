@@ -141,3 +141,19 @@ TEST_FUNCTION(test_zip_table_zones) {
 	
 	TEST_OK();
 }
+
+TEST_FUNCTION(test_zip_table_completion) {
+	zt_zip_table_t* table = zt_new();
+	
+	TEST_ASSERT(zt_add_net_range(table, 5, 10));
+	TEST_ASSERT(zt_add_net_range(table, 20, 30));
+	
+	// marking a network as complete should only mark that network as complete
+	zt_mark_network_complete(table, 5);
+	TEST_ASSERT(zt_network_is_complete(table, 5));
+	
+	// and not the other
+	TEST_ASSERT(!zt_network_is_complete(table, 20));
+
+	TEST_OK();
+}

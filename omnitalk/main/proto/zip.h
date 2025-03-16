@@ -63,6 +63,8 @@ struct zip_reply_packet_s {
 
 typedef struct zip_reply_packet_s zip_reply_packet_t;
 
+#define ZIP_REPLY_TYPE(X) (((zip_reply_packet_t*)(DDP_BODY((X))))->reply_type)
+
 static inline uint8_t* zip_reply_get_zones(buffer_t *buff) {
 	zip_reply_packet_t *packet = (zip_reply_packet_t*)(DDP_BODY(buff));
 	return &packet->zones[0];
@@ -73,7 +75,8 @@ struct zip_zone_tuple_s {
 	pstring zone_name;
 } __attribute__((packed));
 
-
+#define ZIP_TUPLE_NETWORK(X) (ntohs((X)->network))
+#define ZIP_TUPLE_ZONE_NAME(X) ((X)->zone_name)
 
 typedef struct zip_zone_tuple_s zip_zone_tuple_t;
 

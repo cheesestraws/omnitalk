@@ -14,7 +14,36 @@
 
 const static char* TAG = "ZIP";
 
+static void app_zip_handle_extended_reply(buffer_t *packet) {
+	
+}
+
+static void app_zip_handle_nonextended_reply(buffer_t *packet) {
+	// Iterate through the tuples, adding them to the networks
+	zip_zone_tuple_t *t;
+	char* zone_cstr;
+	
+	for (t = zip_reply_get_first_tuple(packet); t != NULL; t = zip_reply_get_next_tuple(packet, t)) {
+		zone_cstr = pstring_to_cstring_alloc(&ZIP_TUPLE_ZONE_NAME(t));
+		zt_add_zone_for(global_zip_table, ZIP_TUPLE_NETWORK(t), zone_cstr);
+		free(zone_cstr);
+	}
+	
+	// Then mark each network entry as complete
+	for (t = zip_reply_get_first_tuple(packet); t != NULL; t = zip_reply_get_next_tuple(packet, t)) {
+		zt_mark_network_complete(global_zip_table, ZIP_TUPLE_NETWORK(t));
+	}
+	
+	printf("zip table:\n"); zt_print(global_zip_table);
+}
+
 void app_zip_handler(buffer_t *packet) {
+	if (DDP_TYPE(packet) == 6 && 
+	    packet->ddp_payload_length > sizeof(zip_reply_packet_t) &&
+	    ZIP_REPLY_TYPE(packet) == ZIP_REPLY) {
+	
+		app_zip_handle_nonextended_reply(packet);
+	}
 	freebuf(packet);
 }
 
