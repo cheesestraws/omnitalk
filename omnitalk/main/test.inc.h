@@ -18,3 +18,5 @@
 
 #include "util/event/event_test.h"
 
+#include "util/pstring_test.h"
+

@@ -27,3 +27,5 @@ RUN_TEST(test_tests);
 RUN_TEST(test_event_add_callback);
 RUN_TEST(test_event_fire);
 
+RUN_TEST(test_pstring_round_tripping);
+

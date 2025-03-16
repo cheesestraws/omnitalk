@@ -17,3 +17,13 @@ bool pstring_eq_cstring(pstring *p, const char *c) {
 	
 	return memcmp(c, &p->str[0], (size_t)p->length) == 0;
 }
+
+char *pstring_to_cstring_alloc(pstring *p) {
+	char *dst = malloc(p->length + 1);
+	if (dst == NULL) {
+		return NULL;
+	}
+	memcpy(dst, &p->str[0], p->length);
+	dst[p->length] = 0;
+	return dst;
+}
