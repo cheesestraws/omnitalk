@@ -333,7 +333,7 @@ char* rt_stats(rt_routing_table_t* table) {
 	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
 
 	// first, count the number of nodes (and while we're doing it,
-	// work out what's the longest LAP and transport names
+	// work out what's the longest LAP and transport names)
 	struct rt_node_s *curr;
 	int node_count = 0;
 	int longest_lap_name = 0;

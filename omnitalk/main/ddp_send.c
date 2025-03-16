@@ -28,11 +28,7 @@ bool ddp_send_via(buffer_t *packet, uint8_t src_socket,
 	ddp_set_srcsock(packet, src_socket);
 	ddp_set_ddptype(packet, ddp_type);
 	
-	// Send the thing
-	
-	printf("ddp_send_via:\n");
-	printbuf(packet);
-	
+	// Send the thing	
 	return lsend(via, packet);
 	
 }

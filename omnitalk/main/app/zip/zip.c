@@ -41,8 +41,6 @@ static void app_zip_handle_extended_reply(buffer_t *packet) {
 	}
 	
 	zt_check_zone_count_for_completeness(global_zip_table, relevant_network);
-	
-	printf("zip table:\n"); zt_print(global_zip_table);
 }
 
 static void app_zip_handle_nonextended_reply(buffer_t *packet) {
@@ -62,12 +60,9 @@ static void app_zip_handle_nonextended_reply(buffer_t *packet) {
 	for (t = zip_reply_get_first_tuple(packet); t != NULL; t = zip_reply_get_next_tuple(packet, t)) {
 		zt_mark_network_complete(global_zip_table, ZIP_TUPLE_NETWORK(t));
 	}
-	
-	printf("zip table:\n"); zt_print(global_zip_table);
 }
 
 void app_zip_handler(buffer_t *packet) {
-	ESP_LOGI(TAG, "got ZIP packet");
 	if (DDP_TYPE(packet) == 6 && 
 	    packet->ddp_payload_length > sizeof(zip_reply_packet_t) &&
 	    ZIP_REPLY_TYPE(packet) == ZIP_REPLY) {
@@ -157,7 +152,7 @@ static void zip_send_requests_if_necessary(rt_route_t *route) {
 }
 
 void app_zip_idle(void*) {
-	zip_internal_command_t* cmd;
+	zip_internal_command_t* cmd = NULL;
 	
 	// Initialise stuff
 	zip_cmd_queue = xQueueCreate(20, sizeof(zip_internal_command_t*));
@@ -166,19 +161,25 @@ void app_zip_idle(void*) {
 	
 	// Loop and execute commands
 	while (1) {
-		xQueueReceive(zip_cmd_queue, &cmd, portMAX_DELAY);
-		switch (cmd->cmd) {
-			case ZIP_NETWORK_TOUCHED:
-				zt_add_net_range(global_zip_table, cmd->route.range_start, cmd->route.range_end);
-				zip_send_requests_if_necessary(&cmd->route);
-				printf("zip table:\n"); zt_print(global_zip_table);
-				break;
-			case ZIP_NETWORK_DELETED:
-				zt_delete_network(global_zip_table, cmd->route.range_start);
-				printf("zip table:\n"); zt_print(global_zip_table);
-				break;
+		BaseType_t ret = xQueueReceive(zip_cmd_queue, &cmd, 20000 / portTICK_PERIOD_MS);
+		if (ret == pdTRUE) {
+			switch (cmd->cmd) {
+				case ZIP_NETWORK_TOUCHED:
+					zt_add_net_range(global_zip_table, cmd->route.range_start, cmd->route.range_end);
+					zip_send_requests_if_necessary(&cmd->route);
+					break;
+				case ZIP_NETWORK_DELETED:
+					zt_delete_network(global_zip_table, cmd->route.range_start);
+					break;
+			}
+			free(cmd);
 		}
-		free(cmd);
+		// emit stats
+		char* new_stats = zt_stats(global_zip_table);
+		char* old_stats = atomic_exchange(&stats_zip_table, new_stats);
+		if (old_stats != NULL) {
+			free(old_stats);
+		}
 	}
 }
 

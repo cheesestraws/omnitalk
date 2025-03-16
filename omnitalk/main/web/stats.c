@@ -16,6 +16,7 @@ stats_lap_metadata_t stats_lap_metadata[MAX_LAP_COUNT];
 stats_omnitalk_metadata_t stats_omnitalk_metadata;
 
 _Atomic(char*) stats_routing_table;
+_Atomic(char*) stats_zip_table;
 
 // Have a reserved stats buffer so that we can't run out of memory mid-flow
 #define STATSBUFFER_SIZE 256
@@ -61,6 +62,10 @@ esp_err_t http_metrics_handler(httpd_req_t *req) {
 
 	if(stats_routing_table != NULL) {
 		httpd_resp_sendstr_chunk(req, stats_routing_table);
+	}
+	
+	if (stats_zip_table != NULL) {
+		httpd_resp_sendstr_chunk(req, stats_zip_table);
 	}
 	
 #include "stats.inc"	

@@ -123,6 +123,10 @@ extern PROMETHEUS_METADATA stats_lap_metadata_t stats_lap_metadata[MAX_LAP_COUNT
 // routing table metrics
 extern _Atomic(char*) stats_routing_table;
 
+// zip table metrics
+extern _Atomic(char*) stats_zip_table;
+
+
 // Other gubbins
 void start_stats(void);
 esp_err_t http_metrics_handler(httpd_req_t *req);

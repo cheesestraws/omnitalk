@@ -28,3 +28,4 @@ size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network);
 bool zt_network_is_complete(zt_zip_table_t *table, uint16_t network);
 
 void zt_print(zt_zip_table_t *table);
+char* zt_stats(zt_zip_table_t *table);

@@ -183,3 +183,26 @@ TEST_FUNCTION(test_zip_table_completion) {
 
 	TEST_OK();
 }
+
+TEST_FUNCTION(test_zip_table_stats) {
+	long old_allocations;
+	long allocations;
+	// Make sure our stats don't leak memory
+	zt_zip_table_t* table = zt_new();
+	TEST_ASSERT(zt_add_net_range(table, 20, 30));
+	
+	zt_add_zone_for(table, 20, "Zone1");
+	zt_add_zone_for(table, 20, "Zone2");
+	zt_add_zone_for(table, 20, "Zone3");
+	zt_add_zone_for(table, 20, "Zone4");
+
+	// We should only have one "loose" allocation, which is the char* we return
+	old_allocations = stats.mem_all_allocs - stats.mem_all_frees;
+	char* ststr = zt_stats(table);
+	allocations = stats.mem_all_allocs - stats.mem_all_frees;
+	TEST_ASSERT(allocations - old_allocations == 1);
+	
+	free(ststr);
+	TEST_OK();
+}
+

@@ -2,6 +2,7 @@
 #include "table/zip/table_impl.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <freertos/FreeRTOS.h>
@@ -381,4 +382,113 @@ void zt_print(zt_zip_table_t *table) {
 	}
 	
 	xSemaphoreGive(table->mutex);
+}
+
+char* zt_stats(zt_zip_table_t *table) {
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	// first, count the number of zones (and while we're doing it,
+	// work out what's the longest zone name)
+	struct zip_network_node_s* curr;
+	struct zip_zone_node_s* curr_zone;
+	int net_count = 0;
+	int zone_count = 0;
+	int max_zone_length = 0;
+	int max_zone_count_per_net = 0;
+	
+	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		net_count++;
+	
+		int zone_count_per_network = 0;
+	
+		for (curr_zone = &curr->root; curr_zone != NULL; curr_zone = curr_zone->next) {
+			if (curr_zone->dummy) {
+				continue;
+			}
+		
+			zone_count++;
+			zone_count_per_network++;
+			
+			int zone_length = strlen(curr_zone->zone_name);
+			if (zone_length > max_zone_length) {
+				max_zone_length = zone_length;
+			}
+		}
+		
+		if (zone_count_per_network > max_zone_count_per_net) {
+			max_zone_count_per_net = zone_count_per_network;
+		}
+	}
+	
+	// Now, estimate how much memory each entry will take
+	char* fmt = "zones{net_range_start=\"%" PRIu16 "\", "
+		"net_range_end=\"%" PRIu16 "\", "
+		"complete=\"%s\", zone_count=\"%d\", "
+		"zones=\"%s\""
+		"} 1\n";
+
+	int zone_str_len = strlen(fmt);
+	zone_str_len += 6; // two bytes for each address, assuming that 1 byte = 3 digits worst case
+	zone_str_len += 5; // 'false' for complete
+	zone_str_len += 3; // 3 digits for zone count, an 8-bit quantity
+	zone_str_len += max_zone_count_per_net * (max_zone_length + 2); // zones themselves - extra for comma and space
+		
+	// Now how much memory do we need for the whole lot?  Let's allocate
+	// a buffer.  +1 for the null.
+	char* strbuf = malloc((zone_str_len * net_count) + 1);
+	assert(strbuf != NULL);
+	
+	// Fill buffer
+	char* cursor = strbuf;
+	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		char* zonestring = malloc((max_zone_count_per_net * (max_zone_length + 2)) + 1); // + 1 for null
+		char* zonecursor = zonestring;
+		bool firstzone = true;
+		
+		for (curr_zone = &curr->root; curr_zone != NULL; curr_zone = curr_zone->next) {
+			if (curr_zone->dummy) {
+				continue;
+			}
+			
+			if (!firstzone) {
+				*zonecursor = ','; zonecursor++;
+				*zonecursor = ' '; zonecursor++;
+			}
+			
+			// copy the zone name, swapping "s for _s
+			for (char* c = curr_zone->zone_name; *c != '\0'; c++) {
+				if (*c == '"') {
+					*zonecursor = '_';
+				} else {
+					*zonecursor = *c;
+				}
+				zonecursor++;
+			}	
+			
+			firstzone = false;
+		}
+		*zonecursor = '\0';
+				
+		// We now have our list of zones as a string in zonestring, phew
+		int len = sprintf(cursor, fmt, curr->net_start, curr->net_end, 
+			(curr->complete ? "true" : "false"),
+			curr->zone_count,
+			zonestring);
+			
+		cursor += len;
+		
+		free(zonestring);
+	}
+
+	xSemaphoreGive(table->mutex);
+	
+	return strbuf;
 }
