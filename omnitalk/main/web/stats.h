@@ -105,7 +105,12 @@ typedef struct stats {
 	prometheus_counter_t rtmp_update_packets;
 	prometheus_counter_t rtmp_errors__err_packet_too_short;
 	prometheus_counter_t rtmp_errors__err_wrong_id_len;
-
+	
+	// ZIP
+	prometheus_counter_t zip_out_queries;
+	prometheus_counter_t zip_out_errors__err_ddp_send_failed;
+	prometheus_counter_t zip_in_replies__kind_nonextended;
+	prometheus_counter_t zip_in_replies__kind_extended;
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported

@@ -18,6 +18,10 @@ bool zt_get_network_complete(zt_zip_table_t *table, uint16_t network);
 
 // Add a zone for the given network.  Copies 'zone'.
 void zt_add_zone_for(zt_zip_table_t *table, uint16_t network, char* zone);
+
+void zt_set_expected_zone_count(zt_zip_table_t *table, uint16_t network, int count);
+void zt_check_zone_count_for_completeness(zt_zip_table_t *table, uint16_t network);
+
 void zt_mark_network_complete(zt_zip_table_t *table, uint16_t network);
 
 size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network);

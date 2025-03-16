@@ -9,16 +9,45 @@
 #include "table/routing/route.h"
 #include "table/routing/table.h"
 #include "table/zip/table.h"
+#include "web/stats.h"
 #include "ddp_send.h"
 #include "global_state.h"
 
 const static char* TAG = "ZIP";
 
 static void app_zip_handle_extended_reply(buffer_t *packet) {
+	stats.zip_in_replies__kind_extended++;
 	
+	int count = (int)zip_packet_get_network_count(packet);
+	
+	bool first_tuple = true;
+	// An extended reply is always about a single network
+	uint16_t relevant_network = 0;
+	
+	// Iterate through the tuples, adding them to the network
+	zip_zone_tuple_t *t;
+	char* zone_cstr;
+	
+	for (t = zip_reply_get_first_tuple(packet); t != NULL; t = zip_reply_get_next_tuple(packet, t)) {
+		if (first_tuple) {
+			zt_set_expected_zone_count(global_zip_table, ZIP_TUPLE_NETWORK(t), count);
+			relevant_network = ZIP_TUPLE_NETWORK(t);
+		}
+	
+		zone_cstr = pstring_to_cstring_alloc(&ZIP_TUPLE_ZONE_NAME(t));
+		zt_add_zone_for(global_zip_table, ZIP_TUPLE_NETWORK(t), zone_cstr);
+		free(zone_cstr);
+		first_tuple = false;
+	}
+	
+	zt_check_zone_count_for_completeness(global_zip_table, relevant_network);
+	
+	printf("zip table:\n"); zt_print(global_zip_table);
 }
 
 static void app_zip_handle_nonextended_reply(buffer_t *packet) {
+	stats.zip_in_replies__kind_nonextended++;
+
 	// Iterate through the tuples, adding them to the networks
 	zip_zone_tuple_t *t;
 	char* zone_cstr;
@@ -38,12 +67,19 @@ static void app_zip_handle_nonextended_reply(buffer_t *packet) {
 }
 
 void app_zip_handler(buffer_t *packet) {
+	ESP_LOGI(TAG, "got ZIP packet");
 	if (DDP_TYPE(packet) == 6 && 
 	    packet->ddp_payload_length > sizeof(zip_reply_packet_t) &&
 	    ZIP_REPLY_TYPE(packet) == ZIP_REPLY) {
 	
 		app_zip_handle_nonextended_reply(packet);
+	} else if (DDP_TYPE(packet) == 6 && 
+	    packet->ddp_payload_length > sizeof(zip_reply_packet_t) &&
+	    ZIP_REPLY_TYPE(packet) == ZIP_EXTENDED_REPLY) {
+	
+		app_zip_handle_extended_reply(packet);
 	}
+
 	freebuf(packet);
 }
 
@@ -113,7 +149,10 @@ static void zip_send_requests_if_necessary(rt_route_t *route) {
 	}
 	
 	if (!buffer_no_longer_our_problem) {
+		stats.zip_out_errors__err_ddp_send_failed++;
 		freebuf(buff);
+	} else {
+		stats.zip_out_queries++;
 	}
 }
 

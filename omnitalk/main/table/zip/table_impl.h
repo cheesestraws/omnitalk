@@ -20,6 +20,7 @@ struct zip_network_node_s {
 	uint16_t net_end;
 	
 	int zone_count;
+	int expected_zone_count;
 	bool complete;
 	
 	struct zip_zone_node_s root;

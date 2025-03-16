@@ -154,6 +154,32 @@ TEST_FUNCTION(test_zip_table_completion) {
 	
 	// and not the other
 	TEST_ASSERT(!zt_network_is_complete(table, 20));
+	
+	// Now let's mark 20 as expecting 4 zones; it will get this information from the
+	// "network count" field of an extended ZIP reply (which isn't actually a network
+	// count, it's a zone count).
+	zt_set_expected_zone_count(table, 20, 4);
+	zt_check_zone_count_for_completeness(table, 20);
+	TEST_ASSERT(!zt_network_is_complete(table, 20));
+	
+	// Add a couple of zones and we still shouldn't be complete
+	zt_add_zone_for(table, 20, "Zone1");
+	zt_add_zone_for(table, 20, "Zone2");
+	zt_check_zone_count_for_completeness(table, 20);
+	TEST_ASSERT(!zt_network_is_complete(table, 20));
+
+	// "Adding" the same two again shouldn't affect the unique zone count and thus
+	// shouldn't make completeness happen
+	zt_add_zone_for(table, 20, "Zone1");
+	zt_add_zone_for(table, 20, "Zone2");
+	zt_check_zone_count_for_completeness(table, 20);
+	TEST_ASSERT(!zt_network_is_complete(table, 20));
+	
+	// Adding two new ones, though, should.
+	zt_add_zone_for(table, 20, "Zone3");
+	zt_add_zone_for(table, 20, "Zone4");
+	zt_check_zone_count_for_completeness(table, 20);
+	TEST_ASSERT(zt_network_is_complete(table, 20));
 
 	TEST_OK();
 }

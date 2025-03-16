@@ -240,6 +240,7 @@ static void zt_add_zone_for_unguarded(zt_zip_table_t *table, uint16_t network, c
 	new_node->zone_name = new_zone_name;
 	new_node->next = curr;
 	prev->next = new_node;
+	net_node->zone_count++;
 	
 	return;
 	
@@ -275,6 +276,38 @@ static void zt_mark_network_complete_unguarded(zt_zip_table_t *table, uint16_t n
 void zt_mark_network_complete(zt_zip_table_t *table, uint16_t network) {
 	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
 	zt_mark_network_complete_unguarded(table, network);
+	xSemaphoreGive(table->mutex);
+}
+
+static void zt_set_expected_zone_count_unguarded(zt_zip_table_t *table, uint16_t network, int count) {
+	struct zip_network_node_s* net_node = zt_lookup_unguarded(table, network);
+	if (net_node == NULL) {
+		return;
+	}
+	
+	net_node->expected_zone_count = count;
+}
+
+void zt_set_expected_zone_count(zt_zip_table_t *table, uint16_t network, int count) {
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	zt_set_expected_zone_count_unguarded(table, network, count);
+	xSemaphoreGive(table->mutex);
+}
+
+static void zt_check_zone_count_for_completeness_unguarded(zt_zip_table_t *table, uint16_t network) {
+	struct zip_network_node_s* net_node = zt_lookup_unguarded(table, network);
+	if (net_node == NULL) {
+		return;
+	}
+	
+	if (net_node->zone_count == net_node->expected_zone_count) {
+		net_node->complete = true;
+	}
+}
+
+void zt_check_zone_count_for_completeness(zt_zip_table_t *table, uint16_t network) {
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	zt_check_zone_count_for_completeness_unguarded(table, network);
 	xSemaphoreGive(table->mutex);
 }
 
@@ -321,6 +354,7 @@ bool zt_network_is_complete(zt_zip_table_t *table, uint16_t network) {
 
 void zt_print(zt_zip_table_t *table) {
 	struct zip_network_node_s* curr;
+	struct zip_zone_node_s* curr_zone;
 
 	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
 	
@@ -329,9 +363,22 @@ void zt_print(zt_zip_table_t *table) {
 			continue;
 		}
 		
-		printf("net %d - %d\n", curr->net_start, curr->net_end);
+		printf("net %d - %d ", curr->net_start, curr->net_end);
+		if (curr->complete) {
+			printf("(complete)");
+		} else {
+			printf("(incomplete)");
+		}
+		printf("\n");
+		
+		for (curr_zone = &curr->root; curr_zone != NULL; curr_zone = curr_zone->next) {
+			if (curr_zone->dummy) {
+				continue;
+			}
+			printf("  - %s\n", curr_zone->zone_name);
+		}
+		
 	}
-
 	
 	xSemaphoreGive(table->mutex);
 }
