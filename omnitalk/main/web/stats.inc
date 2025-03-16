@@ -41,9 +41,9 @@ COUNTER_FIELD(req, transport_in_frames__transport_b2udp, transport_in_frames, "t
 COUNTER_FIELD(req, transport_out_frames__transport_b2udp, transport_out_frames, "transport=\"b2udp\"", "");
 COUNTER_FIELD(req, transport_in_errors__transport_b2udp__err_recvfrom_failed, transport_in_errors, "transport=\"b2udp\",err=\"recvfrom failed\"", "");
 COUNTER_FIELD(req, transport_in_errors__transport_b2udp__err_frame_too_short, transport_in_errors, "transport=\"b2udp\",err=\"frame too short\"", "");
-COUNTER_FIELD(req, transport_in_errors__transport_b2udp__invalid_source_MAC, transport_in_errors, "transport=\"b2udp\",invalid=\"source MAC\"", "");
+COUNTER_FIELD(req, transport_in_errors__transport_b2udp__err_invalid_source_MAC, transport_in_errors, "transport=\"b2udp\",err=\"invalid source MAC\"", "");
 COUNTER_FIELD(req, transport_in_errors__transport_b2udp__err_lap_queue_full, transport_in_errors, "transport=\"b2udp\",err=\"lap queue full\"", "");
-COUNTER_FIELD(req, transport_out_errors__transport_b2udp__frame_too_short, transport_out_errors, "transport=\"b2udp\",frame=\"too short\"", "");
+COUNTER_FIELD(req, transport_out_errors__transport_b2udp__err_frame_too_short, transport_out_errors, "transport=\"b2udp\",err=\"frame too short\"", "");
 COUNTER_FIELD(req, transport_out_errors__transport_b2udp__err_invalid_dst_MAC, transport_out_errors, "transport=\"b2udp\",err=\"invalid dst MAC\"", "");
 COUNTER_FIELD(req, transport_out_errors__transport_b2udp__err_sendto_failed, transport_out_errors, "transport=\"b2udp\",err=\"sendto failed\"", "");
 COUNTER_FIELD(req, transport_in_octets__transport_ethernet, transport_in_octets, "transport=\"ethernet\"", "");

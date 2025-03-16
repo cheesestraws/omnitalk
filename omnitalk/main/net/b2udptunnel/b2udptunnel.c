@@ -86,7 +86,7 @@ static bool sanity_check_incoming_frame(buffer_t *buf) {
 	struct eth_hdr *hdr = (struct eth_hdr*)buf->data;
 	// Do we have a 'b2' source MAC?
 	if (hdr->src.addr[0] != 'B' || hdr->src.addr[1] != '2') {
-		stats.transport_in_errors__transport_b2udp__invalid_source_MAC++;
+		stats.transport_in_errors__transport_b2udp__err_invalid_source_MAC++;
 		return false;
 	}
 
@@ -169,7 +169,7 @@ static void b2udptunnel_outbound_runloop(void* dummy) {
 		
 		// Is the packet long enough?
 		if (buf->length < sizeof(struct eth_hdr) + sizeof(snap_hdr_t)) {
-			stats.transport_out_errors__transport_b2udp__frame_too_short++;
+			stats.transport_out_errors__transport_b2udp__err_frame_too_short++;
 			goto skip_processing;
 		}
 		
