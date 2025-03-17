@@ -4,6 +4,7 @@
 
 #include "net/transport.h"
 #include "net/tashtalk/uart.h"
+#include "tunables.h"
 
 static const char* TAG="TASHTALK_TRANSPORT";
 
@@ -26,6 +27,8 @@ static esp_err_t tashtalk_set_node_address(transport_t* dummy, uint8_t addr) {
 }
 
 transport_t tashtalk_transport = {
+	.quality = QUALITY_LOCALTALK, // LocalTalk is the lowest bandwidth local 
+
 	.kind = "tashtalk",
 	.private_data = NULL,
 	

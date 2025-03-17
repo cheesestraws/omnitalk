@@ -9,6 +9,8 @@ typedef esp_err_t(*transport_handler)(transport_t*);
 typedef esp_err_t(*transport_node_address_handler)(transport_t*, uint8_t);
 
 struct transport_s {
+	int quality;
+
 	char* kind;
 	void* private_data;
 	

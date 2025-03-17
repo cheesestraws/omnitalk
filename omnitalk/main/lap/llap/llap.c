@@ -355,6 +355,7 @@ lap_t *start_llap(char* name, transport_t *transport, runloop_info_t *controlpla
 	lap->name = name;
 	lap->kind = "llap";
 	lap->transport = transport;
+	lap->quality = lap->transport->quality;
 	
 	lap->controlplane = controlplane;
 	lap->dataplane = dataplane;

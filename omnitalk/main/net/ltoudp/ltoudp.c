@@ -11,6 +11,7 @@
 #include "net/common.h"
 #include "net/transport.h"
 #include "web/stats.h"
+#include "tunables.h"
 
 static const char* TAG = "LTOUDP";
 
@@ -224,6 +225,8 @@ esp_err_t ltoudp_transport_disable(transport_t* dummy) {
 }
 
 static transport_t ltoudp_transport = {
+	.quality = QUALITY_LTOUDP,
+
 	.kind = "ltoudp",
 	.private_data = NULL,
 	

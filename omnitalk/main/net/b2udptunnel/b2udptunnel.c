@@ -15,6 +15,7 @@
 #include "net/transport.h"
 #include "proto/SNAP.h"
 #include "web/stats.h"
+#include "tunables.h"
 
 static char* TAG="b2eth";
 
@@ -221,6 +222,8 @@ esp_err_t b2_transport_disable(transport_t* dummy) {
 }
 
 static transport_t b2_transport = {
+	.quality = QUALITY_B2ETH,
+
 	.kind = "b2",
 	.private_data = NULL,
 	

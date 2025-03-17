@@ -20,6 +20,7 @@
 #include "proto/SNAP.h"
 #include "web/stats.h"
 #include "hw.h"
+#include "tunables.h"
 
 #define REQUIRE(x) if(!(x)) { return false; }
 
@@ -210,6 +211,8 @@ esp_err_t ethertalkv2_transport_disable(transport_t* dummy) {
 }
 
 static transport_t ethertalkv2_transport = {
+	.quality = QUALITY_ETHERNET,
+
 	.kind = "ethertalk_v2",
 	.private_data = NULL,
 	

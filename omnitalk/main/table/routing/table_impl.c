@@ -101,6 +101,17 @@ static void rt_touch_unguarded(rt_routing_table_t* table, rt_route_t r) {
 			break;
 		}
 		
+		// If it's the same distance, use the quality as a tie breaker
+		if (curr->route.distance == new_node->route.distance) {
+			int curr_quality = (curr->route.outbound_lap != NULL ? curr->route.outbound_lap->quality : 0);
+			int new_quality = (new_node->route.outbound_lap != NULL ? new_node->route.outbound_lap->quality : 0);
+			
+			// insert ahead of LAPs with lower quality
+			if (curr_quality < new_quality) {
+				break;
+			}
+		}
+		
 	next_item_ins:
 		prev = curr;
 		curr = curr->next;

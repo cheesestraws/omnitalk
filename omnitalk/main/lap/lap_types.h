@@ -15,6 +15,7 @@ typedef esp_err_t(*lap_void_handler)(lap_t*);
 // and turn them into DDP frames.
 struct lap_s {
 	int id;
+	int quality;
 
 	void* info; // protocol-specific
 	void* stats; // protocol-specific

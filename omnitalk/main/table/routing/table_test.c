@@ -144,6 +144,80 @@ TEST_FUNCTION(test_routing_table_distance_and_replacement) {
 	TEST_OK();
 }
 
+TEST_FUNCTION(test_routing_table_route_selection_ordering) {
+	rt_route_t out = { 0 };
+	rt_route_t in = { 0 };
+	rt_routing_table_t* table = rt_new();
+	
+	lap_t good_lap = { .quality = 1 };
+	lap_t better_lap = { .quality = 2 };
+	lap_t best_lap = { .quality = 3 };
+	
+	// If we've only got one route to a network range, we should obviously use that
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &better_lap,
+		.distance = 20,
+	};
+	rt_touch(table, in);
+	
+	TEST_ASSERT(rt_count(table) == 1);
+	TEST_ASSERT(rt_lookup(table, 10, &out));
+	TEST_ASSERT(out.outbound_lap == &better_lap);
+	TEST_ASSERT(out.distance == 20);
+	
+	// Now, if we add another route with the *same* distance, but to a better LAP, we 
+	// should prefer the better LAP.
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &best_lap,
+		.distance = 20,
+	};
+	rt_touch(table, in);
+	out = (rt_route_t){ 0 };
+	
+	TEST_ASSERT(rt_count(table) == 2);
+	TEST_ASSERT(rt_lookup(table, 10, &out));
+	TEST_ASSERT(out.outbound_lap == &best_lap);
+	TEST_ASSERT(out.distance == 20);
+
+	// A worse LAP, however, should go straight to the bottom of the pile.
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &good_lap,
+		.distance = 20,
+	};
+	rt_touch(table, in);
+	out = (rt_route_t){ 0 };
+	
+	TEST_ASSERT(rt_count(table) == 3);
+	TEST_ASSERT(rt_lookup(table, 10, &out));
+	TEST_ASSERT(out.outbound_lap == &best_lap);
+	TEST_ASSERT(out.distance == 20);
+	
+	// That said, a lower distance should still win even if its LAP is crap.
+	// (Note that the count doesn't increase because we're replacing the crap route).
+	in = (rt_route_t){
+		.range_start = 10,
+		.range_end = 20,
+		.outbound_lap = &good_lap,
+		.distance = 10,
+	};
+	rt_touch(table, in);
+	out = (rt_route_t){ 0 };
+	
+	TEST_ASSERT(rt_count(table) == 3);
+	TEST_ASSERT(rt_lookup(table, 10, &out));
+	TEST_ASSERT(out.outbound_lap == &good_lap);
+	TEST_ASSERT(out.distance == 10);
+
+	
+	TEST_OK();
+}
+
 TEST_FUNCTION(test_routing_table_aging) {
 	bool result;
 	rt_route_t out = { 0 };
