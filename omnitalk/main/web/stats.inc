@@ -53,6 +53,7 @@ COUNTER_FIELD(req, transport_out_frames__transport_ethernet, transport_out_frame
 COUNTER_FIELD(req, eth_recv_elap_frames, eth_recv_elap_frames, "", "ethernet: received ELAP frames (raw count)");
 COUNTER_FIELD(req, eth_recv_aarp_frames, eth_recv_aarp_frames, "", "ethernet: received AARP frames (raw count)");
 COUNTER_FIELD(req, transport_in_errors__transport_ethernet__err_lap_queue_full, transport_in_errors, "transport=\"ethernet\",err=\"lap queue full\"", "");
+COUNTER_FIELD(req, lap_registry_registered_laps, lap_registry_registered_laps, "", "");
 COUNTER_FIELD(req, ddp_out_errors__err_no_route_for_network, ddp_out_errors, "err=\"no route for network\"", "");
 COUNTER_FIELD(req, controlplane_inbound_queue_full, controlplane_inbound_queue_full, "", "");
 COUNTER_FIELD(req, rtmp_update_packets, rtmp_update_packets, "", "");

@@ -9,6 +9,8 @@ set(srcs
 	"lap/sink/sink.c"
 	"lap/id.c"
 	"lap/lap.c"
+	"lap/registry.c"
+	"lap/registry_test.c"
 
 	"mem/buffers.c"
 	"mem/buffers_test.c"

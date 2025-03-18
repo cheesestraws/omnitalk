@@ -30,6 +30,8 @@ LAPs are responsible for keeping the L2 to L3 glue going.  They're responsible f
 
 A LAP, like a transport, has a quality, which means about the same thing as a quality on a transport.  In fact, generally, a LAP will inherit its quality from its transport, although it may downgrade its quality if it knows it's not as good as other LAPs over the same medium.  No LAP should ever increase its own quality relative to its transport.
 
+The list of active LAPs is recorded in a LAP registry, which allows other bits of the code to ask for details about LAPs. 
+
 LAPs live under the lap/ hierarchy, each in its own subdirectory.
 
 ## "Ports"

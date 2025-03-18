@@ -2,6 +2,8 @@
 
 #include "lap/llap/llap_test.h"
 
+#include "lap/registry_test.h"
+
 #include "mem/buffers_test.h"
 
 #include "proto/ddp_test.h"

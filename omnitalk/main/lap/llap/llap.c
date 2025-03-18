@@ -10,6 +10,7 @@
 
 #include "lap/id.h"
 #include "lap/lap.h"
+#include "lap/registry.h"
 #include "mem/buffers.h"
 #include "net/transport.h"
 #include "table/routing/table.h"
@@ -337,7 +338,7 @@ void llap_outbound_runloop(void* lapParam) {
 }
 
 
-lap_t *start_llap(char* name, transport_t *transport, runloop_info_t *controlplane, runloop_info_t *dataplane) {
+lap_t *start_llap(char* name, transport_t *transport, lap_registry_t *registry, runloop_info_t *controlplane, runloop_info_t *dataplane) {
 	lap_t *lap = calloc(1, sizeof(lap_t));
 	if (lap == NULL) {
 		return NULL;

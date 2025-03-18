@@ -95,6 +95,9 @@ typedef struct stats {
 	prometheus_counter_t eth_recv_aarp_frames; // help: ethernet: received AARP frames (raw count)
 	prometheus_counter_t transport_in_errors__transport_ethernet__err_lap_queue_full;
 	
+	// LAP registry
+	prometheus_counter_t lap_registry_registered_laps;
+	
 	// DDP metrics
 	prometheus_counter_t ddp_out_errors__err_no_route_for_network;
 	
