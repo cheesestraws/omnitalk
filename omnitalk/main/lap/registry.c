@@ -93,3 +93,25 @@ lap_t* lap_registry_highest_quality_lap(lap_registry_t* registry) {
 	
 	return lap;
 }
+
+void lap_registry_update_zone_cache(lap_registry_t *registry) {
+	while (xSemaphoreTake(registry->mutex, portMAX_DELAY) != pdTRUE) {}
+
+	char* zone = NULL;	
+	struct lap_registry_node_s *curr = NULL;
+	
+	for (curr = &registry->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		if (curr->lap != NULL && curr->lap->my_zone != NULL) {
+			zone = curr->lap->my_zone;
+			break;
+		}
+	}
+	
+	registry->best_zone_cache = zone;
+	stats_omnitalk_metadata.best_zone = zone;
+	
+	xSemaphoreGive(registry->mutex);
+}

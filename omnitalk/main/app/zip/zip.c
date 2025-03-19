@@ -34,6 +34,7 @@ static void propagate_zone_to_lap(zip_zone_tuple_t *t) {
 			// free it.
 			char* zone = pstring_to_cstring_alloc(&ZIP_TUPLE_ZONE_NAME(t));
 			lap_set_my_zone(route.outbound_lap, zone);
+			lap_registry_update_zone_cache(global_lap_registry);
 		}
 	}
 }

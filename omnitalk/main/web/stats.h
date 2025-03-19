@@ -16,6 +16,7 @@ typedef PROMETHEUS_METADATA struct stats_omnitalk_metadata_s {
 	_Atomic bool ok;
 	char* git_commit;
 	const char* esp_version;
+	_Atomic(char*) best_zone;
 } stats_omnitalk_metadata_t;
 
 typedef PROMETHEUS_METADATA struct stats_lap_metadata_s {

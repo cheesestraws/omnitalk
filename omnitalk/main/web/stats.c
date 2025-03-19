@@ -93,6 +93,7 @@ void start_stats(void) {
 	// Set our software version in stats
 	stats_omnitalk_metadata.git_commit = GIT_VERSION;
 	stats_omnitalk_metadata.esp_version = esp_get_idf_version();
+	stats_omnitalk_metadata.best_zone = "";
 	stats_omnitalk_metadata.ok = true;
 
 	xTaskCreate(uptime_task_runloop, "UPTIME", 768, NULL, tskIDLE_PRIORITY,

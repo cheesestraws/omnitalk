@@ -3,6 +3,7 @@
 RUN_TEST(test_llap_extract_ddp_packet);
 
 RUN_TEST(test_lap_registry_ordering);
+RUN_TEST(test_lap_registry_zone_cache);
 
 RUN_TEST(test_newbuf);
 RUN_TEST(test_buf_l2hdr_shenanigans);

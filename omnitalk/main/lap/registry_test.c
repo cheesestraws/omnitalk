@@ -28,3 +28,27 @@ TEST_FUNCTION(test_lap_registry_ordering) {
 	
 	TEST_OK();
 }
+
+TEST_FUNCTION(test_lap_registry_zone_cache) {
+	lap_registry_t *reg = lap_registry_new();
+	TEST_ASSERT(reg != NULL);
+	
+	lap_t good_lap = { .id = 3, .quality = 1, .my_zone = "good" };
+	lap_t better_lap = { .id = 2, .quality = 2, .my_zone = "better" };
+	lap_t best_lap = { .id = 1, .quality = 3, .my_zone = "best" };
+
+	lap_registry_register(reg, &better_lap);
+	lap_registry_update_zone_cache(reg);
+	TEST_ASSERT(reg->best_zone_cache == better_lap.my_zone);
+	
+	lap_registry_register(reg, &good_lap);
+	lap_registry_update_zone_cache(reg);
+	TEST_ASSERT(reg->best_zone_cache == better_lap.my_zone);
+	
+	lap_registry_register(reg, &best_lap);
+	lap_registry_register(reg, &good_lap);
+	lap_registry_update_zone_cache(reg);
+	TEST_ASSERT(reg->best_zone_cache == best_lap.my_zone);
+	
+	TEST_OK();
+}

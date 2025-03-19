@@ -22,6 +22,7 @@ struct lap_registry_node_s {
 
 typedef struct lap_registry_s {
 	EventGroupHandle_t ready_laps;
+	_Atomic(char*) best_zone_cache;
 		
 	SemaphoreHandle_t mutex;
 	EventBits_t registered_laps;
@@ -32,3 +33,4 @@ lap_registry_t* lap_registry_new();
 int lap_registry_lap_count(lap_registry_t *registry);
 void lap_registry_register(lap_registry_t* registry, lap_t *lap);
 lap_t* lap_registry_highest_quality_lap(lap_registry_t* registry);
+void lap_registry_update_zone_cache(lap_registry_t *registry);
