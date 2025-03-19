@@ -362,6 +362,8 @@ lap_t *start_llap(char* name, transport_t *transport, lap_registry_t *registry, 
 	lap->dataplane = dataplane;
 	lap->outbound = xQueueCreate(LLAP_OUTBOUND_QUEUE_SIZE, sizeof(buffer_t*));
 	
+	lap_registry_register(global_lap_registry, lap);
+	
 	// enable metadata metric
 	stats_lap_metadata[lap->id].name = name;
 	stats_lap_metadata[lap->id].state="acquiring address";
