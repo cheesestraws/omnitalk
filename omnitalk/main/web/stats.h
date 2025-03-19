@@ -22,6 +22,7 @@ typedef PROMETHEUS_METADATA struct stats_lap_metadata_s {
 	_Atomic bool ok;
 	_Atomic(char*) name;
 	_Atomic(char*) state;
+	_Atomic(char*) zone;
 	_Atomic uint8_t node_address;
 	_Atomic uint16_t discovered_network;
 } stats_lap_metadata_t;

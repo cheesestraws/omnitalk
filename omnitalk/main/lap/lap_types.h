@@ -1,5 +1,7 @@
 #pragma once 
 
+#include <stdatomic.h>
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <esp_err.h>
@@ -35,4 +37,6 @@ struct lap_s {
 	uint16_t my_network;
 	uint16_t network_range_start;
 	uint16_t network_range_end;
+	
+	_Atomic(char*) my_zone;
 };

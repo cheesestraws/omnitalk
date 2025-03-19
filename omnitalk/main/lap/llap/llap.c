@@ -367,6 +367,7 @@ lap_t *start_llap(char* name, transport_t *transport, lap_registry_t *registry, 
 	// enable metadata metric
 	stats_lap_metadata[lap->id].name = name;
 	stats_lap_metadata[lap->id].state="acquiring address";
+	stats_lap_metadata[lap->id].zone="";
 	stats_lap_metadata[lap->id].ok = true;
 	
 	enable_transport(transport);

@@ -9,7 +9,7 @@ int metadata_vars_index = 0;
 
 for (metadata_vars_index = 0; metadata_vars_index < MAX_LAP_COUNT; metadata_vars_index++) {
 	if (stats_lap_metadata[metadata_vars_index].ok) {
-		snprintf(statsbuffer, STATSBUFFER_SIZE, "lap_metadata{discovered_network=\"%" PRIu16 "\",name=\"%s\",node_address=\"%" PRIu8 "\",state=\"%s\"} 1\n", stats_lap_metadata[metadata_vars_index].discovered_network, stats_lap_metadata[metadata_vars_index].name, stats_lap_metadata[metadata_vars_index].node_address, stats_lap_metadata[metadata_vars_index].state);
+		snprintf(statsbuffer, STATSBUFFER_SIZE, "lap_metadata{discovered_network=\"%" PRIu16 "\",name=\"%s\",node_address=\"%" PRIu8 "\",state=\"%s\",zone=\"%s\"} 1\n", stats_lap_metadata[metadata_vars_index].discovered_network, stats_lap_metadata[metadata_vars_index].name, stats_lap_metadata[metadata_vars_index].node_address, stats_lap_metadata[metadata_vars_index].state, stats_lap_metadata[metadata_vars_index].zone);
 		httpd_resp_send_chunk(req, statsbuffer, HTTPD_RESP_USE_STRLEN);
 	}
 }
