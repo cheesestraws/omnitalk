@@ -28,6 +28,8 @@ set(srcs
 	"net/transport.c"
 	
 	"proto/ddp_test.c"
+	"proto/nbp.c"
+	"proto/nbp_test.c"
 	"proto/rtmp.c"
 	"proto/zip.c"
 	"proto/zip_test.c"
