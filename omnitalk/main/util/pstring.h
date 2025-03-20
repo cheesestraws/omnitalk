@@ -10,4 +10,5 @@ typedef struct {
 
 void pstring_print(pstring *p);
 bool pstring_eq_cstring(pstring *p, const char *c);
+bool pstring_eq_cstring_mac_ci(pstring *p, const char *c);
 char *pstring_to_cstring_alloc(pstring *p);
