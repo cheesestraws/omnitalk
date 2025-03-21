@@ -29,3 +29,24 @@ TEST_FUNCTION(test_pstring_case_mapping) {
 	
 	TEST_OK();
 }
+
+TEST_FUNCTION(test_pstring_matching) {
+	pstring *test_pstring = (pstring*)"\x0bHeLlO wOrLd";
+	TEST_ASSERT(pstring_matches_cstring_nbp(test_pstring, "hello world"));
+	
+	// A wildcard should match everything
+	pstring *wildcard = (pstring*)"\x01=";
+	TEST_ASSERT(pstring_matches_cstring_nbp(wildcard, "underground, overground"));
+	TEST_ASSERT(pstring_matches_cstring_nbp(wildcard, "wombling free"));
+
+	pstring *partial_match = (pstring*)"\x07""abc" NBP_PARTIAL_WILDCARD_STR "def";
+	TEST_ASSERT(!pstring_matches_cstring_nbp(partial_match, "underground, overground"));
+	TEST_ASSERT(pstring_matches_cstring_nbp(partial_match, "abcdef"));
+	TEST_ASSERT(pstring_matches_cstring_nbp(partial_match, "abcxdef"));
+	TEST_ASSERT(pstring_matches_cstring_nbp(partial_match, "abcxxdef"));
+	TEST_ASSERT(pstring_matches_cstring_nbp(partial_match, "abcxxxdef"));
+	TEST_ASSERT(!pstring_matches_cstring_nbp(partial_match, "abXxxxdef"));
+	TEST_ASSERT(!pstring_matches_cstring_nbp(partial_match, "abcxxxXef"));
+	
+	TEST_OK();
+}

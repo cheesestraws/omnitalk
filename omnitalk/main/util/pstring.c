@@ -49,6 +49,16 @@ void pstring_print(pstring *p) {
 	}
 }
 
+int pstring_index_of(pstring *p, char c) {
+	for (int i = 0; i < p->length; i++) {
+		if (p->str[i] == c) {
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
 bool pstring_eq_cstring(pstring *p, const char *c) {
 	if (strlen(c) != p->length) {
 		return false;
@@ -69,6 +79,43 @@ bool pstring_eq_cstring_mac_ci(pstring *p, const char *c) {
 	}
 	
 	return true;
+}
+
+bool pstring_matches_cstring_nbp(pstring *p, const char *c) {
+	// Wildcard?
+	if (p->length == 1 && p->str[0] == '=') {
+		return true;
+	}
+	
+	// Partial match wildcard?
+	int wc_idx = pstring_index_of(p, NBP_PARTIAL_WILDCARD);
+	if (wc_idx > -1) {
+		// Do we have enough characters?
+		// -1 because the wildcard can be zero or more characters, so is allowed to
+		// disappear completely
+		int clen = strlen(c);
+		if (clen < p->length - 1) {
+			return false;
+		}
+		
+		// check the bit before the wildcard
+		if (memcmp(c, &p->str[0], wc_idx) != 0) {
+			return false;
+		}
+		
+		// check the bit after the wildcard
+		// how long is the bit after the wildcard in the pattern?
+		int tail_length = p->length - (wc_idx + 1);
+		const char* ctail = c + (clen - tail_length);
+		
+		if (memcmp(ctail, &p->str[wc_idx + 1], tail_length) != 0) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	return pstring_eq_cstring_mac_ci(p, c);
 }
 
 char *pstring_to_cstring_alloc(pstring *p) {
