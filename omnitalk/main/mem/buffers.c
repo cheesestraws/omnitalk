@@ -127,6 +127,14 @@ void buf_set_lengths_from_ddp_payload_length(buffer_t *buffer) {
 	buffer->length = buffer->ddp_length + l2_hdr_len;
 }
 
+void buf_expand_payload(buffer_t *buffer, size_t bytes) {
+	assert(buffer->ddp_ready);
+	assert(buffer->capacity >= buffer->length + bytes);
+	
+	buffer->ddp_payload_length += bytes;
+	buf_set_lengths_from_ddp_payload_length(buffer);
+}
+
 void printbuf(buffer_t *buffer) {
 	printf("buffer @ %p (data @ %p) length %d capacity %d\n", buffer, 
 		buffer->data, buffer->length, buffer->capacity);

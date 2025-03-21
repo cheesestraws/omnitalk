@@ -22,10 +22,9 @@ static void send_nbp_response(uint16_t dest_net, uint8_t dest_node, uint8_t dest
 	}
 													
 	buffer_t *buff = newbuf_ddp();
-	buff->ddp_payload_length = sizeof(nbp_packet_t) + sizeof(struct nbp_tuple_s);
+	buf_expand_payload(buff, sizeof(nbp_packet_t) + sizeof(struct nbp_tuple_s));
 	((nbp_packet_t*)buff->ddp_payload)->nbp_id = their_id;
 	((nbp_packet_t*)buff->ddp_payload)->function_and_tuple_count = (NBP_LKUP_REPLY << 4) | 1;
-	buf_set_lengths_from_ddp_payload_length(buff);
 	
 	// Set tuple fields
 	struct nbp_tuple_s *tuple = (struct nbp_tuple_s*)NBP_PACKET_TUPLES(buff);
