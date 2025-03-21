@@ -116,6 +116,15 @@ typedef struct stats {
 	prometheus_counter_t zip_out_errors__err_ddp_send_failed;
 	prometheus_counter_t zip_in_replies__kind_nonextended;
 	prometheus_counter_t zip_in_replies__kind_extended;
+	
+	// NBP
+	prometheus_counter_t nbp_in_packets__function_invalid;
+	prometheus_counter_t nbp_in_packets__function_BrRq;
+	prometheus_counter_t nbp_in_packets__function_LkUp;
+	prometheus_counter_t nbp_in_packets__function_LkUp_reply;
+	prometheus_counter_t nbp_in_packets__function_FwdReq;
+	
+	prometheus_counter_t nbp_in_errors__err_no_tuple;
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported

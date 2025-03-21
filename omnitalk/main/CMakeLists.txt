@@ -1,5 +1,6 @@
 set(srcs
 	"app/aep/aep.c"
+	"app/nbp/nbp.c"
 	"app/rtmp/rtmp.c"
 	"app/zip/zip.c"
 	"app/app.c"

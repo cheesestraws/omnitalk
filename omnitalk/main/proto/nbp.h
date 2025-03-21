@@ -7,6 +7,7 @@
 #include "util/pstring.h"
 
 typedef enum {
+	NBP_INVALID = 0,
 	NBP_BRRQ = 1,
 	NBP_LKUP = 2,
 	NBP_LKUP_REPLY = 3,
@@ -14,9 +15,7 @@ typedef enum {
 } nbp_function_t;
 
 struct nbp_packet_s {
-	nbp_function_t function : 4;
-	int tuple_count : 4;
-	
+	uint8_t function_and_tuple_count;	
 	uint8_t nbp_id;
 	
 	uint8_t tuples[];
@@ -25,6 +24,16 @@ struct nbp_packet_s {
 typedef struct nbp_packet_s nbp_packet_t;
 
 #define NBP_PACKET_TUPLES(X) (((nbp_packet_t*)(DDP_BODY((X))))->tuples)
+
+static inline nbp_function_t nbp_packet_function(buffer_t *buffer) {
+	if (buffer->ddp_payload_length < sizeof(nbp_packet_t)) {
+		return NBP_INVALID;
+	}
+	
+	uint8_t fn_and_tuples = ((nbp_packet_t*)(DDP_BODY(buffer)))->function_and_tuple_count;
+	return (fn_and_tuples & 0xf0) >> 4;
+}
+
 
 struct nbp_tuple_s {
 	uint16_t network;
