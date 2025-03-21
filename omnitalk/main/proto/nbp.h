@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include <lwip/inet.h>
+
 #include "mem/buffers.h"
 #include "proto/ddp.h"
 #include "util/pstring.h"
@@ -24,6 +26,8 @@ struct nbp_packet_s {
 typedef struct nbp_packet_s nbp_packet_t;
 
 #define NBP_PACKET_TUPLES(X) (((nbp_packet_t*)(DDP_BODY((X))))->tuples)
+#define NBP_PACKET_ID(X) (((nbp_packet_t*)(DDP_BODY((X))))->nbp_id)
+
 
 static inline nbp_function_t nbp_packet_function(buffer_t *buffer) {
 	if (buffer->ddp_payload_length < sizeof(nbp_packet_t)) {
@@ -45,6 +49,13 @@ struct nbp_tuple_s {
 
 struct nbp_tuple_s *nbp_get_first_tuple(buffer_t *buff);
 struct nbp_tuple_s *nbp_get_next_tuple(buffer_t *buff, struct nbp_tuple_s *prev);
+
+#define NBP_TUPLE_NETWORK(t) (ntohs((t)->network))
+#define NBP_TUPLE_NODE(t) ((t)->node)
+#define NBP_TUPLE_SOCKET(t) ((t)->socket)
+#define NBP_TUPLE_SET_NETWORK(t, n) { (t)->network = ntohs(n); }
+#define NBP_TUPLE_SET_NODE(t, n) { (t)->node = n; }
+#define NBP_TUPLE_SET_SOCKET(t, n) { (t)->socket = n; }
 
 pstring* nbp_tuple_get_object(struct nbp_tuple_s *tuple);
 pstring* nbp_tuple_get_type(struct nbp_tuple_s *tuple);

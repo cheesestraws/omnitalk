@@ -90,3 +90,33 @@ static inline bool buf_append_all(buffer_t *buffer, uint8_t *data, size_t bytes)
 static inline bool buf_append(buffer_t *buffer, uint8_t byte) {
 	return buf_append_all(buffer, &byte, 1);
 }
+
+static inline bool buffer_append_cstring_as_pstring(buffer_t *buffer, char *str) {
+	if (buffer == NULL || buffer->data == NULL) {
+		return false;
+	}
+	
+	int len = strlen(str);
+	if (len > 255) {
+		len = 255;
+	}
+	
+	// Do we have room for this?
+	if (buffer->length + len + 1 > buffer->capacity) {
+		return false;
+	}
+
+	uint8_t* insert_at = buffer->data + buffer->length;
+	*insert_at = (uint8_t)len; // length byte first
+	insert_at++;
+	
+	memcpy(insert_at, str, len); // then string
+	
+	buffer->length += len + 1;
+	if (buffer->ddp_ready) {
+		buffer->ddp_length += len + 1;
+		buffer->ddp_payload_length += len + 1;
+	}
+	
+	return true;
+}

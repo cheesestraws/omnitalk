@@ -69,3 +69,5 @@ COUNTER_FIELD(req, nbp_in_packets__function_LkUp, nbp_in_packets, "function=\"Lk
 COUNTER_FIELD(req, nbp_in_packets__function_LkUp_reply, nbp_in_packets, "function=\"LkUp reply\"", "");
 COUNTER_FIELD(req, nbp_in_packets__function_FwdReq, nbp_in_packets, "function=\"FwdReq\"", "");
 COUNTER_FIELD(req, nbp_in_errors__err_no_tuple, nbp_in_errors, "err=\"no tuple\"", "");
+COUNTER_FIELD(req, nbp_out_packets__function_LkUp_reply, nbp_out_packets, "function=\"LkUp reply\"", "");
+COUNTER_FIELD(req, nbp_out_errors__type_reply__err_ddp_send_failed, nbp_out_errors, "type=\"reply\",err=\"ddp send failed\"", "");

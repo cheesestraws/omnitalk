@@ -34,3 +34,4 @@ int lap_registry_lap_count(lap_registry_t *registry);
 void lap_registry_register(lap_registry_t* registry, lap_t *lap);
 lap_t* lap_registry_highest_quality_lap(lap_registry_t* registry);
 void lap_registry_update_zone_cache(lap_registry_t *registry);
+bool lap_registry_get_best_address(lap_registry_t *registry, uint16_t *out_net, uint8_t *out_node);

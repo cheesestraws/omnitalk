@@ -14,6 +14,10 @@ typedef struct {
 	app_packet_handler handler;
 	app_idle_task idle; 
 	app_start start;
+	
+	char* nbp_object;
+	bool nbp_object_is_hostname;
+	char* nbp_type;
 } app_t;
 
 extern app_t unicast_apps[];

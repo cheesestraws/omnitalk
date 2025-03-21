@@ -115,3 +115,25 @@ void lap_registry_update_zone_cache(lap_registry_t *registry) {
 	
 	xSemaphoreGive(registry->mutex);
 }
+
+bool lap_registry_get_best_address(lap_registry_t *registry, uint16_t *out_net, uint8_t *out_node) {
+	while (xSemaphoreTake(registry->mutex, portMAX_DELAY) != pdTRUE) {}
+	bool found = false;
+
+	struct lap_registry_node_s *curr = NULL;
+	
+	for (curr = &registry->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		if (curr->lap != NULL && curr->lap->my_address != 0 && curr->lap->my_network != 0) {
+			found = true;
+			*out_net = curr->lap->my_network;
+			*out_node = curr->lap->my_address;
+			break;
+		}
+	}
+	
+	xSemaphoreGive(registry->mutex);
+	return found;
+}
