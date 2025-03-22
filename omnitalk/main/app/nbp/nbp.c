@@ -49,6 +49,7 @@ static void handle_nbp_lookup(buffer_t *packet) {
 	struct nbp_tuple_s *tuple = nbp_get_first_tuple(packet);
 	if (tuple == NULL) {
 		stats.nbp_in_errors__err_no_tuple++;
+		return;
 	}
 	
 	// Is this LkUp for us?
