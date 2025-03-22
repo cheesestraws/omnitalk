@@ -111,6 +111,8 @@ typedef struct stats {
 	prometheus_counter_t rtmp_update_packets;
 	prometheus_counter_t rtmp_errors__err_packet_too_short;
 	prometheus_counter_t rtmp_errors__err_wrong_id_len;
+	prometheus_counter_t rtmp_errors__err_invalid_lap;
+	prometheus_counter_t rtmp_errors__err_unreachable_nexthop;
 	
 	// ZIP
 	prometheus_counter_t zip_out_queries;

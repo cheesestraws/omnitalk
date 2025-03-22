@@ -59,6 +59,8 @@ COUNTER_FIELD(req, controlplane_inbound_queue_full, controlplane_inbound_queue_f
 COUNTER_FIELD(req, rtmp_update_packets, rtmp_update_packets, "", "");
 COUNTER_FIELD(req, rtmp_errors__err_packet_too_short, rtmp_errors, "err=\"packet too short\"", "");
 COUNTER_FIELD(req, rtmp_errors__err_wrong_id_len, rtmp_errors, "err=\"wrong id len\"", "");
+COUNTER_FIELD(req, rtmp_errors__err_invalid_lap, rtmp_errors, "err=\"invalid lap\"", "");
+COUNTER_FIELD(req, rtmp_errors__err_unreachable_nexthop, rtmp_errors, "err=\"unreachable nexthop\"", "");
 COUNTER_FIELD(req, zip_out_queries, zip_out_queries, "", "");
 COUNTER_FIELD(req, zip_out_errors__err_ddp_send_failed, zip_out_errors, "err=\"ddp send failed\"", "");
 COUNTER_FIELD(req, zip_in_replies__kind_nonextended, zip_in_replies, "kind=\"nonextended\"", "");

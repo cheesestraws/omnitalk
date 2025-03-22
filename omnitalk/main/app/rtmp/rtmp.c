@@ -31,7 +31,21 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 		ESP_LOGE(TAG, "wrong ID length in RTMP packet: %d", (int)(RTMP_ID_LEN(packet)));
 		return;		
 	}
-			
+	
+	if (packet->recv_chain.lap == NULL) {
+		stats.rtmp_errors__err_invalid_lap++;
+		ESP_LOGE(TAG, "NULL lap found when processing RTMP packet.  The whole router is probably about to fall over.");
+		return;
+	}
+	
+	lap_t *lap = packet->recv_chain.lap;
+	
+	// Is the router we're getting RTMP from even reachable?
+	if (RTMP_ROUTER_NETWORK(packet) < lap->network_range_start || RTMP_ROUTER_NETWORK(packet) < lap->network_range_end) {
+		stats.rtmp_errors__err_unreachable_nexthop++;
+		return;
+	}
+		
 	rtmp_tuple_t *cursor = NULL;
 	
 	for (cursor = get_first_rtmp_tuple(packet); cursor != NULL; cursor = get_next_rtmp_tuple(packet, cursor)) {
@@ -39,7 +53,7 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 			.range_start = RTMP_TUPLE_RANGE_START(cursor),
 			.range_end = RTMP_TUPLE_RANGE_END(cursor),
 	
-			.outbound_lap = packet->recv_chain.lap,
+			.outbound_lap = lap,
 			.nexthop = {
 				.network = RTMP_ROUTER_NETWORK(packet),
 				.node = RTMP_ROUTER_NODE_ID(packet),
