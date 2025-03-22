@@ -32,9 +32,9 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 		return;		
 	}
 			
-	rtmp_tuple_t *cursor = get_first_rtmp_tuple(packet);
+	rtmp_tuple_t *cursor = NULL;
 	
-	while (cursor != NULL) {
+	for (cursor = get_first_rtmp_tuple(packet); cursor != NULL; cursor = get_next_rtmp_tuple(packet, cursor)) {
 		rt_route_t route = {
 			.range_start = RTMP_TUPLE_RANGE_START(cursor),
 			.range_end = RTMP_TUPLE_RANGE_END(cursor),
@@ -54,8 +54,6 @@ static void handle_rtmp_update_packet(buffer_t *packet) {
 		}
 		
 		rt_touch(global_routing_table, route);
-	
-		cursor = get_next_rtmp_tuple(packet, cursor);
 	}
 }
 
