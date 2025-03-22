@@ -23,7 +23,7 @@ void app_main(void)
 #endif
 
 	printf("Welcome to OmniTalk\n");
-	printf("Version: %s\n", GIT_VERSION);
+	printf("Version: %s built on %s\n", GIT_VERSION, BUILD_TIMESTAMP);
 	start_stats();
 	
 	controlplane = start_controlplane_runloop();

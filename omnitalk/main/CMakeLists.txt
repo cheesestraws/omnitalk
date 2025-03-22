@@ -72,6 +72,11 @@ execute_process(COMMAND git describe --always --tags --dirty
                 ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 add_definitions("-DGIT_VERSION=\"${GIT_VERSION}\"")
 
+execute_process(COMMAND date "+%Y-%m-%d %H:%M %Z"
+                OUTPUT_VARIABLE BUILD_TIMESTAMP
+                ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+add_definitions("-DBUILD_TIMESTAMP=\"${BUILD_TIMESTAMP}\"")
+
 # Generate include files for tests, stats and metadata.
 # Technique from https://github.com/espressif/esp-idf/issues/9885 w/ tweaks.
 
