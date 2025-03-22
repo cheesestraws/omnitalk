@@ -135,6 +135,14 @@ void buf_expand_payload(buffer_t *buffer, size_t bytes) {
 	buf_set_lengths_from_ddp_payload_length(buffer);
 }
 
+void buf_trim_payload(buffer_t *buffer, size_t bytes) {
+	assert(buffer->ddp_ready);
+	assert(bytes <= buffer->ddp_payload_length);
+	
+	buffer->ddp_payload_length -= bytes;
+	buf_set_lengths_from_ddp_payload_length(buffer);
+}
+
 void printbuf(buffer_t *buffer) {
 	printf("buffer @ %p (data @ %p) length %d capacity %d\n", buffer, 
 		buffer->data, buffer->length, buffer->capacity);

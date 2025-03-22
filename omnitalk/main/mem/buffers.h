@@ -65,6 +65,7 @@ void buf_give_me_extra_l2_hdr_bytes(buffer_t *buffer, size_t bytes);
 void buf_set_l2_hdr_size(buffer_t *buffer, size_t bytes);
 
 void buf_expand_payload(buffer_t *buffer, size_t bytes);
+void buf_trim_payload(buffer_t *buffer, size_t bytes);
 
 static inline bool buf_append_all(buffer_t *buffer, uint8_t *data, size_t bytes) {
 	if (buffer == NULL || buffer->data == NULL) {

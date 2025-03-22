@@ -3,6 +3,7 @@
 #include "app/aep/aep.h"
 #include "app/nbp/nbp.h"
 #include "app/rtmp/rtmp.h"
+#include "app/sip/sip.h"
 #include "app/zip/zip.h"
 #include "net/common.h"
 
@@ -12,7 +13,7 @@ app_t unicast_apps[] = {
 	{ .socket_number = 4, .handler = &app_aep_handler, .nbp_object_is_hostname = true, .nbp_type = "Workstation" },
 	{ .socket_number = 6, .name = "app/zip", .handler = &app_zip_handler, .idle = &app_zip_idle, .start = &app_zip_start },
 	
-	{ .socket_number = 253, .name = "app/sip", .nbp_object_is_hostname = true, .nbp_type = "OmniTalk" },
+	{ .socket_number = 253, .name = "app/sip", .handler = &app_sip_handler, .nbp_object_is_hostname = true, .nbp_type = "OmniTalk" },
 	
 	{ .socket_number = 0, .handler = NULL }
 };

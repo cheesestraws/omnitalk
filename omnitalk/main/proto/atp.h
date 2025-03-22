@@ -2,6 +2,8 @@
 
 #include <stdbool.h>
 
+#include <lwip/inet.h>
+
 #include "mem/buffers.h"
 
 typedef enum {
@@ -99,6 +101,23 @@ static inline atp_timeout_indicator atp_packet_get_timeout_indicator(buffer_t *b
 
 static inline bool atp_packet_set_timeout_indicator(buffer_t *buff, atp_timeout_indicator value) {
 	return (bool)atp_packet_set_control_info_field(buff, 7, 0, (uint8_t)value);
+}
+
+static inline uint16_t atp_packet_get_transaction_id(buffer_t *buff) {
+	if (buff->ddp_payload_length < sizeof(atp_packet_t)) {
+		return 0;
+	}
+	
+	return 	ntohs(((atp_packet_t*)(buff->ddp_payload))->transaction_id);
+}
+
+static inline bool atp_packet_set_transaction_id(buffer_t *buff, uint16_t tid) {
+	if (buff->ddp_payload_length < sizeof(atp_packet_t)) {
+		return false;
+	}
+	
+	((atp_packet_t*)(buff->ddp_payload))->transaction_id = htons(tid);
+	return true;
 }
 
 buffer_t *newbuf_atp();

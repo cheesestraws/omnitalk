@@ -129,6 +129,11 @@ typedef struct stats {
 	
 	prometheus_counter_t nbp_out_packets__function_LkUp_reply;
 	prometheus_counter_t nbp_out_errors__type_reply__err_ddp_send_failed;
+	
+	// SIP
+	prometheus_counter_t sip_in_packets__function_SystemInfo;
+	prometheus_counter_t sip_out_packets__function_Ack;
+	prometheus_counter_t sip_out_errors__function_Ack__err_ddp_send_failed;
 } stats_t;
 
 // stats is the variable to stuff all our stats in.  It'll be exported
