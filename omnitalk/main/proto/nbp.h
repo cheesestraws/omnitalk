@@ -38,6 +38,16 @@ static inline nbp_function_t nbp_packet_function(buffer_t *buffer) {
 	return (fn_and_tuples & 0xf0) >> 4;
 }
 
+static inline int nbp_packet_tuple_count(buffer_t *buffer) {
+	if (buffer->ddp_payload_length < sizeof(nbp_packet_t)) {
+		return -1;
+	}
+	
+	uint8_t fn_and_tuples = ((nbp_packet_t*)(DDP_BODY(buffer)))->function_and_tuple_count;
+	return fn_and_tuples & 0x0f;
+}
+
+
 
 struct nbp_tuple_s {
 	uint16_t network;

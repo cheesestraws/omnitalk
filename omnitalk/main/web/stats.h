@@ -128,6 +128,7 @@ typedef struct stats {
 	prometheus_counter_t nbp_in_packets__function_FwdReq;
 	
 	prometheus_counter_t nbp_in_errors__err_no_tuple;
+	prometheus_counter_t nbp_in_errors__err_LkUp_with_too_many_tuples;
 	
 	prometheus_counter_t nbp_out_packets__function_LkUp_reply;
 	prometheus_counter_t nbp_out_errors__type_reply__err_ddp_send_failed;

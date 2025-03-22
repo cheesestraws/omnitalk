@@ -45,6 +45,11 @@ static void send_nbp_response(uint16_t dest_net, uint8_t dest_node, uint8_t dest
 }
 
 static void handle_nbp_lookup(buffer_t *packet) {
+	if (nbp_packet_tuple_count(packet) != 1) {
+		stats.nbp_in_errors__err_LkUp_with_too_many_tuples++;
+		// don't return, we'll try to limp on
+	}
+
 	// Does this have a tuple?
 	struct nbp_tuple_s *tuple = nbp_get_first_tuple(packet);
 	if (tuple == NULL) {
