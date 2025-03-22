@@ -6,6 +6,8 @@
 
 #include "mem/buffers_test.h"
 
+#include "proto/atp_test.h"
+
 #include "proto/ddp_test.h"
 
 #include "proto/nbp_test.h"
