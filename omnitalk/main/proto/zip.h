@@ -9,66 +9,59 @@
 #include "proto/ddp.h"
 #include "util/pstring.h"
 
-struct zip_query_packet_s {
-	uint8_t always_one;
+#define ZIP_QUERY 1
+#define ZIP_REPLY 2
+#define ZIP_EXTENDED_REPLY 8
+
+struct zip_packet_s {
+	uint8_t function;
 	uint8_t network_count;
-	uint16_t networks[];
+	uint8_t payload[];
 } __attribute__((packed));
 
-typedef struct zip_query_packet_s zip_query_packet_t;
+typedef struct zip_packet_s zip_packet_t;
 
-static inline void zip_qry_setup_packet(buffer_t* buff, uint8_t network_count) {
-	zip_query_packet_t *packet = (zip_query_packet_t*)(DDP_BODY(buff));
-	packet->always_one = 1;
-	packet->network_count = network_count;
-	buff->ddp_payload_length = sizeof(zip_query_packet_t) + (2 * network_count);
-}
+#define ZIP_FUNCTION(X) (((zip_packet_t*)(DDP_BODY((X))))->function)
 
 static inline uint8_t zip_packet_get_network_count(buffer_t* buff) {
-	// both queries and responses have the network count in the same place
-	// so we just pretend it's a query packet for now
-	zip_query_packet_t *packet = (zip_query_packet_t*)(DDP_BODY(buff));
+	zip_packet_t *packet = (zip_packet_t*)(DDP_BODY(buff));
 	return packet->network_count;
 }
 
 static inline bool zip_qry_set_network(buffer_t* buff, int idx, uint16_t network) {
-	zip_query_packet_t *packet = (zip_query_packet_t*)(DDP_BODY(buff));
+	zip_packet_t *packet = (zip_packet_t*)(DDP_BODY(buff));
 
 	if (unlikely(idx >= packet->network_count)) {
 		return false;
 	}
 	
-	packet->networks[idx] = htons(network);
+	((uint16_t*)packet->payload)[idx] = htons(network);
 	return true;
 }
 
 static inline uint16_t zip_qry_get_network(buffer_t* buff, int idx) {
-	zip_query_packet_t *packet = (zip_query_packet_t*)(DDP_BODY(buff));
+	zip_packet_t *packet = (zip_packet_t*)(DDP_BODY(buff));
 
 	if (unlikely(idx >= packet->network_count)) {
 		return 0;
 	}
 	
-	return ntohs(packet->networks[idx]);
+	return ntohs(((uint16_t*)packet->payload)[idx]);
 }
-
-#define ZIP_REPLY 2
-#define ZIP_EXTENDED_REPLY 8
-
-struct zip_reply_packet_s {
-	uint8_t reply_type;
-	uint8_t network_count;
-	uint8_t zones[];
-} __attribute__((packed));
-
-typedef struct zip_reply_packet_s zip_reply_packet_t;
-
-#define ZIP_REPLY_TYPE(X) (((zip_reply_packet_t*)(DDP_BODY((X))))->reply_type)
 
 static inline uint8_t* zip_reply_get_zones(buffer_t *buff) {
-	zip_reply_packet_t *packet = (zip_reply_packet_t*)(DDP_BODY(buff));
-	return &packet->zones[0];
+	zip_packet_t *packet = (zip_packet_t*)(DDP_BODY(buff));
+	return &packet->payload[0];
 }
+
+
+static inline void zip_qry_setup_packet(buffer_t* buff, uint8_t network_count) {
+	zip_packet_t *packet = (zip_packet_t*)(DDP_BODY(buff));
+	packet->function = ZIP_QUERY;
+	packet->network_count = network_count;
+	buff->ddp_payload_length = sizeof(zip_packet_t) + (2 * network_count);
+}
+
 
 struct zip_zone_tuple_s {
 	uint16_t network;

@@ -35,7 +35,7 @@ TEST_FUNCTION(zip_tuple_reading) {
 	buffer_t *buff = newbuf_ddp();
 	char *tuples = (char*)zip_reply_get_zones(buff);
 	strcpy(tuples, test_tuples);
-	buff->ddp_payload_length += sizeof(zip_reply_packet_t);
+	buff->ddp_payload_length += sizeof(zip_packet_t);
 	buff->ddp_payload_length += strlen(test_tuples);
 	buf_set_lengths_from_ddp_payload_length(buff);
 		

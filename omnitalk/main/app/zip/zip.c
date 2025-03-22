@@ -97,13 +97,13 @@ static void app_zip_handle_nonextended_reply(buffer_t *packet) {
 
 void app_zip_handler(buffer_t *packet) {
 	if (DDP_TYPE(packet) == 6 && 
-	    packet->ddp_payload_length > sizeof(zip_reply_packet_t) &&
-	    ZIP_REPLY_TYPE(packet) == ZIP_REPLY) {
+	    packet->ddp_payload_length > sizeof(zip_packet_t) &&
+	    ZIP_FUNCTION(packet) == ZIP_REPLY) {
 	
 		app_zip_handle_nonextended_reply(packet);
 	} else if (DDP_TYPE(packet) == 6 && 
-	    packet->ddp_payload_length > sizeof(zip_reply_packet_t) &&
-	    ZIP_REPLY_TYPE(packet) == ZIP_EXTENDED_REPLY) {
+	    packet->ddp_payload_length > sizeof(zip_packet_t) &&
+	    ZIP_FUNCTION(packet) == ZIP_EXTENDED_REPLY) {
 	
 		app_zip_handle_extended_reply(packet);
 	}
