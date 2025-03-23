@@ -2,6 +2,7 @@
 
 #include "table/zip/table_impl.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 zt_zip_table_t* zt_new();
@@ -29,3 +30,19 @@ bool zt_network_is_complete(zt_zip_table_t *table, uint16_t network);
 
 void zt_print(zt_zip_table_t *table);
 char* zt_stats(zt_zip_table_t *table);
+
+// An iterator.  We can't do the for-loop-and-cursor trick, because we need to iterate
+// under the lock.  So instead we do it with callbacks.  If any callback returns false,
+// the iteration terminates (calling the finaliser if one is provided.)
+typedef bool (*zip_iterator_init_cb)(void* pvt, uint16_t network, bool exists, size_t zone_count, bool complete);
+// In the loop body iterator, do not modify the zone char* you are given.  If you want
+// to copy it, do so before the callback returns; do not stash the pointer and attempt to
+// copy it later.
+typedef bool (*zip_iterator_loop_cb)(void* pvt, int idx, uint16_t network, char* zone);
+typedef bool (*zip_iterator_end_cb)(void* pvt, bool aborted);
+
+bool zt_iterate_net(
+	zt_zip_table_t *table, void* private_data, uint16_t network,
+	zip_iterator_init_cb init,
+	zip_iterator_loop_cb,
+	zip_iterator_end_cb);

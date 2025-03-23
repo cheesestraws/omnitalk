@@ -6,4 +6,4 @@ TEST_FUNCTION(test_zip_table_networks);
 TEST_FUNCTION(test_zip_table_zones);
 TEST_FUNCTION(test_zip_table_completion);
 TEST_FUNCTION(test_zip_table_stats);
-
+TEST_FUNCTION(test_zip_table_iteration);

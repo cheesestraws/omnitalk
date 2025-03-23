@@ -492,3 +492,63 @@ char* zt_stats(zt_zip_table_t *table) {
 	
 	return strbuf;
 }
+
+static bool zt_iterate_net_unguarded(
+	zt_zip_table_t *table, void* private_data, uint16_t network,
+	zip_iterator_init_cb init,
+	zip_iterator_loop_cb loop,
+	zip_iterator_end_cb end) {
+	
+	bool success = true;
+
+	// Find the node for the network
+	struct zip_network_node_s *node = zt_lookup_unguarded(table, network);
+	if (node == NULL) {
+		// Node doesn't exist, do an init/end callback
+		if (init != NULL) {
+			success = init(private_data, network, false, 0, false);
+		}
+		if (end != NULL) {
+			success = end(private_data, !success);
+		}
+		return success;
+	}
+
+	// We have a node!  Let's iterate.
+	if (init != NULL) {
+		success = init(private_data, network, true, node->zone_count, node->complete);
+	}
+	int idx = 0;
+	if (success) {
+		struct zip_zone_node_s* curr;
+		for (curr = &node->root; success && curr != NULL; curr = curr->next) {
+			if (curr->dummy) {
+				continue;
+			}
+			
+			success = loop(private_data, idx, network, curr->zone_name);
+			
+			idx++;
+		}
+	}
+	if (end != NULL) {
+		success = end(private_data, !success);
+	}
+	
+	return success;
+}
+
+bool zt_iterate_net(
+	zt_zip_table_t *table, void* private_data, uint16_t network,
+	zip_iterator_init_cb init,
+	zip_iterator_loop_cb loop,
+	zip_iterator_end_cb end) {
+
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	bool result = zt_iterate_net_unguarded(table, private_data, network, init, loop, end);
+	
+	xSemaphoreGive(table->mutex);
+	
+	return result;
+}
