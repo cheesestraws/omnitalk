@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "util/pstring.h"
+
 zt_zip_table_t* zt_new();
 
 size_t zt_count_net_ranges(zt_zip_table_t *table);
@@ -18,7 +20,7 @@ bool zt_delete_network(zt_zip_table_t *table, uint16_t network);
 bool zt_get_network_complete(zt_zip_table_t *table, uint16_t network);
 
 // Add a zone for the given network.  Copies 'zone'.
-void zt_add_zone_for(zt_zip_table_t *table, uint16_t network, char* zone);
+void zt_add_zone_for(zt_zip_table_t *table, uint16_t network, pstring* zone);
 
 void zt_set_expected_zone_count(zt_zip_table_t *table, uint16_t network, int count);
 void zt_check_zone_count_for_completeness(zt_zip_table_t *table, uint16_t network);
@@ -38,7 +40,7 @@ typedef bool (*zip_iterator_init_cb)(void* pvt, uint16_t network, bool exists, s
 // In the loop body iterator, do not modify the zone char* you are given.  If you want
 // to copy it, do so before the callback returns; do not stash the pointer and attempt to
 // copy it later.
-typedef bool (*zip_iterator_loop_cb)(void* pvt, int idx, uint16_t network, char* zone);
+typedef bool (*zip_iterator_loop_cb)(void* pvt, int idx, uint16_t network, pstring* zone);
 typedef bool (*zip_iterator_end_cb)(void* pvt, bool aborted);
 
 bool zt_iterate_net(

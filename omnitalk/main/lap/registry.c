@@ -1,5 +1,6 @@
 #include "lap/registry.h"
 
+#include <stdatomic.h>
 #include <stdbool.h>
 
 #include <freertos/FreeRTOS.h>
@@ -95,9 +96,11 @@ lap_t* lap_registry_highest_quality_lap(lap_registry_t* registry) {
 }
 
 void lap_registry_update_zone_cache(lap_registry_t *registry) {
+	static bool previously_set_stats_zone = false;
+
 	while (xSemaphoreTake(registry->mutex, portMAX_DELAY) != pdTRUE) {}
 
-	char* zone = NULL;	
+	pstring* zone = NULL;	
 	struct lap_registry_node_s *curr = NULL;
 	
 	for (curr = &registry->root; curr != NULL; curr = curr->next) {
@@ -110,8 +113,15 @@ void lap_registry_update_zone_cache(lap_registry_t *registry) {
 		}
 	}
 	
-	registry->best_zone_cache = zone;
-	stats_omnitalk_metadata.best_zone = zone;
+	if (zone != NULL) {
+		registry->best_zone_cache = zone;
+		char* old_stats_zone = atomic_exchange(&stats_omnitalk_metadata.best_zone, pstring_to_cstring_alloc(zone));
+		if (previously_set_stats_zone && old_stats_zone != NULL) {
+			free(old_stats_zone);
+		}
+		previously_set_stats_zone = true;
+
+	}
 	
 	xSemaphoreGive(registry->mutex);
 }

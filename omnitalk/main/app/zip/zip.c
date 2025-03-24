@@ -32,7 +32,7 @@ static void propagate_zone_to_lap(zip_zone_tuple_t *t) {
 		if (route.outbound_lap != NULL && route.outbound_lap->my_zone == NULL) {	
 			// We will never change this again, so we can allocate it and will never
 			// free it.
-			char* zone = pstring_to_cstring_alloc(&ZIP_TUPLE_ZONE_NAME(t));
+			pstring* zone = pstrclone(&ZIP_TUPLE_ZONE_NAME(t));
 			lap_set_my_zone(route.outbound_lap, zone);
 			lap_registry_update_zone_cache(global_lap_registry);
 		}
@@ -50,7 +50,6 @@ static void app_zip_handle_extended_reply(buffer_t *packet) {
 	
 	// Iterate through the tuples, adding them to the network
 	zip_zone_tuple_t *t;
-	char* zone_cstr;
 	
 	for (t = zip_reply_get_first_tuple(packet); t != NULL; t = zip_reply_get_next_tuple(packet, t)) {
 		if (first_tuple) {
@@ -60,9 +59,7 @@ static void app_zip_handle_extended_reply(buffer_t *packet) {
 			propagate_zone_to_lap(t);
 		}
 	
-		zone_cstr = pstring_to_cstring_alloc(&ZIP_TUPLE_ZONE_NAME(t));
-		zt_add_zone_for(global_zip_table, ZIP_TUPLE_NETWORK(t), zone_cstr);
-		free(zone_cstr);
+		zt_add_zone_for(global_zip_table, ZIP_TUPLE_NETWORK(t), &ZIP_TUPLE_ZONE_NAME(t));
 		first_tuple = false;
 	}
 	
@@ -74,18 +71,13 @@ static void app_zip_handle_nonextended_reply(buffer_t *packet) {
 
 	// Iterate through the tuples, adding them to the networks
 	zip_zone_tuple_t *t;
-	char* zone_cstr;
 	bool first_tuple = true;
 	
 	for (t = zip_reply_get_first_tuple(packet); t != NULL; t = zip_reply_get_next_tuple(packet, t)) {
 		if (first_tuple) {
 			propagate_zone_to_lap(t);
 		}
-		
-		zone_cstr = pstring_to_cstring_alloc(&ZIP_TUPLE_ZONE_NAME(t));
-		zt_add_zone_for(global_zip_table, ZIP_TUPLE_NETWORK(t), zone_cstr);
-		free(zone_cstr);
-		
+		zt_add_zone_for(global_zip_table, ZIP_TUPLE_NETWORK(t), &ZIP_TUPLE_ZONE_NAME(t));		
 		first_tuple = false;
 	}
 	

@@ -33,9 +33,9 @@ TEST_FUNCTION(test_lap_registry_zone_cache) {
 	lap_registry_t *reg = lap_registry_new();
 	TEST_ASSERT(reg != NULL);
 	
-	lap_t good_lap = { .id = 3, .quality = 1, .my_zone = "good" };
-	lap_t better_lap = { .id = 2, .quality = 2, .my_zone = "better" };
-	lap_t best_lap = { .id = 1, .quality = 3, .my_zone = "best" };
+	lap_t good_lap = { .id = 3, .quality = 1, .my_zone = (pstring*)"\x04good" };
+	lap_t better_lap = { .id = 2, .quality = 2, .my_zone = (pstring*)"\x06""better" };
+	lap_t best_lap = { .id = 1, .quality = 3, .my_zone = (pstring*)"\x04""best" };
 
 	lap_registry_register(reg, &better_lap);
 	lap_registry_update_zone_cache(reg);

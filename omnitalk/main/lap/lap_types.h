@@ -7,6 +7,7 @@
 #include <esp_err.h>
 
 #include "net/transport_types.h"
+#include "util/pstring.h"
 #include "runloop_types.h"
 
 typedef struct lap_s lap_t;
@@ -38,5 +39,5 @@ struct lap_s {
 	uint16_t network_range_start;
 	uint16_t network_range_end;
 	
-	_Atomic(char*) my_zone;
+	_Atomic(pstring*) my_zone;
 };

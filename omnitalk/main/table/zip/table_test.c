@@ -88,26 +88,26 @@ TEST_FUNCTION(test_zip_table_zones) {
 	old_allocs = stats.mem_all_allocs;
 	
 	// Add a zone and check it got added
-	zt_add_zone_for(table, 5, "Zone1");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone1");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 1);
 	
 	// Trying to add the same zone again shouldn't increase counter
-	zt_add_zone_for(table, 5, "Zone1");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone1");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 1);
 	
-	zt_add_zone_for(table, 5, "Zone2");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone2");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 2);
 
-	zt_add_zone_for(table, 5, "Zone3");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone3");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
 
-	zt_add_zone_for(table, 5, "Zone3");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone3");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
 
-	zt_add_zone_for(table, 5, "Zone2");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone2");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
 
-	zt_add_zone_for(table, 5, "Zone1");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone1");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
 	
 	// We've added three zones, so we should have allocated six times
@@ -118,15 +118,15 @@ TEST_FUNCTION(test_zip_table_zones) {
 	
 	old_allocs = stats.mem_all_allocs;
 	
-	zt_add_zone_for(table, 25, "1enoZ");
+	zt_add_zone_for(table, 25, (pstring*)"\x05""1enoZ");
 	TEST_ASSERT(zt_count_zones_for(table, 25) == 1);
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
 	
-	zt_add_zone_for(table, 25, "2enoZ");
+	zt_add_zone_for(table, 25, (pstring*)"\x05""2enoZ");
 	TEST_ASSERT(zt_count_zones_for(table, 25) == 2);
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
 	
-	zt_add_zone_for(table, 5, "Zone4");
+	zt_add_zone_for(table, 5, (pstring*)"\x05Zone4");
 	TEST_ASSERT(zt_count_zones_for(table, 25) == 2);
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 4);
 	
@@ -165,21 +165,21 @@ TEST_FUNCTION(test_zip_table_completion) {
 	TEST_ASSERT(!zt_network_is_complete(table, 20));
 	
 	// Add a couple of zones and we still shouldn't be complete
-	zt_add_zone_for(table, 20, "Zone1");
-	zt_add_zone_for(table, 20, "Zone2");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone1");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone2");
 	zt_check_zone_count_for_completeness(table, 20);
 	TEST_ASSERT(!zt_network_is_complete(table, 20));
 
 	// "Adding" the same two again shouldn't affect the unique zone count and thus
 	// shouldn't make completeness happen
-	zt_add_zone_for(table, 20, "Zone1");
-	zt_add_zone_for(table, 20, "Zone2");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone1");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone2");
 	zt_check_zone_count_for_completeness(table, 20);
 	TEST_ASSERT(!zt_network_is_complete(table, 20));
 	
 	// Adding two new ones, though, should.
-	zt_add_zone_for(table, 20, "Zone3");
-	zt_add_zone_for(table, 20, "Zone4");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone3");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone4");
 	zt_check_zone_count_for_completeness(table, 20);
 	TEST_ASSERT(zt_network_is_complete(table, 20));
 
@@ -193,10 +193,10 @@ TEST_FUNCTION(test_zip_table_stats) {
 	zt_zip_table_t* table = zt_new();
 	TEST_ASSERT(zt_add_net_range(table, 20, 30));
 	
-	zt_add_zone_for(table, 20, "Zone1");
-	zt_add_zone_for(table, 20, "Zone2");
-	zt_add_zone_for(table, 20, "Zone3");
-	zt_add_zone_for(table, 20, "Zone4");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone1");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone2");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone3");
+	zt_add_zone_for(table, 20, (pstring*)"\x05Zone4");
 
 	// We should only have one "loose" allocation, which is the char* we return
 	old_allocations = stats.mem_all_allocs - stats.mem_all_frees;
@@ -239,7 +239,7 @@ static bool test_iter_init(void* pvt, uint16_t network, bool exists, size_t zone
 	return true;
 }
 
-static bool test_iter_loop(void* pvt, int idx, uint16_t network, char* zone) {
+static bool test_iter_loop(void* pvt, int idx, uint16_t network, pstring* zone) {
 	test_zip_iteration_state_t *state = (test_zip_iteration_state_t*)pvt;
 	SET_TEST_NAME(state->test_name);
 	
@@ -247,10 +247,13 @@ static bool test_iter_loop(void* pvt, int idx, uint16_t network, char* zone) {
 	state->next_expected_index++;
 	
 	state->iterations++;
-	state->cursor = stpcpy(state->cursor, zone);
+	// We've cheated and made all our zone strings both C and pascal strings, so we can
+	// just point to the first char of zone to get the c string (with a null on the end)
+	char* cstr = &zone->str[0];
+	state->cursor = stpcpy(state->cursor, cstr);
 		
 	// simulate an error
-	if (strcmp(zone, "3BREAK") == 0) {
+	if (strcmp(cstr, "3BREAK") == 0) {
 		return false;
 	} else {
 		return true;
@@ -272,18 +275,18 @@ TEST_FUNCTION(test_zip_table_iteration) {
 	zt_zip_table_t* table = zt_new();
 	TEST_ASSERT(zt_add_net_range(table, 20, 30));
 	
-	zt_add_zone_for(table, 20, "Zone1");
-	zt_add_zone_for(table, 20, "Zone2");
-	zt_add_zone_for(table, 20, "Zone3");
-	zt_add_zone_for(table, 20, "Zone4");
+	zt_add_zone_for(table, 20, (pstring*)"\x06Zone1");
+	zt_add_zone_for(table, 20, (pstring*)"\x06Zone2");
+	zt_add_zone_for(table, 20, (pstring*)"\x06Zone3");
+	zt_add_zone_for(table, 20, (pstring*)"\x06Zone4");
 	zt_mark_network_complete(table, 20);
 	
 	TEST_ASSERT(zt_add_net_range(table, 1, 10));
-	zt_add_zone_for(table, 1, "1enoZ");
-	zt_add_zone_for(table, 1, "2enoZ");
-	zt_add_zone_for(table, 1, "3BREAK");
-	zt_add_zone_for(table, 1, "4enoZ");
-	zt_add_zone_for(table, 1, "5enoZ");
+	zt_add_zone_for(table, 1, (pstring*)"\x06""1enoZ");
+	zt_add_zone_for(table, 1, (pstring*)"\x06""2enoZ");
+	zt_add_zone_for(table, 1, (pstring*)"\x07""3BREAK");
+	zt_add_zone_for(table, 1, (pstring*)"\x06""4enoZ");
+	zt_add_zone_for(table, 1, (pstring*)"\x06""5enoZ");
 
 	test_zip_iteration_state_t state;
 	

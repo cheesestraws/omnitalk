@@ -33,7 +33,7 @@ static void send_nbp_response(uint16_t dest_net, uint8_t dest_node, uint8_t dest
 	NBP_TUPLE_SET_SOCKET(tuple, socket);
 	buffer_append_cstring_as_pstring(buff, nbp_object);
 	buffer_append_cstring_as_pstring(buff, nbp_type);
-	buffer_append_cstring_as_pstring(buff, global_lap_registry->best_zone_cache);
+	buf_append_pstring(buff, global_lap_registry->best_zone_cache);
 		
 	if (!ddp_send(buff, 2, dest_net, dest_node, dest_socket, 2)) {
 		stats.nbp_out_errors__type_reply__err_ddp_send_failed++;
@@ -66,10 +66,10 @@ static void handle_nbp_lookup(buffer_t *packet) {
 		if (packet_lap == NULL) {
 			return;
 		}
-		if (!strcmp(packet_lap->my_zone, global_lap_registry->best_zone_cache)) {
+		if (!pstring_eq_pstring(packet_lap->my_zone, global_lap_registry->best_zone_cache)) {
 			return;
 		}
-	} else if (!pstring_eq_cstring(zone, global_lap_registry->best_zone_cache)) {
+	} else if (!pstring_eq_pstring_mac_ci(zone, global_lap_registry->best_zone_cache)) {
 		return;
 	}
 		

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "net/chain.h"
+#include "util/pstring.h"
 
 typedef enum {
 	BUF_SHORT_HEADER = 1,
@@ -92,6 +93,10 @@ static inline bool buf_append_all(buffer_t *buffer, uint8_t *data, size_t bytes)
 
 static inline bool buf_append(buffer_t *buffer, uint8_t byte) {
 	return buf_append_all(buffer, &byte, 1);
+}
+
+static inline bool buf_append_pstring(buffer_t *buffer, pstring *str) {
+	return buf_append_all(buffer, (uint8_t*)&str->str[0], ((size_t)str->length) + 1);
 }
 
 static inline bool buffer_append_cstring_as_pstring(buffer_t *buffer, char *str) {

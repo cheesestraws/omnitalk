@@ -67,6 +67,14 @@ bool pstring_eq_cstring(pstring *p, const char *c) {
 	return memcmp(c, &p->str[0], (size_t)p->length) == 0;
 }
 
+bool pstring_eq_pstring(pstring *a, pstring *b) {
+	if (a->length != b->length) {
+		return false;
+	}
+	
+	return memcmp(&a->str[0], &b->str[0], (size_t)a->length) == 0;
+}
+
 bool pstring_eq_cstring_mac_ci(pstring *p, const char *c) {
 	if (strlen(c) != p->length) {
 		return false;
@@ -80,6 +88,21 @@ bool pstring_eq_cstring_mac_ci(pstring *p, const char *c) {
 	
 	return true;
 }
+
+bool pstring_eq_pstring_mac_ci(pstring *a, pstring *b) {
+	if (a->length != b->length) {
+		return false;
+	}
+	
+	for (int i = 0; i < a->length; i++) {
+		if (mac_uc(a->str[i]) != mac_uc(b->str[i])) {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 
 bool pstring_matches_cstring_nbp(pstring *p, const char *c) {
 	// Wildcard?
@@ -125,5 +148,36 @@ char *pstring_to_cstring_alloc(pstring *p) {
 	}
 	memcpy(dst, &p->str[0], p->length);
 	dst[p->length] = 0;
+	return dst;
+}
+
+int pstrcmp(pstring* s1, pstring* s2) {
+	int comparisonLength = (s1->length < s2->length ? s1->length : s2->length);
+	
+	for (int i = 0; i < comparisonLength; i++) {
+		if (s1->str[i] > s2->str[i]) {
+			return 1;
+		}
+		if (s1->str[i] < s2->str[i]) {
+			return -1;
+		}
+	}
+	
+	// The two strings are equal up to the length of their common prefix
+	if (s1->length > s2->length) {
+		return 1;
+	} else if (s1->length < s2->length) {
+		return -1;
+	} else /* s1->length == s2->length */ {
+		return 0;
+	}
+}
+
+pstring* pstrclone(pstring *src) {
+	pstring* dst = calloc(1, src->length + 1);
+	if (dst == NULL) {
+		return NULL;
+	}
+	memcpy(dst, src, src->length + 1);
 	return dst;
 }

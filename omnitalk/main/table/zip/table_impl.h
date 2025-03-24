@@ -6,10 +6,12 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 
+#include "util/pstring.h"
+
 struct zip_zone_node_s {
 	bool dummy;
 	
-	char* zone_name;
+	pstring* zone_name;
 	struct zip_zone_node_s* next;	
 };
 

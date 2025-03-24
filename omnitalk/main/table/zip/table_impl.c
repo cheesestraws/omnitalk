@@ -191,7 +191,7 @@ bool zt_get_network_complete(zt_zip_table_t *table, uint16_t network) {
 	return complete;	
 }
 
-static void zt_add_zone_for_unguarded(zt_zip_table_t *table, uint16_t network, char* zone) {
+static void zt_add_zone_for_unguarded(zt_zip_table_t *table, uint16_t network, pstring* zone) {
 	struct zip_network_node_s* net_node = zt_lookup_unguarded(table, network);
 	if (net_node == NULL) {
 		return;
@@ -205,7 +205,7 @@ static void zt_add_zone_for_unguarded(zt_zip_table_t *table, uint16_t network, c
 			continue;
 		}
 	
-		int cmp = strcmp(curr->zone_name, zone);
+		int cmp = pstrcmp(curr->zone_name, zone);
 		
 		// Is this zone name already in the zonelist?
 		if (cmp == 0) {
@@ -227,13 +227,13 @@ static void zt_add_zone_for_unguarded(zt_zip_table_t *table, uint16_t network, c
 	
 	// If we reach here, we didn't find the zone, and prev will point to where we
 	// ought to put it.
-	char* new_zone_name = NULL;
+	pstring* new_zone_name = NULL;
 	struct zip_zone_node_s *new_node = calloc(1, sizeof(*new_node));
 	if (new_node == NULL) {
 		goto cleanup;
 	}
 	
-	new_zone_name = strclone(zone);
+	new_zone_name = pstrclone(zone);
 	if (new_zone_name == NULL) {
 		goto cleanup;
 	}
@@ -256,7 +256,7 @@ cleanup:
 }
 
 
-void zt_add_zone_for(zt_zip_table_t *table, uint16_t network, char* zone) {
+void zt_add_zone_for(zt_zip_table_t *table, uint16_t network, pstring* zone) {
 	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
 	
 	zt_add_zone_for_unguarded(table, network, zone);
@@ -376,7 +376,9 @@ void zt_print(zt_zip_table_t *table) {
 			if (curr_zone->dummy) {
 				continue;
 			}
-			printf("  - %s\n", curr_zone->zone_name);
+			printf("  - ");
+			pstring_print(curr_zone->zone_name);
+			printf("\n");
 		}
 		
 	}
@@ -413,7 +415,7 @@ char* zt_stats(zt_zip_table_t *table) {
 			zone_count++;
 			zone_count_per_network++;
 			
-			int zone_length = strlen(curr_zone->zone_name);
+			int zone_length = curr_zone->zone_name->length;
 			if (zone_length > max_zone_length) {
 				max_zone_length = zone_length;
 			}
@@ -464,15 +466,19 @@ char* zt_stats(zt_zip_table_t *table) {
 			}
 			
 			// copy the zone name, swapping "s for _s
-			for (char* c = curr_zone->zone_name; *c != '\0'; c++) {
-				if (*c == '"') {
+			int i;
+			char* c;
+			for (i = 0, c = &curr_zone->zone_name->str[0]; 
+			     i < curr_zone->zone_name->length; c++, i++) {
+				
+				if (*c == '"' || *c == '\0') {
 					*zonecursor = '_';
 				} else {
 					*zonecursor = *c;
 				}
 				zonecursor++;
-			}	
-			
+			}
+
 			firstzone = false;
 		}
 		*zonecursor = '\0';

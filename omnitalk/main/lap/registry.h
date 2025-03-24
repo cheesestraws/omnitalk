@@ -8,6 +8,7 @@
 #include <freertos/semphr.h>
 
 #include "lap/lap_types.h"
+#include "util/pstring.h"
 
 // The LAP registry keeps track of what LAPs there are and whether they're ready or
 // not.  It allows efficiently waiting for all LAPs to be ready, and also retrieval
@@ -22,7 +23,7 @@ struct lap_registry_node_s {
 
 typedef struct lap_registry_s {
 	EventGroupHandle_t ready_laps;
-	_Atomic(char*) best_zone_cache;
+	_Atomic(pstring*) best_zone_cache;
 		
 	SemaphoreHandle_t mutex;
 	EventBits_t registered_laps;
