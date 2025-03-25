@@ -329,3 +329,23 @@ TEST_FUNCTION(test_zip_table_iteration) {
 
 	TEST_OK();
 }
+
+static bool test_null_iter_loop(void* pvt, int idx, uint16_t network, pstring* zone) {
+	SET_TEST_NAME((char*)pvt);
+	
+	TEST_ASSERT(pstring_eq_pstring(zone, (pstring*)"\x0dhorrible\0name"));
+	
+	return true;
+}
+
+TEST_FUNCTION(test_zip_table_zone_names_with_null_in) {
+	zt_zip_table_t* table = zt_new();
+	TEST_ASSERT(zt_add_net_range(table, 20, 30));
+
+	pstring* zone_name = (pstring*)"\x0dhorrible\0name";
+	zt_add_zone_for(table, 20, zone_name);
+	
+	TEST_ASSERT(zt_iterate_net(table, TEST_NAME, 20, NULL, test_null_iter_loop, NULL));
+
+	TEST_OK();
+}

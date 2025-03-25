@@ -32,6 +32,7 @@ RUN_TEST(test_zip_table_zones);
 RUN_TEST(test_zip_table_completion);
 RUN_TEST(test_zip_table_stats);
 RUN_TEST(test_zip_table_iteration);
+RUN_TEST(test_zip_table_zone_names_with_null_in);
 
 RUN_TEST(test_tests);
 
