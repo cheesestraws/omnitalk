@@ -6,6 +6,7 @@
 #include <freertos/queue.h>
 
 #include "lap/lap.h"
+#include "proto/ddp.h"
 #include "proto/zip.h"
 #include "table/routing/route.h"
 #include "table/routing/table.h"
@@ -87,17 +88,137 @@ static void app_zip_handle_nonextended_reply(buffer_t *packet) {
 	}
 }
 
+/* ZIP query handling */
+
+struct zip_query_response_state {
+	uint8_t to_node;
+	uint16_t to_net;
+	uint8_t to_socket;
+	
+	size_t zone_count;
+	
+	buffer_t *packet_in_progress;	
+};
+
+// These three functions form a loop iterating over the zone table
+bool query_reply_iterator_init(void* pvt, uint16_t network, bool exists, size_t zone_count, bool complete) {
+	struct zip_query_response_state *state = (struct zip_query_response_state*)pvt;
+
+	// If this network doesn't exist or the zone records aren't complete, bail out.
+	if (!exists) {
+		return false;
+	}
+	if (!complete) {
+		return false;
+	}
+	if (zone_count == 0) {
+		return false;
+	}
+	
+	state->zone_count = zone_count;
+	return true;
+}
+
+bool query_reply_iterator_loop(void* pvt, int idx, uint16_t network, pstring* zone) {
+	struct zip_query_response_state *state = (struct zip_query_response_state*)pvt;
+	bool try_again = false;
+	
+	do {
+		// Do we need to create a new packet buffer?
+		if (state->packet_in_progress == NULL) {
+			state->packet_in_progress = newbuf_ddp();
+			zip_ext_reply_setup_packet(state->packet_in_progress, state->zone_count);
+		}
+	
+		// Do we have room in the current packet for this next tuple?
+		size_t tuple_len = zone->length + 3;
+		if (state->packet_in_progress->ddp_payload_length + tuple_len <= DDP_MAX_PAYLOAD_LEN) {
+			// Happy days!
+			buf_append_uint16(state->packet_in_progress, network);
+			buf_append_pstring(state->packet_in_progress, zone);
+			try_again = false;
+		} else {
+			// Send this packet off and try again with a fresh one
+			if (!ddp_send(state->packet_in_progress, DDP_SOCKET_ZIP, state->to_net,
+			              state->to_node, state->to_socket, 6)) {
+				stats.zip_out_errors__err_ddp_send_failed++;
+				free(state->packet_in_progress);
+			} else {
+				stats.zip_out_replies__kind_extended++;
+			}
+			state->packet_in_progress = NULL;
+			try_again = true;
+		}
+	} while(try_again);
+	
+	return true;
+}
+
+ bool query_reply_iterator_end(void* pvt, bool aborted) {
+ 	struct zip_query_response_state *state = (struct zip_query_response_state*)pvt;
+ 
+ 	if (aborted) {
+ 		return false;
+ 	}
+ 	
+ 	if (state->packet_in_progress != NULL) {
+ 		// Send our last chunk of reply
+		if (!ddp_send(state->packet_in_progress, DDP_SOCKET_ZIP, state->to_net,
+					  state->to_node, state->to_socket, 6)) {
+			stats.zip_out_errors__err_ddp_send_failed++;
+			free(state->packet_in_progress);
+		} else {
+			stats.zip_out_replies__kind_extended++;
+		}
+		state->packet_in_progress = NULL;
+ 	}
+ 	
+ 	return true;
+ }
+
+static void app_zip_reply_to_query_for_net(buffer_t *packet, uint16_t net) {
+	struct zip_query_response_state state = {
+		.to_node = DDP_SRC(packet),
+		.to_net = DDP_SRCNET(packet),
+		.to_socket = DDP_SRCSOCK(packet)
+	};
+	
+	zt_iterate_net(global_zip_table, &state, net,
+		query_reply_iterator_init, query_reply_iterator_loop, query_reply_iterator_end);
+}
+
+static void app_zip_handle_query(buffer_t *packet) {
+	uint8_t network_count = zip_packet_get_network_count(packet);
+	
+	// Do we have the number of networks the header claims we have?
+	int remaining_bytes_after_hdr = packet->ddp_payload_length - sizeof(zip_packet_t);
+	if (remaining_bytes_after_hdr < network_count * 2) {
+		stats.zip_in_errors__err_query_packet_too_short++;
+		return;
+	}
+	
+	for (int i = 0; i < network_count; i++) {
+		uint16_t net = zip_qry_get_network(packet, i);
+		app_zip_reply_to_query_for_net(packet, net);
+	}
+}
+
 void app_zip_handler(buffer_t *packet) {
 	if (DDP_TYPE(packet) == 6 && 
-	    packet->ddp_payload_length > sizeof(zip_packet_t) &&
+	    packet->ddp_payload_length >= sizeof(zip_packet_t) &&
 	    ZIP_FUNCTION(packet) == ZIP_REPLY) {
 	
 		app_zip_handle_nonextended_reply(packet);
 	} else if (DDP_TYPE(packet) == 6 && 
-	    packet->ddp_payload_length > sizeof(zip_packet_t) &&
+	    packet->ddp_payload_length >= sizeof(zip_packet_t) &&
 	    ZIP_FUNCTION(packet) == ZIP_EXTENDED_REPLY) {
 	
 		app_zip_handle_extended_reply(packet);
+	} else if (DDP_TYPE(packet) == 6 && 
+	    packet->ddp_payload_length >= sizeof(zip_packet_t) &&
+	    ZIP_FUNCTION(packet) == ZIP_QUERY) {
+	    
+		app_zip_handle_query(packet);
 	}
 
 	freebuf(packet);

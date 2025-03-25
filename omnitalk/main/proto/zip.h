@@ -62,6 +62,13 @@ static inline void zip_qry_setup_packet(buffer_t* buff, uint8_t network_count) {
 	buff->ddp_payload_length = sizeof(zip_packet_t) + (2 * network_count);
 }
 
+static inline void zip_ext_reply_setup_packet(buffer_t* buff, uint8_t zone_count) {
+	zip_packet_t *packet = (zip_packet_t*)(DDP_BODY(buff));
+	packet->function = ZIP_EXTENDED_REPLY;
+	packet->network_count = zone_count;
+}
+
+
 
 struct zip_zone_tuple_s {
 	uint16_t network;

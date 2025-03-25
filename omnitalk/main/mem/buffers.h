@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <lwip/inet.h>
+
 #include "net/chain.h"
 #include "util/pstring.h"
 
@@ -93,6 +95,11 @@ static inline bool buf_append_all(buffer_t *buffer, uint8_t *data, size_t bytes)
 
 static inline bool buf_append(buffer_t *buffer, uint8_t byte) {
 	return buf_append_all(buffer, &byte, 1);
+}
+
+static inline bool buf_append_uint16(buffer_t *buffer, uint16_t uint16) {
+	uint16_t in_network_byte_order = htons(uint16);
+	return buf_append_all(buffer, (uint8_t*)&in_network_byte_order, 2);
 }
 
 static inline bool buf_append_pstring(buffer_t *buffer, pstring *str) {

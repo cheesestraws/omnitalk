@@ -118,9 +118,11 @@ typedef struct stats {
 	
 	// ZIP
 	prometheus_counter_t zip_out_queries;
+	prometheus_counter_t zip_out_replies__kind_extended;
 	prometheus_counter_t zip_out_errors__err_ddp_send_failed;
 	prometheus_counter_t zip_in_replies__kind_nonextended;
 	prometheus_counter_t zip_in_replies__kind_extended;
+	prometheus_counter_t zip_in_errors__err_query_packet_too_short;
 	
 	// NBP
 	prometheus_counter_t nbp_in_packets__function_invalid;
