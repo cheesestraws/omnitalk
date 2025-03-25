@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdatomic.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #include <esp_http_server.h>
@@ -18,6 +19,7 @@ typedef PROMETHEUS_METADATA struct stats_omnitalk_metadata_s {
 	const char* esp_version;
 	const char* build_date;
 	_Atomic(char*) best_zone;
+	_Atomic(bool) best_zone_decided;
 } stats_omnitalk_metadata_t;
 
 typedef PROMETHEUS_METADATA struct stats_lap_metadata_s {

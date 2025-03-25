@@ -84,6 +84,8 @@ for my $mdtype (keys %metadata_types) {
 	my $format = "\"%%METRIC%%{";
 	my $first = 1;
 	for my $field (@fieldnames) {
+		next unless $format_specifiers{$fields->{$field}};
+		
 		$format .= "," unless $first;
 		$format .= "$field=\\\"";
 		$format .= $format_specifiers{$fields->{$field}};
@@ -94,6 +96,8 @@ for my $mdtype (keys %metadata_types) {
 	
 	$format .= "} 1\\n\"";
 	for my $field (@fieldnames) {
+		next unless $format_specifiers{$fields->{$field}};
+
 		$format .= ", %%VAR%%.$field";
 	}
 	

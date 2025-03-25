@@ -95,6 +95,7 @@ void start_stats(void) {
 	stats_omnitalk_metadata.build_date = BUILD_TIMESTAMP;
 	stats_omnitalk_metadata.esp_version = esp_get_idf_version();
 	stats_omnitalk_metadata.best_zone = "";
+	stats_omnitalk_metadata.best_zone_decided = false;
 	stats_omnitalk_metadata.ok = true;
 
 	xTaskCreate(uptime_task_runloop, "UPTIME", 768, NULL, tskIDLE_PRIORITY,

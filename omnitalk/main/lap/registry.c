@@ -96,8 +96,6 @@ lap_t* lap_registry_highest_quality_lap(lap_registry_t* registry) {
 }
 
 void lap_registry_update_zone_cache(lap_registry_t *registry) {
-	static bool previously_set_stats_zone = false;
-
 	while (xSemaphoreTake(registry->mutex, portMAX_DELAY) != pdTRUE) {}
 
 	pstring* zone = NULL;	
@@ -116,10 +114,10 @@ void lap_registry_update_zone_cache(lap_registry_t *registry) {
 	if (zone != NULL) {
 		registry->best_zone_cache = zone;
 		char* old_stats_zone = atomic_exchange(&stats_omnitalk_metadata.best_zone, pstring_to_cstring_alloc(zone));
-		if (previously_set_stats_zone && old_stats_zone != NULL) {
+		if (stats_omnitalk_metadata.best_zone_decided && old_stats_zone != NULL) {
 			free(old_stats_zone);
 		}
-		previously_set_stats_zone = true;
+		stats_omnitalk_metadata.best_zone_decided = true;
 
 	}
 	
