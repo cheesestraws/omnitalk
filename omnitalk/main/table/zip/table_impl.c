@@ -312,11 +312,9 @@ void zt_check_zone_count_for_completeness(zt_zip_table_t *table, uint16_t networ
 	xSemaphoreGive(table->mutex);
 }
 
-size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network) {
+static size_t zt_count_zones_for_unguarded(zt_zip_table_t *table, uint16_t network) {
 	size_t count = 0;
-	
-	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
-	
+		
 	struct zip_network_node_s* net_node = zt_lookup_unguarded(table, network);
 	if (net_node == NULL) {
 		return 0;
@@ -330,7 +328,40 @@ size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network) {
 		
 		count++;
 	}
+		
+	return count;
+}
+
+size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network) {
+	size_t count = 0;
 	
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+
+	count = zt_count_zones_for_unguarded(table, network);
+	
+	xSemaphoreGive(table->mutex);
+	
+	return count;
+}
+
+size_t zt_count_all_zones(zt_zip_table_t *table) {
+	size_t count = 0;
+	struct zip_network_node_s* curr;
+	
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+
+	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		if (!curr->complete) {
+			continue;
+		}
+	
+		count += curr->zone_count;
+	}
+
 	xSemaphoreGive(table->mutex);
 	
 	return count;

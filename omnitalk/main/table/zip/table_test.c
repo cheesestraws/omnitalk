@@ -133,13 +133,22 @@ TEST_FUNCTION(test_zip_table_zones) {
 	// We've added three more zones, so we should have allocated six times
 	TEST_ASSERT(stats.mem_all_allocs - old_allocs == 6);
 	
+	// can we count all nodes?
+	TEST_ASSERT(zt_count_all_zones(table) == 0);
+	zt_mark_network_complete(table, 5);
+	TEST_ASSERT(zt_count_all_zones(table) == 4);
+	zt_mark_network_complete(table, 25);
+	TEST_ASSERT(zt_count_all_zones(table) == 6);
+	
 	// Now remove a network, and check that it's freed the zones
 	old_frees = stats.mem_all_frees;
 	TEST_ASSERT(zt_delete_network(table, 5));
+	TEST_ASSERT(zt_count_all_zones(table) == 2);
 	
 	// There are four zones associated with network 5, and one alloc
 	// for the network node itself (2 * 4 + 1), so:
 	TEST_ASSERT(stats.mem_all_frees - old_frees == 9);
+	
 	
 	TEST_OK();
 }
