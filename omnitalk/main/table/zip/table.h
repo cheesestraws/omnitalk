@@ -48,3 +48,20 @@ bool zt_iterate_net(
 	zip_iterator_init_cb init,
 	zip_iterator_loop_cb,
 	zip_iterator_end_cb);
+
+// Iterator for zone names.  This is highly fragile, because of course indexes don't
+// stay still when routers are joining and leaving.  But the GetZoneList/GetLocalZoneList
+// ZIP protocol operations are defined in terms of indexes, so we have to support querying
+// by them.
+//
+// This API is intentionally hobbled to prevent it being used for anything else.
+// Return false from the callback to bail out.  If you get a NULL pstring, that means
+// you've reached the end of the list.
+typedef bool(*zip_zone_name_iterator)(void* pvt, pstring* zone);
+
+bool zt_iterate_zone_names(zt_zip_table_t *table, void* private_data,
+	int starting_index, zip_zone_name_iterator callback);
+	
+bool zt_iterate_zone_names_for_net(zt_zip_table_t *table, void* private_data,
+	uint16_t network, int starting_index, zip_zone_name_iterator callback);
+

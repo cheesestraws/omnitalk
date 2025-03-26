@@ -558,3 +558,134 @@ bool zt_iterate_net(
 	
 	return result;
 }
+
+static bool zt_iterate_zone_names_unguarded(zt_zip_table_t *table, void* private_data,
+	int starting_index, zip_zone_name_iterator callback) {
+
+	// Start by finding the network
+	struct zip_network_node_s* curr;
+	struct zip_zone_node_s* curr_zone;
+
+	int idx = 0;
+	bool carry_on = true;
+	for (curr = &table->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		if (!curr->complete) {
+			continue;
+		}
+		
+		if (idx + curr->zone_count >= starting_index) {
+			break;
+		}
+		
+		idx += curr->zone_count;
+	}
+	
+	if (curr == NULL) {
+		return false;
+	}
+	
+	for(; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+
+		for (curr_zone = &curr->root; curr_zone != NULL; curr_zone = curr_zone->next) {
+			if (curr_zone->dummy) {
+				continue;
+			}
+		
+			if (idx < starting_index) {
+				idx++;
+				continue;
+			}
+
+			carry_on = callback(private_data, curr_zone->zone_name);
+			idx++;
+		
+			if (!carry_on) {
+				break;
+			}
+		}
+		
+		if (!carry_on) {
+			break;
+		}
+	}
+	
+	if (carry_on) {
+		callback(private_data, NULL);
+	}
+
+	return true;	
+}
+
+bool zt_iterate_zone_names(zt_zip_table_t *table, void* private_data,
+	int starting_index, zip_zone_name_iterator callback) {
+	
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	bool result = zt_iterate_zone_names_unguarded(table, private_data, starting_index, callback);
+	
+	xSemaphoreGive(table->mutex);
+	
+	return result;
+}
+
+static bool zt_iterate_zone_names_for_net_unguarded(zt_zip_table_t *table, void* private_data,
+	uint16_t network, int starting_index, zip_zone_name_iterator callback) {
+	
+	struct zip_network_node_s *node = zt_lookup_unguarded(table, network);
+	if (node == NULL) {
+		return false;
+	}
+	if (!node->complete) {
+		return false;
+	}
+	
+	int idx = 0;
+	struct zip_zone_node_s* curr;
+	bool carry_on = true;
+	
+	for (curr = &node->root; curr != NULL; curr = curr->next) {
+		if (curr->dummy) {
+			continue;
+		}
+		
+		if (idx < starting_index) {
+			idx++;
+			continue;
+		}
+		
+		carry_on = callback(private_data, curr->zone_name);
+		idx++;
+		
+		if (!carry_on) {
+			break;
+		}
+	}
+	
+	// If we didn't abort we must be at the end
+	if (carry_on) {
+		callback(private_data, NULL);
+	}
+	
+	return true;
+}
+
+	
+bool zt_iterate_zone_names_for_net(zt_zip_table_t *table, void* private_data,
+	uint16_t network, int starting_index, zip_zone_name_iterator callback) {
+	
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	bool result = zt_iterate_zone_names_for_net_unguarded(table, private_data, network, starting_index, callback);
+	
+	xSemaphoreGive(table->mutex);
+	
+	return result;
+
+}

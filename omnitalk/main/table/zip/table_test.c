@@ -270,6 +270,39 @@ static bool test_iter_end(void* pvt, bool aborted) {
 	return !aborted;
 }
 
+struct zone_name_iter_state {
+	int break_out_after;
+	int iterations;
+	bool seen_null;
+	char buffer[256];
+	char* cursor;
+};
+
+static bool simple_zone_name_iterator(void* pvt, pstring* zone) {
+	struct zone_name_iter_state *state = (struct zone_name_iter_state*)pvt;
+	
+	if (state->cursor == NULL) {
+		state->cursor = state->buffer;
+	}
+	
+	if (zone == NULL) {
+		state->seen_null = true;
+		return true;
+	}
+	
+	state->iterations++;
+	// We've cheated and made all our zone strings both C and pascal strings, so we can
+	// just point to the first char of zone to get the c string (with a null on the end)
+	char* cstr = &zone->str[0];
+	state->cursor = stpcpy(state->cursor, cstr);
+	
+	if (state->iterations == state->break_out_after) {
+		return false;
+	}
+	
+	return true;
+}
+
 TEST_FUNCTION(test_zip_table_iteration) {
 	// create ourselves a table
 	zt_zip_table_t* table = zt_new();
@@ -326,6 +359,69 @@ TEST_FUNCTION(test_zip_table_iteration) {
 	TEST_ASSERT(state.iterations == 3);
 	TEST_ASSERT(state.finalised);
 	TEST_ASSERT(strcmp(state.buffer, "1enoZ2enoZ3BREAK") == 0);
+	
+	// Now let's try out the zone name iterator.
+	// Add another complete netrange at the end
+	TEST_ASSERT(zt_add_net_range(table, 40, 50));
+	zt_add_zone_for(table, 40, (pstring*)"\x06ZoneA");
+	zt_add_zone_for(table, 40, (pstring*)"\x06ZoneB");
+	zt_add_zone_for(table, 40, (pstring*)"\x06ZoneC");
+	zt_add_zone_for(table, 40, (pstring*)"\x06ZoneD");
+	zt_mark_network_complete(table, 40);
+	
+	struct zone_name_iter_state state2 = { 0 };
+	zt_iterate_zone_names(table, &state2, 0, simple_zone_name_iterator);
+	// Make sure we skip the incomplete network range
+	TEST_ASSERT(strcmp(state2.buffer, "Zone1Zone2Zone3Zone4ZoneAZoneBZoneCZoneD") == 0);
+	TEST_ASSERT(state2.seen_null);
+		
+	bzero(&state2, sizeof(state2));
+	zt_iterate_zone_names(table, &state2, 2, simple_zone_name_iterator);
+	TEST_ASSERT(strcmp(state2.buffer, "Zone3Zone4ZoneAZoneBZoneCZoneD") == 0);
+	TEST_ASSERT(state2.seen_null);
+	
+	bzero(&state2, sizeof(state2));
+	zt_iterate_zone_names(table, &state2, 5, simple_zone_name_iterator);
+	TEST_ASSERT(strcmp(state2.buffer, "ZoneBZoneCZoneD") == 0);
+	TEST_ASSERT(state2.seen_null);
+
+	// Does bailing out early work?
+	bzero(&state2, sizeof(state2));
+	state2.break_out_after = 4;
+	zt_iterate_zone_names(table, &state2, 2, simple_zone_name_iterator);
+	TEST_ASSERT(strcmp(state2.buffer, "Zone3Zone4ZoneAZoneB") == 0);
+	TEST_ASSERT(!state2.seen_null);
+
+	// What about iterating through individual networks?
+	bzero(&state2, sizeof(state2));
+	TEST_ASSERT(zt_iterate_zone_names_for_net(table, &state2, 20, 0, simple_zone_name_iterator));
+	TEST_ASSERT(strcmp(state2.buffer, "Zone1Zone2Zone3Zone4") == 0);
+	TEST_ASSERT(state2.seen_null);
+	
+	// Starting at 2 in net 20 shouldn't overrun into the next net
+	bzero(&state2, sizeof(state2));
+	TEST_ASSERT(zt_iterate_zone_names_for_net(table, &state2, 20, 2, simple_zone_name_iterator));
+	TEST_ASSERT(strcmp(state2.buffer, "Zone3Zone4") == 0);
+	TEST_ASSERT(state2.seen_null);
+	
+	// Starting at 2 in net 20 shouldn't overrun into the next net
+	bzero(&state2, sizeof(state2));
+	state2.break_out_after = 1;
+	TEST_ASSERT(zt_iterate_zone_names_for_net(table, &state2, 20, 2, simple_zone_name_iterator));
+	TEST_ASSERT(strcmp(state2.buffer, "Zone3") == 0);
+	TEST_ASSERT(!state2.seen_null);
+		
+	// net 1 isn't ready
+	bzero(&state2, sizeof(state2));
+	TEST_ASSERT(!zt_iterate_zone_names_for_net(table, &state2, 1, 0, simple_zone_name_iterator));
+	TEST_ASSERT(strcmp(state2.buffer, "") == 0);
+	TEST_ASSERT(!state2.seen_null);
+	
+	// net 100 doesn't exist
+	bzero(&state2, sizeof(state2));
+	TEST_ASSERT(!zt_iterate_zone_names_for_net(table, &state2, 1, 0, simple_zone_name_iterator));
+	TEST_ASSERT(strcmp(state2.buffer, "") == 0);
+	TEST_ASSERT(!state2.seen_null);
 
 	TEST_OK();
 }
