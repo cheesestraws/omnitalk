@@ -14,6 +14,9 @@
 #define DDP_SOCKET_RTMP 1
 #define DDP_SOCKET_ZIP 6
 
+#define DDP_TYPE_ATP 3
+#define DDP_TYPE_ZIP 6
+
 struct ddp_short_header_s {
 	uint8_t dst;
 	uint8_t src;

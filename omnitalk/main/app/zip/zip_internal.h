@@ -13,3 +13,5 @@ typedef struct {
 	zip_internal_command_type_t cmd;
 	rt_route_t route;
 } zip_internal_command_t;
+
+void app_zip_handle_get_zone_list(buffer_t *packet);

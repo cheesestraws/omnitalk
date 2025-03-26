@@ -119,10 +119,15 @@ typedef struct stats {
 	// ZIP
 	prometheus_counter_t zip_out_queries;
 	prometheus_counter_t zip_out_replies__kind_extended;
+	prometheus_counter_t zip_out_replies__kind_getzonelist;
 	prometheus_counter_t zip_out_errors__err_ddp_send_failed;
 	prometheus_counter_t zip_in_replies__kind_nonextended;
 	prometheus_counter_t zip_in_replies__kind_extended;
 	prometheus_counter_t zip_in_errors__err_query_packet_too_short;
+	prometheus_counter_t zip_in_errors__err_atp_dispatch_error;
+	prometheus_counter_t zip_in_errors__err_unknown_atp_packet_command;
+	prometheus_counter_t zip_in_errors__err_getzonelist_incomplete_net;
+
 	
 	// NBP
 	prometheus_counter_t nbp_in_packets__function_invalid;
@@ -136,6 +141,7 @@ typedef struct stats {
 	
 	prometheus_counter_t nbp_out_packets__function_LkUp_reply;
 	prometheus_counter_t nbp_out_errors__type_reply__err_ddp_send_failed;
+
 	
 	// SIP
 	prometheus_counter_t sip_in_packets__function_SystemInfo;

@@ -3,6 +3,7 @@ set(srcs
 	"app/nbp/nbp.c"
 	"app/rtmp/rtmp.c"
 	"app/sip/sip.c"
+	"app/zip/zip_get_zone_list.c"
 	"app/zip/zip.c"
 	"app/app.c"
 

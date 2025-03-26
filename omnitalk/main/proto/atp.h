@@ -38,6 +38,14 @@ static inline uint8_t* atp_packet_get_payload(buffer_t *buff) {
 	return ((atp_packet_t*)(buff->ddp_payload))->payload;
 }
 
+static inline uint8_t* atp_packet_get_user_data(buffer_t *buff) {
+	if (buff->ddp_payload_length < sizeof(atp_packet_t)) {
+		return NULL;
+	}
+	return ((atp_packet_t*)(buff->ddp_payload))->user_data;
+}
+
+
 static inline int atp_packet_get_control_info_field(buffer_t *buff, uint8_t mask, uint8_t shift) {
 	if (buff->ddp_payload_length < sizeof(atp_packet_t)) {
 		return 0;

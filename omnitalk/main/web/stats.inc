@@ -63,10 +63,14 @@ COUNTER_FIELD(req, rtmp_errors__err_invalid_lap, rtmp_errors, "err=\"invalid lap
 COUNTER_FIELD(req, rtmp_errors__err_unreachable_nexthop, rtmp_errors, "err=\"unreachable nexthop\"", "");
 COUNTER_FIELD(req, zip_out_queries, zip_out_queries, "", "");
 COUNTER_FIELD(req, zip_out_replies__kind_extended, zip_out_replies, "kind=\"extended\"", "");
+COUNTER_FIELD(req, zip_out_replies__kind_getzonelist, zip_out_replies, "kind=\"getzonelist\"", "");
 COUNTER_FIELD(req, zip_out_errors__err_ddp_send_failed, zip_out_errors, "err=\"ddp send failed\"", "");
 COUNTER_FIELD(req, zip_in_replies__kind_nonextended, zip_in_replies, "kind=\"nonextended\"", "");
 COUNTER_FIELD(req, zip_in_replies__kind_extended, zip_in_replies, "kind=\"extended\"", "");
 COUNTER_FIELD(req, zip_in_errors__err_query_packet_too_short, zip_in_errors, "err=\"query packet too short\"", "");
+COUNTER_FIELD(req, zip_in_errors__err_atp_dispatch_error, zip_in_errors, "err=\"atp dispatch error\"", "");
+COUNTER_FIELD(req, zip_in_errors__err_unknown_atp_packet_command, zip_in_errors, "err=\"unknown atp packet command\"", "");
+COUNTER_FIELD(req, zip_in_errors__err_getzonelist_incomplete_net, zip_in_errors, "err=\"getzonelist incomplete net\"", "");
 COUNTER_FIELD(req, nbp_in_packets__function_invalid, nbp_in_packets, "function=\"invalid\"", "");
 COUNTER_FIELD(req, nbp_in_packets__function_BrRq, nbp_in_packets, "function=\"BrRq\"", "");
 COUNTER_FIELD(req, nbp_in_packets__function_LkUp, nbp_in_packets, "function=\"LkUp\"", "");

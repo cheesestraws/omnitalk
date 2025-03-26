@@ -103,7 +103,7 @@ static inline bool buf_append_uint16(buffer_t *buffer, uint16_t uint16) {
 }
 
 static inline bool buf_append_pstring(buffer_t *buffer, pstring *str) {
-	return buf_append_all(buffer, (uint8_t*)&str->str[0], ((size_t)str->length) + 1);
+	return buf_append_all(buffer, (uint8_t*)str, ((size_t)str->length) + 1);
 }
 
 static inline bool buffer_append_cstring_as_pstring(buffer_t *buffer, char *str) {

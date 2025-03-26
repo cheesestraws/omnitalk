@@ -6,6 +6,7 @@
 #include <freertos/queue.h>
 
 #include "lap/lap.h"
+#include "proto/atp.h"
 #include "proto/ddp.h"
 #include "proto/zip.h"
 #include "table/routing/route.h"
@@ -101,7 +102,7 @@ struct zip_query_response_state {
 };
 
 // These three functions form a loop iterating over the zone table
-bool query_reply_iterator_init(void* pvt, uint16_t network, bool exists, size_t zone_count, bool complete) {
+static bool query_reply_iterator_init(void* pvt, uint16_t network, bool exists, size_t zone_count, bool complete) {
 	struct zip_query_response_state *state = (struct zip_query_response_state*)pvt;
 
 	// If this network doesn't exist or the zone records aren't complete, bail out.
@@ -119,7 +120,7 @@ bool query_reply_iterator_init(void* pvt, uint16_t network, bool exists, size_t 
 	return true;
 }
 
-bool query_reply_iterator_loop(void* pvt, int idx, uint16_t network, pstring* zone) {
+static bool query_reply_iterator_loop(void* pvt, int idx, uint16_t network, pstring* zone) {
 	struct zip_query_response_state *state = (struct zip_query_response_state*)pvt;
 	bool try_again = false;
 	
@@ -154,7 +155,7 @@ bool query_reply_iterator_loop(void* pvt, int idx, uint16_t network, pstring* zo
 	return true;
 }
 
- bool query_reply_iterator_end(void* pvt, bool aborted) {
+static bool query_reply_iterator_end(void* pvt, bool aborted) {
  	struct zip_query_response_state *state = (struct zip_query_response_state*)pvt;
  
  	if (aborted) {
@@ -203,22 +204,40 @@ static void app_zip_handle_query(buffer_t *packet) {
 	}
 }
 
+void app_zip_handle_atp(buffer_t *packet) {
+	uint8_t *user_data = atp_packet_get_user_data(packet);
+	uint8_t command = user_data[0];
+	
+	if (command == 8 || command == 9) {
+		app_zip_handle_get_zone_list(packet);
+	} else if (command == 7) {
+		// handle GetMyZone
+	} else {
+		stats.zip_in_errors__err_unknown_atp_packet_command++;
+	}
+	
+}
+
 void app_zip_handler(buffer_t *packet) {
-	if (DDP_TYPE(packet) == 6 && 
+	if (DDP_TYPE(packet) == DDP_TYPE_ZIP && 
 	    packet->ddp_payload_length >= sizeof(zip_packet_t) &&
 	    ZIP_FUNCTION(packet) == ZIP_REPLY) {
 	
 		app_zip_handle_nonextended_reply(packet);
-	} else if (DDP_TYPE(packet) == 6 && 
+	} else if (DDP_TYPE(packet) == DDP_TYPE_ZIP && 
 	    packet->ddp_payload_length >= sizeof(zip_packet_t) &&
 	    ZIP_FUNCTION(packet) == ZIP_EXTENDED_REPLY) {
 	
 		app_zip_handle_extended_reply(packet);
-	} else if (DDP_TYPE(packet) == 6 && 
+	} else if (DDP_TYPE(packet) == DDP_TYPE_ZIP && 
 	    packet->ddp_payload_length >= sizeof(zip_packet_t) &&
 	    ZIP_FUNCTION(packet) == ZIP_QUERY) {
 	    
 		app_zip_handle_query(packet);
+	} else if (DDP_TYPE(packet) == DDP_TYPE_ATP &&
+	    packet->ddp_payload_length >= sizeof(atp_packet_t)) {
+	 	
+	  app_zip_handle_atp(packet);
 	}
 
 	freebuf(packet);
