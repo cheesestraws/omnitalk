@@ -11,9 +11,8 @@
 #include "global_state.h"
 #include "ddp_send.h"
 
-const static char* TAG = "ZIP";
-
 int zone_count_in_packet;
+bool only_return_first_zone;
 
 static bool add_zone_name_to_buffer(void* bufferp, pstring* zone) {
 	buffer_t *buffer = (buffer_t*)bufferp;
@@ -28,7 +27,7 @@ static bool add_zone_name_to_buffer(void* bufferp, pstring* zone) {
 	if (buffer->ddp_payload_length + zone->length < DDP_MAX_PAYLOAD_LEN) {
 		buf_append_pstring(buffer, zone);
 		zone_count_in_packet++;
-		return true;
+		return !only_return_first_zone;
 	} else {
 		return false;
 	}
@@ -36,6 +35,8 @@ static bool add_zone_name_to_buffer(void* bufferp, pstring* zone) {
 
 void app_zip_handle_get_zone_list(buffer_t *packet) {
 	zone_count_in_packet = 0;
+	only_return_first_zone = false;
+	
 	uint8_t *user_data = atp_packet_get_user_data(packet);
 	
 	// Local or all zones?
@@ -44,6 +45,9 @@ void app_zip_handle_get_zone_list(buffer_t *packet) {
 		only_local_zones = false;
 	} else if (user_data[0] == 9) {
 		only_local_zones = true;
+	} else if (user_data[0] == 7) {
+		only_local_zones = true;
+		only_return_first_zone = true;
 	} else {
 		stats.zip_in_errors__err_atp_dispatch_error++;
 		return;

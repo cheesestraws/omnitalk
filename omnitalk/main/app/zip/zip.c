@@ -208,10 +208,8 @@ void app_zip_handle_atp(buffer_t *packet) {
 	uint8_t *user_data = atp_packet_get_user_data(packet);
 	uint8_t command = user_data[0];
 	
-	if (command == 8 || command == 9) {
+	if (command == 7 || command == 8 || command == 9) {
 		app_zip_handle_get_zone_list(packet);
-	} else if (command == 7) {
-		// handle GetMyZone
 	} else {
 		stats.zip_in_errors__err_unknown_atp_packet_command++;
 	}
