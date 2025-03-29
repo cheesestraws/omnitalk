@@ -18,6 +18,8 @@
 esp_err_t enable_transport(transport_t* transport);
 esp_err_t disable_transport(transport_t* transport);
 esp_err_t set_transport_node_address(transport_t* transport, uint8_t node_address);
+bool transport_supports_ether_multicast(transport_t* transport);
+struct eth_addr transport_ether_multicast_for_zone(transport_t* transport, pstring* zone);
 
 
 void wait_for_transport_ready(transport_t* transport);

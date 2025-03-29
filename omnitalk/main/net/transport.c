@@ -36,6 +36,15 @@ esp_err_t set_transport_node_address(transport_t* transport, uint8_t node_addres
 	return ESP_OK;
 }
 
+bool transport_supports_ether_multicast(transport_t* transport) {
+	return transport->get_zone_ether_multicast != NULL;
+}
+
+struct eth_addr transport_ether_multicast_for_zone(transport_t* transport, pstring* zone) {
+	return transport->get_zone_ether_multicast(transport, zone);
+}
+
+
 buffer_t* trecv(transport_t* transport) {
 	buffer_t *buff = NULL;
 	xQueueReceive(transport->inbound, &buff, portMAX_DELAY);
