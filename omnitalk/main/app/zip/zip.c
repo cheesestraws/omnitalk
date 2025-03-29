@@ -232,6 +232,11 @@ void app_zip_handler(buffer_t *packet) {
 	    ZIP_FUNCTION(packet) == ZIP_QUERY) {
 	    
 		app_zip_handle_query(packet);
+	} else if (DDP_TYPE(packet) == DDP_TYPE_ZIP && 
+	    packet->ddp_payload_length >= sizeof(zip_packet_t) &&
+	    ZIP_FUNCTION(packet) == ZIP_GETNETINFO) {
+	    
+	    app_zip_handle_get_net_info(packet);
 	} else if (DDP_TYPE(packet) == DDP_TYPE_ATP &&
 	    packet->ddp_payload_length >= sizeof(atp_packet_t)) {
 	 	

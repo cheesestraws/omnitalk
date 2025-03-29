@@ -15,3 +15,4 @@ typedef struct {
 } zip_internal_command_t;
 
 void app_zip_handle_get_zone_list(buffer_t *packet);
+void app_zip_handle_get_net_info(buffer_t *packet);

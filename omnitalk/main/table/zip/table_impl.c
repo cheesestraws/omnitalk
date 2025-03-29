@@ -384,6 +384,37 @@ bool zt_network_is_complete(zt_zip_table_t *table, uint16_t network) {
 	return result;
 }
 
+static bool zt_zone_is_valid_for_unguarded(zt_zip_table_t *table, pstring* zone, uint16_t network) {
+	struct zip_network_node_s* net_node = zt_lookup_unguarded(table, network);
+	if (net_node == NULL) {
+		return false;
+	}
+	
+	struct zip_zone_node_s* curr_zone;
+	for (curr_zone = &net_node->root; curr_zone != NULL; curr_zone = curr_zone->next) {
+		if (curr_zone->dummy) {
+			continue;
+		}
+		
+		if (pstring_eq_pstring(zone, curr_zone->zone_name)) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+bool zt_zone_is_valid_for(zt_zip_table_t *table, pstring* zone, uint16_t network) {
+	bool result;
+	while (xSemaphoreTake(table->mutex, portMAX_DELAY) != pdTRUE) {}
+	
+	result = zt_zone_is_valid_for_unguarded(table, zone, network);
+	
+	xSemaphoreGive(table->mutex);
+	
+	return result;
+}
+
 void zt_print(zt_zip_table_t *table) {
 	struct zip_network_node_s* curr;
 	struct zip_zone_node_s* curr_zone;

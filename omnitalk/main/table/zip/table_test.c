@@ -110,6 +110,9 @@ TEST_FUNCTION(test_zip_table_zones) {
 	zt_add_zone_for(table, 5, (pstring*)"\x05Zone1");
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 3);
 	
+	TEST_ASSERT(zt_zone_is_valid_for(table, (pstring*)"\x05Zone2", 5));
+	TEST_ASSERT(!zt_zone_is_valid_for(table, (pstring*)"\x05ZoneX", 5));
+	
 	// We've added three zones, so we should have allocated six times
 	TEST_ASSERT(stats.mem_all_allocs - old_allocs == 6);
 	
@@ -130,6 +133,10 @@ TEST_FUNCTION(test_zip_table_zones) {
 	TEST_ASSERT(zt_count_zones_for(table, 25) == 2);
 	TEST_ASSERT(zt_count_zones_for(table, 5) == 4);
 	
+	TEST_ASSERT(zt_zone_is_valid_for(table, (pstring*)"\x05""1enoZ", 25));
+	TEST_ASSERT(!zt_zone_is_valid_for(table, (pstring*)"\x05Zone2", 25));
+
+	
 	// We've added three more zones, so we should have allocated six times
 	TEST_ASSERT(stats.mem_all_allocs - old_allocs == 6);
 	
@@ -148,7 +155,6 @@ TEST_FUNCTION(test_zip_table_zones) {
 	// There are four zones associated with network 5, and one alloc
 	// for the network node itself (2 * 4 + 1), so:
 	TEST_ASSERT(stats.mem_all_frees - old_frees == 9);
-	
 	
 	TEST_OK();
 }

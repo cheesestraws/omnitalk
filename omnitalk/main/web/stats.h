@@ -121,13 +121,16 @@ typedef struct stats {
 	prometheus_counter_t zip_out_replies__kind_extended;
 	prometheus_counter_t zip_out_replies__kind_getzonelist;
 	prometheus_counter_t zip_out_errors__err_ddp_send_failed;
+	prometheus_counter_t zip_out_errors__err_no_good_default_zone_for_network;
 	prometheus_counter_t zip_in_replies__kind_nonextended;
 	prometheus_counter_t zip_in_replies__kind_extended;
+	prometheus_counter_t zip_in_GetNetInfo_requests;
 	prometheus_counter_t zip_in_errors__err_query_packet_too_short;
 	prometheus_counter_t zip_in_errors__err_atp_dispatch_error;
 	prometheus_counter_t zip_in_errors__err_unknown_atp_packet_command;
+	prometheus_counter_t zip_in_errors__err_truncated_GetNetInfo_request;
 	prometheus_counter_t zip_in_errors__err_getzonelist_incomplete_net;
-
+	prometheus_counter_t zip_in_errors__err_GetNetInfo_incomplete_net;
 	
 	// NBP
 	prometheus_counter_t nbp_in_packets__function_invalid;

@@ -29,6 +29,7 @@ void zt_mark_network_complete(zt_zip_table_t *table, uint16_t network);
 
 size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network);
 size_t zt_count_all_zones(zt_zip_table_t *table);
+bool zt_zone_is_valid_for(zt_zip_table_t *table, pstring* zone, uint16_t network);
 bool zt_network_is_complete(zt_zip_table_t *table, uint16_t network);
 
 void zt_print(zt_zip_table_t *table);
