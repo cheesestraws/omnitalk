@@ -320,16 +320,7 @@ static size_t zt_count_zones_for_unguarded(zt_zip_table_t *table, uint16_t netwo
 		return 0;
 	}
 	
-	struct zip_zone_node_s *curr;
-	for(curr = &net_node->root; curr != NULL; curr = curr->next) {
-		if (curr->dummy) {
-			continue;
-		}
-		
-		count++;
-	}
-		
-	return count;
+	return net_node->zone_count;
 }
 
 size_t zt_count_zones_for(zt_zip_table_t *table, uint16_t network) {
