@@ -20,6 +20,9 @@ void start_net(runloop_info_t* controlplane, runloop_info_t* dataplane) {
 	start_ltoudp();
 	start_b2udptunnel();
 	
+	// forcibly clean up after any lingering unit tests
+	lap_lsend_mock = NULL;
+	
 	global_lap_registry = lap_registry_new();
 	
 	start_sink("SINK-eth", ethertalkv2_get_transport());

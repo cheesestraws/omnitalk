@@ -7,6 +7,11 @@
 
 #include "mem/buffers.h"
 
+// a mock so we can mock out lsend in tests, to test application code.
+// Mocks are responsible for disposing of the buffer if they return true.
+typedef bool (*lsend_mock_t)(lap_t* lap, buffer_t* buff);
+extern lsend_mock_t lap_lsend_mock;
+
 bool lsend(lap_t* lap, buffer_t *buff);
 
 // The LAP will keep the reference to zone, do not free it

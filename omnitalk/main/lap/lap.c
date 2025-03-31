@@ -3,7 +3,13 @@
 #include "net/transport.h"
 #include "web/stats.h"
 
+lsend_mock_t lap_lsend_mock;
+
 bool lsend(lap_t *lap, buffer_t *buff) {
+	if (lap_lsend_mock != NULL) {
+		return lap_lsend_mock(lap, buff);
+	}
+
 	BaseType_t err = xQueueSendToBack(lap->outbound,
 		&buff, 0);
 	
