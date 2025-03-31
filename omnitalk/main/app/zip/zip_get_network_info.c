@@ -52,13 +52,13 @@ void app_zip_handle_get_net_info(buffer_t *packet) {
 	
 	// Flags
 	bool only_one_zone = (zt_count_zones_for(global_zip_table, net) == 1);
-	bool use_broadcast = lap_supports_ether_multicast(recv_lap);
+	bool use_broadcast = !lap_supports_ether_multicast(recv_lap);
 	bool zone_invalid = !zt_zone_is_valid_for(global_zip_table, zip_gni_req_get_zone_name(packet), net);
 	zip_gni_resp_set_flags(reply, only_one_zone, use_broadcast, zone_invalid);
 	
 	// Networks
-	buf_append_uint16(reply, recv_lap->network_range_start);
-	buf_append_uint16(reply, recv_lap->network_range_end);
+	zip_gni_resp_set_net_range_start(reply, recv_lap->network_range_start);
+	zip_gni_resp_set_net_range_end(reply, recv_lap->network_range_end);
 	
 	// The original zone being requested
 	buf_append_pstring(reply, zip_gni_req_get_zone_name(packet));
@@ -70,8 +70,8 @@ void app_zip_handle_get_net_info(buffer_t *packet) {
 		real_zone = pstrclone(zip_gni_req_get_zone_name(packet));
 	} else {
 		// "iterate" once to get the real zone
-		zt_iterate_zone_names_for_net(global_zip_table, &real_zone, 0,
-			recv_lap->network_range_start, stash_first_zone_name);
+		zt_iterate_zone_names_for_net(global_zip_table, &real_zone,
+			recv_lap->network_range_start, 0, stash_first_zone_name);
 	}
 	
 	if (real_zone == NULL) {
@@ -91,7 +91,9 @@ void app_zip_handle_get_net_info(buffer_t *packet) {
 		buf_append_all(reply, &mcaddr.addr[0], 6);
 	}
 	
-	buf_append_pstring(reply, real_zone);
+	if (zone_invalid) {
+		buf_append_pstring(reply, real_zone);
+	}
 	
 	// That's the whole packet.  Where do we send it?
 	// We have two options.  IA specifies that if the source address of the packet

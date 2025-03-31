@@ -117,6 +117,16 @@ static inline void zip_gni_resp_set_flags(buffer_t *buff,
 	packet->flags = flags;
 }
 
+static inline void zip_gni_resp_set_net_range_start(buffer_t *buff, uint16_t net_start) {
+	zip_get_info_resp_t *packet = (zip_get_info_resp_t*)(buff->ddp_payload);
+	packet->net_range_start = htons(net_start);
+}
+
+static inline void zip_gni_resp_set_net_range_end(buffer_t *buff, uint16_t net_end) {
+	zip_get_info_resp_t *packet = (zip_get_info_resp_t*)(buff->ddp_payload);
+	packet->net_range_end = htons(net_end);
+}
+
 struct zip_zone_tuple_s {
 	uint16_t network;
 	pstring zone_name;

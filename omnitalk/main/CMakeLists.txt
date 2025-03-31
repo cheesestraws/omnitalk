@@ -5,6 +5,7 @@ set(srcs
 	"app/sip/sip.c"
 	"app/zip/zip_get_zone_list.c"
 	"app/zip/zip_get_network_info.c"
+	"app/zip/zip_get_network_info_test.c"
 	"app/zip/zip.c"
 	"app/app.c"
 
