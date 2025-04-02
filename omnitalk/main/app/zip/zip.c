@@ -128,6 +128,7 @@ static bool query_reply_iterator_loop(void* pvt, int idx, uint16_t network, pstr
 		// Do we need to create a new packet buffer?
 		if (state->packet_in_progress == NULL) {
 			state->packet_in_progress = newbuf_ddp();
+			buf_expand_payload(state->packet_in_progress, sizeof(zip_packet_t));
 			zip_ext_reply_setup_packet(state->packet_in_progress, state->zone_count);
 		}
 	
@@ -188,7 +189,7 @@ static void app_zip_reply_to_query_for_net(buffer_t *packet, uint16_t net) {
 		query_reply_iterator_init, query_reply_iterator_loop, query_reply_iterator_end);
 }
 
-static void app_zip_handle_query(buffer_t *packet) {
+void app_zip_handle_query(buffer_t *packet) {
 	uint8_t network_count = zip_packet_get_network_count(packet);
 	
 	// Do we have the number of networks the header claims we have?

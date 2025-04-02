@@ -2,6 +2,8 @@
 
 RUN_TEST(test_zip_get_net_info);
 
+RUN_TEST(test_zip_queries);
+
 RUN_TEST(test_lap_lsend_mock);
 
 RUN_TEST(test_llap_extract_ddp_packet);

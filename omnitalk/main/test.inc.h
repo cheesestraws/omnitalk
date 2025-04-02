@@ -2,6 +2,8 @@
 
 #include "app/zip/zip_get_network_info_test.h"
 
+#include "app/zip/zip_test.h"
+
 #include "lap/lap_test.h"
 
 #include "lap/llap/llap_test.h"

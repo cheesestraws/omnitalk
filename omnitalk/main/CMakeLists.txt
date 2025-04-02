@@ -7,6 +7,7 @@ set(srcs
 	"app/zip/zip_get_network_info.c"
 	"app/zip/zip_get_network_info_test.c"
 	"app/zip/zip.c"
+	"app/zip/zip_test.c"
 	"app/app.c"
 
 	"lap/llap/llap.c"
