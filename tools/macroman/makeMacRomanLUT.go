@@ -56,7 +56,7 @@ func main() {
 	}
 	
 	for i := 32; i < 127; i++ {
-		charmap = append(charmap, string([]byte{byte(i)}))
+		charmap = append(charmap, escapedString([]byte{byte(i)}))
 		charlengths = append(charlengths, 1)
 	}
 	
@@ -81,7 +81,7 @@ func main() {
 	fmt.Printf("#include <stddef.h>\n\n")
 	
 	// print the bugger out
-	fmt.Printf("char* macroman_to_utf8 = {\n\t")
+	fmt.Printf("char* macroman_to_utf8[] = {\n\t")
 	linelen := 0
 	for i := 0; i < 256; i++ {
 		linelen += len(charmap[i]) + 4
@@ -94,7 +94,7 @@ func main() {
 	
 	fmt.Printf("};\n\n")
 	
-	fmt.Printf("size_t macroman_to_utf8_lengths = {\n\t")
+	fmt.Printf("size_t macroman_to_utf8_lengths[] = {\n\t")
 	for i := 0; i < 256; i++ {
 		fmt.Printf("%d, ", charlengths[i]);
 		if i != 0 && i%20 == 0 {
