@@ -45,6 +45,8 @@ RUN_TEST(test_tests);
 RUN_TEST(test_event_add_callback);
 RUN_TEST(test_event_fire);
 
+RUN_TEST(test_macroman_to_utf8);
+
 RUN_TEST(test_pstring_round_tripping);
 RUN_TEST(test_pstring_case_mapping);
 RUN_TEST(test_pstring_matching);

@@ -8,6 +8,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 
+#include "util/macroman.h"
 #include "util/string.h"
 
 zt_zip_table_t* zt_new() {
@@ -468,7 +469,7 @@ char* zt_stats(zt_zip_table_t *table) {
 			zone_count++;
 			zone_count_per_network++;
 			
-			int zone_length = curr_zone->zone_name->length;
+			int zone_length = pstring_macroman_to_utf8_length(curr_zone->zone_name);
 			if (zone_length > max_zone_length) {
 				max_zone_length = zone_length;
 			}
@@ -526,10 +527,10 @@ char* zt_stats(zt_zip_table_t *table) {
 				
 				if (*c == '"' || *c == '\0') {
 					*zonecursor = '_';
+					zonecursor++;
 				} else {
-					*zonecursor = *c;
+					zonecursor = stpcpy(zonecursor, macroman_to_utf8[(int)*c]);
 				}
-				zonecursor++;
 			}
 
 			firstzone = false;

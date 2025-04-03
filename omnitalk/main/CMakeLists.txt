@@ -54,6 +54,8 @@ set(srcs
 	"util/event/event_test.c"
 	"util/crc.c"
 	"util/crc32.c"
+	"util/macroman.c"
+	"util/macroman_test.c"
 	"util/macroman_to_utf8_tables.c"
 	"util/pstring.c"
 	"util/pstring_test.c"

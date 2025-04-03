@@ -41,7 +41,7 @@ func main() {
 	}
 	
 	if len(strs) != 128 {
-		log.Fatal("wrong number of chars");
+		log.Fatal("wrong number of chars: ", len(strs));
 	}
 
 	

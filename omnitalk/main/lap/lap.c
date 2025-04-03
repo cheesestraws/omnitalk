@@ -1,6 +1,7 @@
 #include "lap.h"
 
 #include "net/transport.h"
+#include "util/macroman.h"
 #include "web/stats.h"
 
 lsend_mock_t lap_lsend_mock;
@@ -22,7 +23,7 @@ bool lsend(lap_t *lap, buffer_t *buff) {
 
 void lap_set_my_zone(lap_t *lap, pstring* zone) {
 	lap->my_zone = zone;
-	stats_lap_metadata[lap->id].zone = pstring_to_cstring_alloc(zone);
+	stats_lap_metadata[lap->id].zone = pstring_to_cstring_and_macroman_to_utf8_alloc(zone);
 }
 
 bool lap_supports_ether_multicast(lap_t *lap) {
